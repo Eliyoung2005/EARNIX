@@ -1,0 +1,209 @@
+:root {
+  /* Brand Colors from User Requirements */
+  --bg-color: #050505; /* Black */
+  --surface-color: #07162F; /* Dark Blue */
+  --surface-color-light: #0d254d; /* Slightly lighter Dark Blue for hover */
+  
+  --text-primary: #FFFFFF; /* White */
+  --text-secondary: #a0aec0;
+  
+  /* Brand Accents */
+  --accent-blue: #0A5BFF; /* Primary Blue */
+  --accent-blue-hover: #0849cc;
+  --accent-gold: #D4AF37; /* Gold (PRO accents) */
+  --accent-gold-glow: rgba(212, 175, 55, 0.2);
+  
+  /* Status Colors */
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.text-gold {
+  color: var(--accent-gold);
+}
+
+.text-blue {
+  color: var(--accent-blue);
+}
+
+.bg-surface {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Typography elements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Smooth animations */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-block;
+  background-color: var(--accent-blue);
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-blue-hover);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(10, 91, 255, 0.3);
+}
+
+.btn-pro {
+  display: inline-block;
+  background-color: transparent;
+  color: var(--accent-gold);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent-gold);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-pro:hover {
+  background-color: var(--accent-gold);
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
+}
+
+/* Responsive Utilities */
+.desktop-only {
+  display: flex !important;
+}
+.mobile-only {
+  display: none !important;
+}
+
+/* Dashboard Desktop Defaults */
+@media (min-width: 769px) {
+  .dashboard-main {
+    margin-left: 280px !important;
+  }
+  .sidebar-closed {
+    transform: translateX(0) !important;
+  }
+}
+
+/* New Responsive Layout Utilities */
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.grid-responsive-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.flex-responsive {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.hero-text-responsive {
+  font-size: 4.5rem;
+}
+.hero-padding {
+  padding: 8rem 1.5rem;
+}
+
+/* Custom Grid Classes for Admin/Dashboard Layouts */
+.grid-1-2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+.grid-1-1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+  .mobile-flex {
+    display: flex !important;
+  }
+  .dashboard-main {
+    margin-left: 0 !important;
+  }
+  
+  /* Make grids collapse to 1 column on mobile */
+  .grid-responsive-2, .grid-responsive-3, .grid-responsive-4, .grid-1-2, .grid-1-1 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Make flex wrap or stack on mobile */
+  .flex-responsive {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* Adjust Hero typography and spacing for mobile */
+  .hero-text-responsive {
+    font-size: 2.5rem;
+  }
+  .hero-padding {
+    padding: 4rem 1.5rem;
+  }
+}

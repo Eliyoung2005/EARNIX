@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  VENDOR
+  ADMIN
+  SUB_ADMIN
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum Permission {
+  GENERATE_CODES
+  UPLOAD_TASKS
+  APPROVE_WITHDRAWALS
+  MANAGE_USERS
+  SEND_NOTIFICATIONS
+}
+
+enum TargetAudience {
+  ALL
+  FREE
+  PRO
+  SPECIFIC_USER
+}
+
+enum TaskStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CouponStatus {
+  UNUSED
+  USED
+}
+
+enum WithdrawalType {
+  AFFILIATE
+  TASK
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  name                String
+  username            String       @unique
+  email               String       @unique
+  password            String
+  withdrawalPin       String?
+  role                Role         @default(USER)
+  plan                Plan         @default(FREE)
+  affiliateBalance    Float        @default(0.0)
+  taskBalance         Float        @default(0.0)
+  totalEarnings       Float        @default(0.0)
+  referralCount       Int          @default(0)
+  profilePic          String?
+  customGreeting      String?
+  bankName            String?
+  accountName         String?
+  accountNumber       String?
+  subAdminPermissions Permission[] // PostgreSQL supports enum arrays
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submissions      TaskSubmission[]
+  assignedCoupons  CouponCode[]        @relation("AssignedTo")
+  redeemedCoupons  CouponCode[]        @relation("RedeemedBy")
+  withdrawals      WithdrawalRequest[]
+  activityLogs     ActivityLog[]
+  notifications    Notification[]      @relation("TargetedUser")
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  reward      Float
+  link        String
+  platform    String     // E.g., FACEBOOK, WHATSAPP, etc.
+  status      TaskStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  submissions TaskSubmission[]
+}
+
+model TaskSubmission {
+  id        String           @id @default(uuid())
+  userId    String
+  taskId    String
+  proofUrl  String
+  status    SubmissionStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model CouponCode {
+  id               String       @id @default(uuid())
+  code             String       @unique
+  assignedVendorId String
+  redeemedById     String?
+  status           CouponStatus @default(UNUSED)
+  createdAt        DateTime     @default(now())
+  redeemedDate     DateTime?
+
+  assignedVendor User  @relation("AssignedTo", fields: [assignedVendorId], references: [id], onDelete: Cascade)
+  redeemedBy     User? @relation("RedeemedBy", fields: [redeemedById], references: [id], onDelete: SetNull)
+}
+
+model WithdrawalRequest {
+  id        String           @id @default(uuid())
+  userId    String
+  amount    Float
+  type      WithdrawalType
+  status    WithdrawalStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  action      String
+  description String
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id             String         @id @default(uuid())
+  title          String
+  message        String
+  targetAudience TargetAudience @default(ALL)
+  targetUserId   String?
+  createdAt      DateTime       @default(now())
+
+  targetUser User? @relation("TargetedUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+}
+
+model PlatformSettings {
+  id                     String    @id @default("1")
+  name                   String    @default("EARNIX")
+  tagline                String    @default("Earn More. Grow Beyond.")
+  logo                   String?
+  
+  // Plans & Bonuses
+  welcomeBonusFree       Float     @default(50.0)
+  welcomeBonusPro        Float     @default(100.0)
+  proActivationFee       Float     @default(500.0)
+  freeTaskReward         Float     @default(80.0)
+  proTaskReward          Float     @default(120.0)
+  referralCommission     Float     @default(250.0)
+  dailyLoginBonus        Float     @default(50.0)
+  
+  // Withdrawals
+  minAffiliateWithdraw   Float     @default(1000.0)
+  minTaskWithdraw        Float     @default(3500.0)
+  freeWithdrawalOpen     Boolean   @default(true)
+  proWithdrawalOpen      Boolean   @default(true)
+  scheduledFreeOpenDate  DateTime?
+  scheduledFreeCloseDate DateTime?
+  scheduledProOpenDate   DateTime?
+  scheduledProCloseDate  DateTime?
+
+  // System
+  maintenanceMode        Boolean   @default(false)
+  maintenanceMessage     String?
+  registrationMessage    String?
+  
+  // Feature Toggles
+  enableFreeReg          Boolean   @default(true)
+  enableProReg           Boolean   @default(true)
+  enableTasks            Boolean   @default(true)
+  enableWithdrawals      Boolean   @default(true)
+  enableReferrals        Boolean   @default(true)
+
+  // AdSense
+  adsenseEnabled         Boolean   @default(false)
+  adsenseClientId        String?
+
+  updatedAt              DateTime  @updatedAt
+}
