@@ -29,12 +29,20 @@ export default function Register() {
     fetch('/api/plans')
       .then(res => res.json())
       .then(data => {
-        setPlans(data);
-        if (data.length > 0) {
-          setPlan(data[0].id);
+        if (Array.isArray(data)) {
+          setPlans(data);
+          if (data.length > 0) {
+            setPlan(data[0].id);
+          }
+        } else {
+          console.error('API Error:', data);
+          setPlans([]);
         }
       })
-      .catch(err => console.error("Failed to load plans", err));
+      .catch(err => {
+        console.error("Failed to load plans", err);
+        setPlans([]);
+      });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

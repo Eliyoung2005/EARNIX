@@ -103,11 +103,6 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (!query.trim()) {
-        setResults([]);
-        return;
-      }
-
       setLoading(true);
       setError('');
       

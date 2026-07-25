@@ -18,12 +18,10 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('q');
 
-    if (!query || query.trim() === '') {
-      return NextResponse.json({ users: [] });
-    }
+    let whereClause = {};
 
-    const users = await prisma.user.findMany({
-      where: {
+    if (query && query.trim() !== '') {
+      whereClause = {
         OR: [
           { username: { contains: query, mode: 'insensitive' } },
           { email: { contains: query, mode: 'insensitive' } },
@@ -31,7 +29,11 @@ export async function GET(req: Request) {
           { accountName: { contains: query, mode: 'insensitive' } },
           { accountNumber: { contains: query, mode: 'insensitive' } }
         ]
-      },
+      };
+    }
+
+    const users = await prisma.user.findMany({
+      where: whereClause,
       select: {
         id: true,
         username: true,
