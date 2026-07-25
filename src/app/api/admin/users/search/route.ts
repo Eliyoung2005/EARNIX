@@ -37,7 +37,9 @@ export async function GET(req: Request) {
         username: true,
         email: true,
         name: true,
-        plan: true,
+        membership: {
+          select: { name: true }
+        },
         role: true,
         totalEarnings: true,
         referralCount: true,
@@ -46,7 +48,13 @@ export async function GET(req: Request) {
       take: 20 // Limit to top 20 results for performance
     });
 
-    return NextResponse.json({ users });
+    const mappedUsers = users.map(u => ({
+      ...u,
+      plan: u.membership?.name || 'FREE',
+      membership: undefined
+    }));
+
+    return NextResponse.json({ users: mappedUsers });
   } catch (error: any) {
     console.error('User Search Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

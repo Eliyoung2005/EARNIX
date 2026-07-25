@@ -17,6 +17,7 @@ interface UserResult {
 export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserResult[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -94,6 +95,13 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
   };
 
   useEffect(() => {
+    // Fetch plans on mount for the dropdown
+    if (viewerRole === 'ADMIN') {
+      fetch('/api/admin/memberships').then(res => res.json()).then(data => setPlans(data)).catch(console.error);
+    }
+  }, [viewerRole]);
+
+  useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (!query.trim()) {
         setResults([]);
@@ -162,8 +170,8 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
                     onChange={(e) => handlePlanChange(user.id, user.plan, e.target.value)}
                     style={{ 
                       padding: '0.25rem 0.5rem', 
-                      background: user.plan === 'PRO' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', 
-                      color: user.plan === 'PRO' ? '#000' : 'white', 
+                      background: user.plan !== 'FREE' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', 
+                      color: user.plan !== 'FREE' ? '#000' : 'white', 
                       borderRadius: '50px', 
                       fontSize: '0.7rem', 
                       fontWeight: 'bold',
@@ -171,11 +179,14 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="FREE" style={{ background: '#000', color: 'white' }}>FREE PLAN</option>
-                    <option value="PRO" style={{ background: '#000', color: 'var(--accent-gold)' }}>PRO PLAN</option>
+                    {plans.map(p => (
+                      <option key={p.id} value={p.name} style={{ background: '#000', color: p.level > 1 ? 'var(--accent-gold)' : 'white' }}>
+                        {p.name} PLAN
+                      </option>
+                    ))}
                   </select>
                 ) : (
-                  <span style={{ padding: '0.25rem 0.75rem', background: user.plan === 'PRO' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: user.plan === 'PRO' ? '#000' : 'white', borderRadius: '50px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                  <span style={{ padding: '0.25rem 0.75rem', background: user.plan !== 'FREE' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: user.plan !== 'FREE' ? '#000' : 'white', borderRadius: '50px', fontSize: '0.7rem', fontWeight: 'bold' }}>
                     {user.plan} PLAN
                   </span>
                 )}

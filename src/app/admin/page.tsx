@@ -19,8 +19,8 @@ export default async function AdminOverview() {
 
   // Aggregate Data
   const totalUsers = await prisma.user.count();
-  const freeUsers = await prisma.user.count({ where: { plan: 'FREE' } });
-  const proUsers = await prisma.user.count({ where: { plan: 'PRO' } });
+  const freeUsers = await prisma.user.count({ where: { membership: { name: 'FREE' } } });
+  const proUsers = await prisma.user.count({ where: { membership: { name: 'PRO' } } });
   const vendors = await prisma.user.count({ where: { role: 'VENDOR' } });
 
   const totalInflow = proUsers * 500;

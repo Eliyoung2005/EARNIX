@@ -27,6 +27,9 @@ export const authOptions: NextAuthOptions = {
               { email: credentials.identifier },
               { username: credentials.identifier }
             ]
+          },
+          include: {
+            membership: true
           }
         });
 
@@ -60,7 +63,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
-          plan: user.plan
+          plan: user.membership?.name || 'FREE'
         };
       }
     })

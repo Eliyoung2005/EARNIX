@@ -15,7 +15,7 @@ export default async function TasksPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { plan: true }
+    select: { membership: { select: { name: true } } }
   });
 
   const tasks = await prisma.task.findMany({
@@ -23,7 +23,7 @@ export default async function TasksPage() {
       status: 'ACTIVE',
       OR: [
         { targetPlan: 'ALL' },
-        { targetPlan: dbUser?.plan || 'FREE' }
+        { targetPlan: dbUser?.membership?.name || 'FREE' }
       ]
     },
     orderBy: { createdAt: 'desc' }

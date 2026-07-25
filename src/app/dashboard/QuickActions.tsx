@@ -23,7 +23,7 @@ export default function QuickActions({ username, plan }: { username: string, pla
         <button onClick={() => handleWithdraw('Task')} className="btn-pro" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--surface-color-light)' }}>
           Withdraw Task Earnings <span>→</span>
         </button>
-        {plan === 'PRO' && (
+        {plan !== 'FREE' && (
           <button onClick={handleCopyLink} className="btn-pro" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--surface-color-light)' }}>
             Copy Referral Link <span>📋</span>
           </button>

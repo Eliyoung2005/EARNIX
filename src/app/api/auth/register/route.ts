@@ -39,17 +39,21 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedPin = await bcrypt.hash(pin, 10);
 
-    // 5. Registration logic (Welcome Bonus and Plan)
-    // We would ideally fetch these values from PlatformSettings
-    const settings = await prisma.platformSettings.findFirst();
-    const welcomeBonus = plan === 'PRO' ? (settings?.welcomeBonusPro || 100.0) : (settings?.welcomeBonusFree || 50.0);
+    // 5. Fetch selected MembershipPlan
+    const selectedPlan = await prisma.membershipPlan.findUnique({
+      where: { id: plan } // The frontend now sends planId as 'plan'
+    });
 
-    // If PRO, we check the coupon code logic here
-    if (plan === 'PRO') {
+    if (!selectedPlan || !selectedPlan.isActive) {
+      return NextResponse.json({ error: 'Selected plan is invalid or currently inactive' }, { status: 400 });
+    }
+
+    const welcomeBonus = selectedPlan.welcomeBonus;
+
+    // 6. Handle Paid Plans (Price > 0)
+    if (selectedPlan.price > 0) {
       if (!coupon) {
-        // Normally redirect to paystack
-        // For now, let's just reject if no coupon in this mockup logic
-        return NextResponse.json({ error: 'Payment logic or valid coupon required for PRO plan' }, { status: 400 });
+        return NextResponse.json({ error: `A valid coupon code is required for the ${selectedPlan.name} plan` }, { status: 400 });
       }
 
       // Normalize coupon code
@@ -74,7 +78,7 @@ export async function POST(request: Request) {
             password: hashedPassword,
             withdrawalPin: hashedPin,
             role: 'USER',
-            plan: 'PRO',
+            planId: selectedPlan.id,
             taskBalance: welcomeBonus,
           }
         });
@@ -92,7 +96,7 @@ export async function POST(request: Request) {
         await tx.activityLog.create({
           data: {
             action: 'SIGNUP_BONUS',
-            description: `Received ₦${welcomeBonus} PRO sign-up bonus`,
+            description: `Received ₦${welcomeBonus} ${selectedPlan.name} sign-up bonus`,
             userId: newUser.id
           }
         });
@@ -103,7 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, user: { id: user.id, email: user.email } }, { status: 201 });
     }
 
-    // Free Registration
+    // Free Registration (Price === 0)
     const user = await prisma.user.create({
       data: {
         name: `${fname} ${lname}`,
@@ -112,7 +116,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         withdrawalPin: hashedPin,
         role: 'USER',
-        plan: 'FREE',
+        planId: selectedPlan.id,
         taskBalance: welcomeBonus,
       }
     });
@@ -121,7 +125,7 @@ export async function POST(request: Request) {
     await prisma.activityLog.create({
       data: {
         action: 'SIGNUP_BONUS',
-        description: `Received ₦${welcomeBonus} FREE sign-up bonus`,
+        description: `Received ₦${welcomeBonus} ${selectedPlan.name} sign-up bonus`,
         userId: user.id
       }
     });

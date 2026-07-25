@@ -13,10 +13,6 @@ enum Role {
   SUB_ADMIN
 }
 
-enum Plan {
-  FREE
-  PRO
-}
 
 enum Permission {
   GENERATE_CODES
@@ -68,7 +64,8 @@ model User {
   password            String
   withdrawalPin       String?
   role                Role         @default(USER)
-  plan                Plan         @default(FREE)
+  planId              String?
+  membership          MembershipPlan? @relation(fields: [planId], references: [id])
   affiliateBalance    Float        @default(0.0)
   taskBalance         Float        @default(0.0)
   totalEarnings       Float        @default(0.0)
@@ -174,14 +171,6 @@ model PlatformSettings {
   tagline                String    @default("Earn More. Grow Beyond.")
   logo                   String?
   
-  // Plans & Bonuses
-  welcomeBonusFree       Float     @default(50.0)
-  welcomeBonusPro        Float     @default(100.0)
-  proActivationFee       Float     @default(500.0)
-  freeTaskReward         Float     @default(80.0)
-  proTaskReward          Float     @default(120.0)
-  referralCommission     Float     @default(250.0)
-  
   // Withdrawals
   minAffiliateWithdraw   Float     @default(1000.0)
   minTaskWithdraw        Float     @default(3500.0)
@@ -216,4 +205,22 @@ model PlatformSettings {
   adsenseClientId        String?
 
   updatedAt              DateTime  @updatedAt
+}
+
+model MembershipPlan {
+  id                 String   @id @default(uuid())
+  name               String   @unique
+  price              Float    @default(0.0)
+  welcomeBonus       Float    @default(0.0)
+  dailyLoginBonus    Float    @default(0.0)
+  taskReward         Float    @default(0.0)
+  referralCommission Float    @default(0.0)
+  description        String?
+  features           String[]
+  isActive           Boolean  @default(true)
+  level              Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  users              User[]
 }

@@ -25,6 +25,7 @@ export default async function DashboardOverview(props: {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
+      membership: true,
       activityLogs: {
         orderBy: { createdAt: 'desc' },
         take: 3
@@ -35,6 +36,16 @@ export default async function DashboardOverview(props: {
   if (!user) {
     redirect('/login');
   }
+
+  const userPlanName = user.membership?.name || 'FREE';
+  const userPlanLevel = user.membership?.level || 1;
+
+  const plans = await prisma.membershipPlan.findMany({
+    where: { isActive: true },
+    orderBy: { level: 'asc' }
+  });
+
+  const nextPlan = plans.find(p => p.level > userPlanLevel);
 
   // Fetch active coupons if the user is a VENDOR or ADMIN
   const isVendorOrAdmin = role === 'VENDOR' || role === 'ADMIN' || role === 'SUB_ADMIN';
@@ -56,7 +67,7 @@ export default async function DashboardOverview(props: {
         <div style={{ 
           display: 'inline-flex', 
           alignItems: 'center', 
-          background: 'linear-gradient(135deg, #4F46E5, #0ea5e9)', // Deep Indigo to vivid sky blue
+          background: 'linear-gradient(135deg, #4F46E5, #0ea5e9)', 
           padding: '0.5rem 1.5rem', 
           borderRadius: '50px',
           boxShadow: '0 4px 15px rgba(14, 165, 233, 0.3)',
@@ -73,20 +84,20 @@ export default async function DashboardOverview(props: {
             @{user.username}
           </h1>
         </div>
-        <span style={{ padding: '0.3rem 1rem', background: user.plan === 'PRO' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: user.plan === 'PRO' ? '#000' : 'white', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-          {user.plan} PLAN
+        <span style={{ padding: '0.3rem 1rem', background: userPlanLevel > 1 ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: userPlanLevel > 1 ? '#000' : 'white', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+          {userPlanName} PLAN
         </span>
       </div>
 
-      {/* Upgrade Banner for FREE Users */}
-      {user.plan === 'FREE' && (
+      {/* Dynamic Upgrade Banner */}
+      {nextPlan && (
         <div style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(10, 91, 255, 0.1))', border: '1px solid var(--accent-gold)', borderRadius: '16px', padding: '1.5rem', marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', boxShadow: '0 0 20px rgba(212, 175, 55, 0.1)' }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem', color: 'var(--accent-gold)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Upgrade to PRO</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Unlock higher Task Earnings and ₦250 Referral Commissions!</p>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--accent-gold)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Upgrade to {nextPlan.name}</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{nextPlan.description}</p>
           </div>
           <button className="btn-primary" style={{ background: 'var(--accent-gold)', color: '#000', padding: '0.75rem 2rem', fontWeight: 'bold', borderRadius: '50px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)', border: 'none' }}>
-            Activate PRO for ₦500
+            Activate {nextPlan.name} for ₦{nextPlan.price.toLocaleString()}
           </button>
         </div>
       )}
@@ -95,7 +106,7 @@ export default async function DashboardOverview(props: {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
         
         {/* Total Balance - Hidden for FREE users */}
-        {user.plan !== 'FREE' && (
+        {userPlanLevel > 1 && (
           <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-blue)' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Affiliate Balance</p>
             <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>₦{user.affiliateBalance.toLocaleString()}</div>
@@ -119,7 +130,7 @@ export default async function DashboardOverview(props: {
           <CouponManager initialCoupons={activeCoupons} />
         )}
 
-        <QuickActions username={user.username} plan={user.plan} />
+        <QuickActions username={user.username} plan={userPlanName} />
 
         <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Recent Activity</h2>

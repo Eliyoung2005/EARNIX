@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function Register() {
   const router = useRouter();
-  const [plan, setPlan] = useState<'FREE' | 'PRO'>('FREE');
+  const [plans, setPlans] = useState<any[]>([]);
+  const [plan, setPlan] = useState<string>(''); // Holds selected plan ID
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,18 @@ export default function Register() {
     pin: '',
     coupon: ''
   });
+
+  useEffect(() => {
+    fetch('/api/plans')
+      .then(res => res.json())
+      .then(data => {
+        setPlans(data);
+        if (data.length > 0) {
+          setPlan(data[0].id);
+        }
+      })
+      .catch(err => console.error("Failed to load plans", err));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
@@ -100,37 +113,35 @@ export default function Register() {
           <p style={{ color: 'var(--text-secondary)' }}>Create your account to start earning</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-          <button 
-            type="button"
-            className={plan === 'FREE' ? 'btn-primary' : 'btn-pro'} 
-            style={{ flex: 1, borderColor: plan === 'FREE' ? 'transparent' : 'rgba(255,255,255,0.2)' }}
-            onClick={() => setPlan('FREE')}
-          >
-            FREE Plan
-          </button>
-          <button 
-            type="button"
-            className={plan === 'PRO' ? 'btn-primary' : 'btn-pro'} 
-            style={{ flex: 1, background: plan === 'PRO' ? 'var(--accent-gold)' : 'transparent' }}
-            onClick={() => setPlan('PRO')}
-          >
-            PRO Plan
-          </button>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          {plans.map((p) => (
+            <button 
+              key={p.id}
+              type="button"
+              className={plan === p.id ? 'btn-primary' : 'btn-pro'} 
+              style={{ flex: 1, minWidth: '120px', background: plan === p.id ? 'var(--accent-gold)' : 'transparent', borderColor: plan === p.id ? 'transparent' : 'rgba(255,255,255,0.2)' }}
+              onClick={() => setPlan(p.id)}
+            >
+              {p.name} Plan
+            </button>
+          ))}
         </div>
 
-        {plan === 'FREE' && (
+        {plans.find(p => p.id === plan)?.level === 1 && plans.find(p => p.level > 1) && (
           <div 
-            onClick={() => setPlan('PRO')}
+            onClick={() => {
+              const higherPlan = plans.find(p => p.level > 1);
+              if (higherPlan) setPlan(higherPlan.id);
+            }}
             style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px dashed var(--accent-gold)', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
           >
             <p style={{ color: 'var(--accent-gold)', fontSize: '0.95rem', fontWeight: 'bold' }}>
-              Want higher earnings? <span style={{ textDecoration: 'underline' }}>Switch to the PRO plan!</span>
+              Want higher earnings? <span style={{ textDecoration: 'underline' }}>Switch to a premium plan!</span>
             </p>
           </div>
         )}
 
-        {plan === 'PRO' && <div style={{ marginBottom: '2rem' }}></div>}
+        {plans.find(p => p.id === plan)?.level !== 1 && <div style={{ marginBottom: '2rem' }}></div>}
 
         {error && (
           <div style={{ padding: '0.8rem', background: 'rgba(255, 59, 48, 0.1)', color: '#ff3b30', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -155,7 +166,6 @@ export default function Register() {
             <label htmlFor="username" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Username</label>
             <input type="text" id="username" value={formData.username} onChange={handleChange} required autoComplete="username" placeholder="johndoe123" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label htmlFor="email" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Email Address</label>
             <input type="email" id="email" value={formData.email} onChange={handleChange} required autoComplete="email" placeholder="you@example.com" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
@@ -204,7 +214,7 @@ export default function Register() {
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>You will need this PIN to withdraw your earnings.</p>
           </div>
 
-          {plan === 'PRO' && (
+          {plans.find(p => p.id === plan)?.price > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', border: '1px dashed var(--accent-gold)', borderRadius: '8px', marginTop: '0.5rem' }}>
               <label htmlFor="coupon" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>Activation Coupon Code (Optional)</label>
               <input type="text" id="coupon" value={formData.coupon} onChange={handleChange} placeholder="ERX-XXXX-XXXX" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--accent-gold)', background: 'rgba(0,0,0,0.4)', color: 'var(--accent-gold)', textTransform: 'uppercase' }} />
@@ -212,8 +222,8 @@ export default function Register() {
             </div>
           )}
 
-          <button type="submit" disabled={loading} className={plan === 'PRO' ? 'btn-primary' : 'btn-primary'} style={{ marginTop: '1rem', width: '100%', background: plan === 'PRO' ? 'var(--accent-gold)' : 'var(--accent-blue)', color: '#000', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Creating Account...' : (plan === 'PRO' ? 'Pay ₦500 & Register' : 'Register for Free')}
+          <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: '1rem', width: '100%', background: plans.find(p => p.id === plan)?.price > 0 ? 'var(--accent-gold)' : 'var(--accent-blue)', color: '#000', opacity: loading ? 0.7 : 1 }}>
+            {loading ? 'Creating Account...' : (plans.find(p => p.id === plan)?.price > 0 ? `Pay ₦${plans.find(p => p.id === plan)?.price} & Register` : 'Register for Free')}
           </button>
         </form>
 

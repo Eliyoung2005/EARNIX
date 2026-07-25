@@ -17,13 +17,21 @@ export async function PATCH(req: Request) {
 
     const { userId, newPlan } = await req.json();
 
-    if (!userId || !['FREE', 'PRO'].includes(newPlan)) {
+    if (!userId || !newPlan) {
       return NextResponse.json({ error: 'Invalid user ID or plan format.' }, { status: 400 });
+    }
+
+    const plan = await prisma.membershipPlan.findUnique({
+      where: { name: newPlan }
+    });
+
+    if (!plan) {
+      return NextResponse.json({ error: 'Invalid plan selected.' }, { status: 400 });
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { plan: newPlan }
+      data: { planId: plan.id }
     });
     
     await prisma.activityLog.create({

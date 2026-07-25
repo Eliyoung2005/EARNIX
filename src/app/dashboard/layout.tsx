@@ -29,7 +29,7 @@ export default async function DashboardLayout({
 
   const dbUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { name: true, username: true, plan: true, taskBalance: true, affiliateBalance: true, hasSeenWelcomePopup: true }
+    select: { name: true, username: true, membership: { select: { name: true, level: true } }, taskBalance: true, affiliateBalance: true, hasSeenWelcomePopup: true }
   });
 
   if (!dbUser) {
@@ -39,17 +39,20 @@ export default async function DashboardLayout({
   
   const settings = await prisma.platformSettings.findUnique({ where: { id: "1" } });
 
+  const userPlanName = dbUser.membership?.name || 'FREE';
+  const isUpgraded = (dbUser.membership?.level || 1) > 1;
+
   const user = {
     name: dbUser.name,
     username: dbUser.username,
-    plan: dbUser.plan,
+    plan: userPlanName,
     initials: dbUser.name ? dbUser.name.substring(0, 2).toUpperCase() : 'U',
     balance: dbUser.taskBalance + dbUser.affiliateBalance
   };
 
   const showPopup = settings?.welcomePopupEnabled && !dbUser.hasSeenWelcomePopup;
-  const popupTitle = dbUser.plan === 'PRO' ? settings?.welcomePopupTitlePro : settings?.welcomePopupTitleFree;
-  const popupMessage = dbUser.plan === 'PRO' ? settings?.welcomePopupMessagePro : settings?.welcomePopupMessageFree;
+  const popupTitle = isUpgraded ? settings?.welcomePopupTitlePro : settings?.welcomePopupTitleFree;
+  const popupMessage = isUpgraded ? settings?.welcomePopupMessagePro : settings?.welcomePopupMessageFree;
 
   return (
     <>
