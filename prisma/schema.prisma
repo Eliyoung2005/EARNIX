@@ -181,7 +181,6 @@ model PlatformSettings {
   freeTaskReward         Float     @default(80.0)
   proTaskReward          Float     @default(120.0)
   referralCommission     Float     @default(250.0)
-  dailyLoginBonus        Float     @default(50.0)
   
   // Withdrawals
   minAffiliateWithdraw   Float     @default(1000.0)
@@ -210,7 +209,7 @@ model PlatformSettings {
   welcomePopupTitleFree    String    @default("Welcome to EARNIX!")
   welcomePopupMessageFree  String    @default("We are excited to have you on board! Start completing tasks today to earn real cash.")
   welcomePopupTitlePro     String    @default("Welcome to EARNIX PRO!")
-  welcomePopupMessagePro   String    @default("Thank you for upgrading! Enjoy exclusive premium tasks, daily login bonuses, and higher earnings.")
+  welcomePopupMessagePro   String    @default("Thank you for upgrading! Enjoy exclusive premium tasks and higher earnings.")
 
   // AdSense
   adsenseEnabled         Boolean   @default(false)

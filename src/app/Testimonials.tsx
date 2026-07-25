@@ -20,7 +20,7 @@ const testimonials = [
   {
     name: 'Oluwaseun A.',
     role: 'Student & Earner',
-    text: '"This platform pays seamlessly! The dark mode is sleek, the daily login bonuses keep me coming back, and withdrawals drop instantly. Highly recommended!"',
+    text: '"This platform pays seamlessly! The dark mode is sleek, and withdrawals drop instantly. Highly recommended!"',
     initial: 'O',
     color: '#10b981'
   },

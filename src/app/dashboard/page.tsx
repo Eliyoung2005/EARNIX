@@ -84,7 +84,7 @@ export default async function DashboardOverview({
         <div style={{ background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(10, 91, 255, 0.1))', border: '1px solid var(--accent-gold)', borderRadius: '16px', padding: '1.5rem', marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', boxShadow: '0 0 20px rgba(212, 175, 55, 0.1)' }}>
           <div>
             <h3 style={{ fontSize: '1.25rem', color: 'var(--accent-gold)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Upgrade to PRO</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Unlock Daily Login Bonuses, higher Task Earnings, and ₦250 Referral Commissions!</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Unlock higher Task Earnings and ₦250 Referral Commissions!</p>
           </div>
           <button className="btn-primary" style={{ background: 'var(--accent-gold)', color: '#000', padding: '0.75rem 2rem', fontWeight: 'bold', borderRadius: '50px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)', border: 'none' }}>
             Activate PRO for ₦500

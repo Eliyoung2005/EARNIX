@@ -30,7 +30,7 @@ export default function TermsOfServicePage() {
 
         <h2 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.5rem' }}>3. Earning and Withdrawals</h2>
         <p style={{ marginBottom: '2rem' }}>
-          EARNIX provides opportunities to earn through sponsored tasks, daily logins, and our affiliate referral program. 
+          EARNIX provides opportunities to earn through sponsored tasks and our affiliate referral program. 
           All earnings are subject to verification. We reserve the right to void any earnings if we detect fraud, bot usage, or manipulation of our task verification system. 
           Withdrawal minimums (e.g., ₦1,000 for Affiliates, ₦3,500 for Tasks) are strictly enforced.
         </p>

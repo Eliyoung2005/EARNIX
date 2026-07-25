@@ -67,11 +67,7 @@ export default function AdminSettings() {
               <input type="number" id="freeTask" defaultValue={80} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label htmlFor="freeDaily" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Daily Login Bonus (₦)</label>
-              <input type="number" id="freeDaily" defaultValue={0} disabled style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)', color: 'var(--text-secondary)' }} />
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Free users do not receive a daily login bonus.</p>
-            </div>
+
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
               <input type="checkbox" id="enableFree" defaultChecked style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
@@ -131,10 +127,7 @@ export default function AdminSettings() {
                 <label htmlFor="proWelcome" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Welcome Bonus (₦)</label>
                 <input type="number" id="proWelcome" defaultValue={100} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                <label htmlFor="proDaily" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Daily Login Bonus (₦)</label>
-                <input type="number" id="proDaily" defaultValue={50} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
-              </div>
+
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>

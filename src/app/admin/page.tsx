@@ -45,19 +45,7 @@ export default async function AdminOverview() {
     });
   }
 
-  // Top 5 All Time
-  const topReferrersAllTime = await prisma.user.findMany({
-    orderBy: { referralCount: 'desc' },
-    take: 5,
-    select: { id: true, username: true, email: true, referralCount: true }
-  });
 
-  // Top 5 Weekly
-  const topReferrersWeekly = await prisma.user.findMany({
-    orderBy: { weeklyReferralCount: 'desc' },
-    take: 5,
-    select: { id: true, username: true, email: true, weeklyReferralCount: true }
-  });
 
   const recentActivity = await prisma.activityLog.findMany({
     orderBy: { createdAt: 'desc' },
@@ -159,58 +147,7 @@ export default async function AdminOverview() {
           </div>
         </div>
 
-        {/* Top Referrers */}
-        <div className="grid-1-1">
-          {/* Top Referrers (All Time) */}
-          <div style={{ padding: '2rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1042a3 0%, #0d2875 100%)' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Top Referrers (All Time)</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              {topReferrersAllTime.map((user, index) => (
-                <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: index === 0 ? 'var(--accent-gold)' : 'rgba(255,255,255,0.15)', color: index === 0 ? '#000' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{index + 1}</div>
-                    <div>
-                      <p style={{ fontWeight: 'bold', color: 'white' }}>{user.username}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{user.email}</p>
-                    </div>
-                  </div>
-                  <div style={{ fontWeight: 'bold', color: index === 0 ? 'var(--accent-gold)' : (index === 1 ? '#4da6ff' : 'var(--success)') }}>{user.referralCount} Refs</div>
-                </div>
-              ))}
 
-              {topReferrersAllTime.length === 0 && (
-                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>No referrers yet.</p>
-              )}
-
-            </div>
-          </div>
-
-          {/* Top Referrers (This Week) */}
-          <div style={{ padding: '2rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1042a3 0%, #0d2875 100%)' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#4da6ff' }}>Top Referrers (This Week)</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              
-              {topReferrersWeekly.map((user, index) => (
-                <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: index === 0 ? '#4da6ff' : 'rgba(255,255,255,0.15)', color: index === 0 ? '#000' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{index + 1}</div>
-                    <div>
-                      <p style={{ fontWeight: 'bold', color: 'white' }}>{user.username}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{user.email}</p>
-                    </div>
-                  </div>
-                  <div style={{ fontWeight: 'bold', color: index === 0 ? '#4da6ff' : (index === 1 ? 'var(--accent-gold)' : 'var(--success)') }}>{user.weeklyReferralCount} Refs</div>
-                </div>
-              ))}
-
-              {topReferrersWeekly.length === 0 && (
-                <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>No referrers this week.</p>
-              )}
-
-            </div>
-          </div>
-        </div>
 
       </div>
     </div>

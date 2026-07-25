@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: "EARNIX | Where Luxury Meets Earnings",
-  description: "EARNIX is the ultimate platform for SoftLife and Stress-free Earnings. Get paid for sponsored tasks, referrals, and daily logins.",
+  title: "EARNIX | SoftLife & Stress-free Earnings",
+  description: "EARNIX is the ultimate platform for SoftLife and Stress-free Earnings. Get paid for sponsored tasks and referrals.",
   keywords: "EARNIX, earnings, make money online, affiliate marketing, sponsored tasks, softlife",
   // Google AdSense verification meta tag placeholder
   other: {

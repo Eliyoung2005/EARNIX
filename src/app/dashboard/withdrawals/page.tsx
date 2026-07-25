@@ -9,6 +9,13 @@ export default function WithdrawalsPage() {
   const isFreePlan = userPlan === 'FREE';
   
   const [withdrawalType, setWithdrawalType] = useState<'AFFILIATE' | 'TASK'>('TASK');
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+
+  const mockTaskBalance = 4200; // Increased to be above minimum to allow testing
+  const mockAffiliateBalance = 4500;
+  
+  const minTaskWithdraw = 3500;
+  const minAffiliateWithdraw = 1000;
 
   useEffect(() => {
     if (status === 'authenticated' && !isFreePlan) {
@@ -64,19 +71,49 @@ export default function WithdrawalsPage() {
             </label>
           </div>
 
-          <form id="withdrawal-form" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form id="withdrawal-form" onSubmit={(e) => {
+            e.preventDefault();
+            const amountInput = document.getElementById('amount') as HTMLInputElement;
+            const amount = parseFloat(amountInput.value);
+
+            const availableBalance = withdrawalType === 'AFFILIATE' ? mockAffiliateBalance : mockTaskBalance;
+            const minWithdrawal = withdrawalType === 'AFFILIATE' ? minAffiliateWithdraw : minTaskWithdraw;
+
+            if (isNaN(amount)) {
+              alert('Please enter a valid amount.');
+              return;
+            }
+
+            if (amount < minWithdrawal) {
+              alert('Amount is below the minimum withdrawal limit.');
+              return;
+            }
+
+            if (amount > availableBalance) {
+              alert('Insufficient balance.');
+              return;
+            }
+
+            if (isFreePlan) {
+              setShowUpgradePopup(true);
+              return;
+            }
+
+            alert('Withdrawal request submitted successfully!');
+            amountInput.value = '';
+          }} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Available Balance</span>
               <span style={{ fontWeight: 'bold', color: withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)' }}>
-                {withdrawalType === 'AFFILIATE' ? '₦4,500' : '₦1,200'}
+                {withdrawalType === 'AFFILIATE' ? `₦${mockAffiliateBalance.toLocaleString()}` : `₦${mockTaskBalance.toLocaleString()}`}
               </span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Minimum Withdrawal</span>
               <span style={{ fontWeight: 'bold' }}>
-                {withdrawalType === 'AFFILIATE' ? '₦1,000' : '₦3,500'}
+                {withdrawalType === 'AFFILIATE' ? `₦${minAffiliateWithdraw.toLocaleString()}` : `₦${minTaskWithdraw.toLocaleString()}`}
               </span>
             </div>
 
@@ -97,7 +134,9 @@ export default function WithdrawalsPage() {
               <a href="/dashboard/settings" style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', textDecoration: 'underline' }}>Change Bank Details</a>
             </div>
 
-            <button type="button" className="btn-primary" style={{ marginTop: '1rem', width: '100%', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'var(--accent-blue)', color: withdrawalType === 'TASK' ? '#000' : '#fff' }}>
+            </div>
+
+            <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'var(--accent-blue)', color: withdrawalType === 'TASK' ? '#000' : '#fff' }}>
               Request Withdrawal
             </button>
           </form>
@@ -111,6 +150,36 @@ export default function WithdrawalsPage() {
               Withdrawal Disabled
             </button>
           </div>
+          
+          {/* Upgrade Popup Modal */}
+          {showUpgradePopup && (
+            <div style={{
+              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+              background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+            }}>
+              <div className="bg-surface" style={{ padding: '2.5rem', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center', position: 'relative' }}>
+                <button 
+                  onClick={() => setShowUpgradePopup(false)}
+                  style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚀</div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '1rem' }}>Upgrade to PRO</h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.5' }}>
+                  Congratulations on reaching the minimum withdrawal threshold! 
+                  Before withdrawing, you must upgrade to the PRO plan to process your payment.
+                </p>
+                <a 
+                  href="/register" 
+                  className="btn-primary" 
+                  style={{ display: 'block', width: '100%', padding: '1rem', borderRadius: '8px', background: 'var(--accent-gold)', color: 'black', fontWeight: 'bold', textDecoration: 'none' }}
+                >
+                  Upgrade to PRO Now
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Withdrawal History */}
