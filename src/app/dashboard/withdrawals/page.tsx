@@ -134,8 +134,6 @@ export default function WithdrawalsPage() {
               <a href="/dashboard/settings" style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', textDecoration: 'underline' }}>Change Bank Details</a>
             </div>
 
-            </div>
-
             <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'var(--accent-blue)', color: withdrawalType === 'TASK' ? '#000' : '#fff' }}>
               Request Withdrawal
             </button>

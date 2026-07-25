@@ -90,6 +90,11 @@ export default function Register() {
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
       <div className="bg-surface" style={{ width: '100%', maxWidth: '500px', padding: '2.5rem' }}>
         
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem', textDecoration: 'none' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back to Home
+        </Link>
+
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--accent-blue)' }}>Join EARNIX</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Create your account to start earning</p>

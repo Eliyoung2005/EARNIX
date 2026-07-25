@@ -5,11 +5,10 @@ import { redirect } from "next/navigation";
 import QuickActions from "./QuickActions";
 import CouponManager from "../admin/CouponManager";
 
-export default async function DashboardOverview({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+export default async function DashboardOverview(props: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {

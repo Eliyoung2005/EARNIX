@@ -10,9 +10,7 @@ export default withAuth(
     const isDashboardRoute = req.nextUrl.pathname.startsWith('/dashboard');
 
     if (isAuthPage) {
-      if (isAuth) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
-      }
+      // Allowed: Let authenticated users view the auth pages if they want to.
       return null;
     }
 
