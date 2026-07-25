@@ -1,9 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function WithdrawalsPage() {
-  const [withdrawalType, setWithdrawalType] = useState<'AFFILIATE' | 'TASK'>('AFFILIATE');
+  const { data: session, status } = useSession();
+  const userPlan = (session?.user as any)?.plan || 'FREE';
+  const isFreePlan = userPlan === 'FREE';
+  
+  const [withdrawalType, setWithdrawalType] = useState<'AFFILIATE' | 'TASK'>('TASK');
+
+  useEffect(() => {
+    if (status === 'authenticated' && !isFreePlan) {
+      setWithdrawalType('AFFILIATE');
+    }
+  }, [status, isFreePlan]);
+
+  if (status === 'loading') {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading withdrawal portal...</div>;
+  }
 
   return (
     <div>
@@ -16,13 +31,15 @@ export default function WithdrawalsPage() {
         <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px' }}>
           
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-            <button 
-              className={withdrawalType === 'AFFILIATE' ? 'btn-primary' : 'btn-pro'} 
-              style={{ flex: 1, padding: '0.75rem', borderRadius: '8px' }}
-              onClick={() => setWithdrawalType('AFFILIATE')}
-            >
-              Affiliate Wallet
-            </button>
+            {!isFreePlan && (
+              <button 
+                className={withdrawalType === 'AFFILIATE' ? 'btn-primary' : 'btn-pro'} 
+                style={{ flex: 1, padding: '0.75rem', borderRadius: '8px' }}
+                onClick={() => setWithdrawalType('AFFILIATE')}
+              >
+                Affiliate Wallet
+              </button>
+            )}
             <button 
               className={withdrawalType === 'TASK' ? 'btn-primary' : 'btn-pro'} 
               style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'transparent', color: withdrawalType === 'TASK' ? '#000' : 'white', borderColor: 'rgba(255,255,255,0.2)' }}

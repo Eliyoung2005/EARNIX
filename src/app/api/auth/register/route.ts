@@ -52,9 +52,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Payment logic or valid coupon required for PRO plan' }, { status: 400 });
       }
 
+      // Normalize coupon code
+      const upperCoupon = coupon.toUpperCase().trim();
+
       // Check coupon
       const validCoupon = await prisma.couponCode.findUnique({
-        where: { code: coupon }
+        where: { code: upperCoupon }
       });
 
       if (!validCoupon || validCoupon.status === 'USED') {

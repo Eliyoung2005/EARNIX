@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
-    const isAuth = !!token;
+    const isAuth = !!token && !!token.id;
     const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register');
     const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
     const isDashboardRoute = req.nextUrl.pathname.startsWith('/dashboard');

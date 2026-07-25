@@ -7,25 +7,27 @@ export default function CheckCodePage() {
   const [code, setCode] = useState('');
   const [status, setStatus] = useState<'IDLE' | 'LOADING' | 'VALID' | 'INVALID' | 'USED'>('IDLE');
 
-  const handleValidate = (e: React.FormEvent) => {
+  const handleValidate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
 
     setStatus('LOADING');
 
-    // Simulate API call to check database
-    setTimeout(() => {
-      const upperCode = code.toUpperCase();
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
       
-      // Mock validation logic
-      if (upperCode === 'ERX-A7B2-C9X4' || upperCode === 'ERX-K3M8-P1Z5') {
-        setStatus('VALID');
-      } else if (upperCode === 'ERX-Q5W1-E6R9') {
-        setStatus('USED');
-      } else {
-        setStatus('INVALID');
-      }
-    }, 1500);
+      if (!res.ok) throw new Error('Network error');
+      
+      const data = await res.json();
+      setStatus(data.status as 'VALID' | 'INVALID' | 'USED');
+    } catch (error) {
+      console.error(error);
+      setStatus('INVALID');
+    }
   };
 
   return (

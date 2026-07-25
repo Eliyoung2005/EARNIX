@@ -1,0 +1,131 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+function generateRandomCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let segment1 = '';
+  let segment2 = '';
+  for (let i = 0; i < 4; i++) {
+    segment1 += chars.charAt(Math.floor(Math.random() * chars.length));
+    segment2 += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `ERX-${segment1}-${segment2}`;
+}
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const role = (session.user as any).role;
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'VENDOR') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { amount, assignToId } = await req.json();
+    const count = parseInt(amount, 10);
+
+    if (isNaN(count) || count < 1 || count > 100) {
+      return NextResponse.json({ error: 'Invalid amount. Must be between 1 and 100.' }, { status: 400 });
+    }
+
+    const userId = (session.user as any).id;
+    let targetVendorId = null;
+
+    if (assignToId === 'SELF') {
+      targetVendorId = userId;
+    } else if (assignToId === 'UNASSIGNED') {
+      targetVendorId = null;
+    } else if (assignToId) {
+      targetVendorId = assignToId;
+    }
+
+    const generatedCodes = [];
+
+    // Generate unique codes
+    for (let i = 0; i < count; i++) {
+      let unique = false;
+      let code = '';
+      // Collision handling (though extremely rare)
+      while (!unique) {
+        code = generateRandomCode();
+        const existing = await prisma.couponCode.findUnique({ where: { code } });
+        if (!existing) unique = true;
+      }
+      
+      generatedCodes.push({
+        code,
+        assignedVendorId: targetVendorId,
+        status: 'UNUSED' as const,
+      });
+    }
+
+    await prisma.couponCode.createMany({
+      data: generatedCodes
+    });
+
+    // Log the activity
+    await prisma.activityLog.create({
+      data: {
+        action: 'GENERATED_COUPONS',
+        description: `Generated ${count} new PRO activation coupons.`,
+        userId: userId
+      }
+    });
+
+    return NextResponse.json({ message: 'Coupons generated successfully!', count });
+
+  } catch (error: any) {
+    console.error('Coupon Generation Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const role = (session.user as any).role;
+    if (role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only Super Admins can delete coupons.' }, { status: 403 });
+    }
+
+    const { couponCode } = await req.json();
+
+    if (!couponCode) {
+      return NextResponse.json({ error: 'Coupon code is required.' }, { status: 400 });
+    }
+
+    const existing = await prisma.couponCode.findUnique({ where: { code: couponCode } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Coupon not found.' }, { status: 404 });
+    }
+
+    await prisma.couponCode.delete({
+      where: { code: couponCode }
+    });
+
+    // Log the activity
+    await prisma.activityLog.create({
+      data: {
+        action: 'DELETED_COUPON',
+        description: `Deleted coupon code: ${couponCode}`,
+        userId: (session.user as any).id
+      }
+    });
+
+    return NextResponse.json({ message: 'Coupon deleted successfully!' });
+
+  } catch (error: any) {
+    console.error('Coupon Deletion Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+

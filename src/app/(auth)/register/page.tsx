@@ -9,6 +9,9 @@ export default function Register() {
   const [plan, setPlan] = useState<'FREE' | 'PRO'>('FREE');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPin, setShowPin] = useState(false);
 
   const [formData, setFormData] = useState({
     fname: '',
@@ -92,7 +95,7 @@ export default function Register() {
           <p style={{ color: 'var(--text-secondary)' }}>Create your account to start earning</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
           <button 
             type="button"
             className={plan === 'FREE' ? 'btn-primary' : 'btn-pro'} 
@@ -110,6 +113,19 @@ export default function Register() {
             PRO Plan
           </button>
         </div>
+
+        {plan === 'FREE' && (
+          <div 
+            onClick={() => setPlan('PRO')}
+            style={{ marginBottom: '2rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px dashed var(--accent-gold)', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+          >
+            <p style={{ color: 'var(--accent-gold)', fontSize: '0.95rem', fontWeight: 'bold' }}>
+              Want higher earnings? <span style={{ textDecoration: 'underline' }}>Switch to the PRO plan!</span>
+            </p>
+          </div>
+        )}
+
+        {plan === 'PRO' && <div style={{ marginBottom: '2rem' }}></div>}
 
         {error && (
           <div style={{ padding: '0.8rem', background: 'rgba(255, 59, 48, 0.1)', color: '#ff3b30', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -142,17 +158,44 @@ export default function Register() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label htmlFor="password" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Password</label>
-            <input type="password" id="password" value={formData.password} onChange={handleChange} required autoComplete="new-password" placeholder="Min 6 chars, 1 uppercase, 1 number" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
+            <div style={{ position: 'relative' }}>
+              <input type={showPassword ? "text" : "password"} id="password" value={formData.password} onChange={handleChange} required autoComplete="new-password" placeholder="Min 6 chars, 1 uppercase, 1 number" style={{ width: '100%', padding: '0.75rem', paddingRight: '2.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label htmlFor="confirmPassword" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Confirm Password</label>
-            <input type="password" id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required autoComplete="new-password" placeholder="Re-enter your password" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
+            <div style={{ position: 'relative' }}>
+              <input type={showConfirmPassword ? "text" : "password"} id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required autoComplete="new-password" placeholder="Re-enter your password" style={{ width: '100%', padding: '0.75rem', paddingRight: '2.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }} />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {showConfirmPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label htmlFor="pin" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--warning)' }}>Set 4-Digit Withdrawal PIN</label>
-            <input type="password" id="pin" value={formData.pin} onChange={handleChange} required maxLength={4} pattern="\d{4}" placeholder="e.g. 1234" style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.5)', background: 'rgba(0,0,0,0.2)', color: 'white', letterSpacing: '4px' }} />
+            <div style={{ position: 'relative' }}>
+              <input type={showPin ? "text" : "password"} id="pin" value={formData.pin} onChange={handleChange} required maxLength={4} pattern="\d{4}" placeholder="e.g. 1234" style={{ width: '100%', padding: '0.75rem', paddingRight: '2.5rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.5)', background: 'rgba(0,0,0,0.2)', color: 'white', letterSpacing: '4px' }} />
+              <button type="button" onClick={() => setShowPin(!showPin)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {showPin ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </button>
+            </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>You will need this PIN to withdraw your earnings.</p>
           </div>
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Testimonials from './Testimonials';
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function Home() {
         
         {/* Desktop Centered Links */}
         <div className="desktop-only" style={{ gap: '2rem', fontSize: '0.95rem', fontWeight: '500' }}>
-          <Link href="/" style={{ color: 'white' }}>Home</Link>
+          <Link href="/" style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Home</Link>
           <Link href="#about" style={{ color: 'var(--text-secondary)' }}>About Us</Link>
           <Link href="#plans" style={{ color: 'var(--text-secondary)' }}>Plans</Link>
           <Link href="/vendors" style={{ color: 'var(--text-secondary)' }}>Code Vendors</Link>
@@ -29,10 +30,12 @@ export default function Home() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {/* Desktop Login Button */}
-          <Link href="/login" className="btn-pro desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}>
+          <Link href="/login" className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'var(--accent-blue)', color: 'white', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(10, 91, 255, 0.4)', transition: 'transform 0.2s' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
             Login
           </Link>
+
+
           
           {/* Hamburger Icon (Mobile Only) */}
           <button 
@@ -67,63 +70,125 @@ export default function Home() {
         justifyContent: 'center',
         padding: '2rem',
         paddingTop: '6rem',
-        backgroundImage: 'linear-gradient(rgba(5, 5, 5, 0.4), rgba(5, 5, 5, 0.9)), url("/hero-bg.jpg")',
+        backgroundImage: 'linear-gradient(var(--hero-overlay-start), var(--hero-overlay-end)), url("/hero-bg.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container">
+        
+        {/* Floating Elements for Desktop */}
+        <div className="animate-float-reverse desktop-only" style={{ position: 'absolute', top: '40%', right: '8%', background: 'rgba(255,255,255,0.95)', padding: '1rem 1.5rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem', color: '#000', boxShadow: '0 10px 40px rgba(0,0,0,0.5)', zIndex: 10 }}>
+          <div style={{ background: 'var(--accent-blue)', color: 'white', padding: '0.75rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          </div>
+          <div>
+            <div style={{ fontWeight: '800', fontSize: '1rem' }}>Withdrawal Alert</div>
+            <div style={{ color: '#666', fontSize: '0.85rem', marginTop: '2px' }}>You just received ₦5,000</div>
+          </div>
+        </div>
+
+        <div className="animate-float-slow desktop-only" style={{ position: 'absolute', bottom: '10%', right: '6%', background: 'rgba(255,255,255,0.95)', padding: '1.5rem', borderRadius: '24px', color: '#000', boxShadow: '0 10px 40px rgba(0,0,0,0.5)', minWidth: '320px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>Daily Tasks</div>
+            <div style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', fontSize: '0.85rem', color: '#444' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--accent-blue)' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span> Watch Videos
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--accent-blue)' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></span> Instagram Post
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--accent-blue)' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg></span> TikTok Share
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--accent-blue)' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span> Visit Websites
+            </div>
+          </div>
+        </div>
+
+        <div className="container" style={{ position: 'relative', zIndex: 20 }}>
           <h1 style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)', fontWeight: '900', lineHeight: '1.1', marginBottom: '1.5rem', letterSpacing: '-2px', textShadow: '0 0 20px rgba(0,0,0,0.8)', maxWidth: '900px' }}>
             Where Luxury<br/>Meets <span className="text-blue">Earnings!!!</span>
           </h1>
-          <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '700px', marginBottom: '3rem', lineHeight: '1.6' }}>
+          <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '3rem', lineHeight: '1.6' }}>
             EARNIX is Luxury. EARNIX is SoftLife and Stress-free Earnings personified!!!<br/>
             From Lifestyle Earnings, to Real-time, to Code Vendors, to DarkMode benefits, we have it all covered...<br/>
             #EarnixLife, Softlife!
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link href="/register" className="btn-primary" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem' }}>Join Us</Link>
+            <Link href="/register" className="btn-primary" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(10, 91, 255, 0.4)' }}>Join Us</Link>
             <Link href="#about" className="btn-pro" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Learn More</Link>
           </div>
         </div>
       </section>
 
       {/* Features & Plans */}
-      <section id="plans" className="container" style={{ padding: '6rem 1.5rem' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '3rem', fontWeight: '800', marginBottom: '3rem', letterSpacing: '-1px' }}>Choose Your Path</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+      <section id="plans" className="container" style={{ padding: '6rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '3rem', fontWeight: '800', marginBottom: '3rem', letterSpacing: '-1px', background: 'linear-gradient(135deg, var(--accent-blue), #00d2ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>
+          Start Today Here
+        </h2>
+        
+        <div style={{ width: '100%', maxWidth: '500px' }}>
           
-          {/* FREE Plan */}
-          <div className="bg-surface" style={{ padding: '3rem 2rem', textAlign: 'center', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700' }}>FREE Plan</h3>
-            <div style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '2rem' }}>₦0</div>
-            <ul style={{ listStyle: 'none', marginBottom: '3rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '1.1rem' }}>
-              <li>Welcome Bonus: <strong style={{color: 'white'}}>₦50</strong></li>
-              <li>Sponsored Task: <strong style={{color: 'white'}}>₦80</strong></li>
-              <li>No Referral Commission</li>
-              <li>Standard Dashboard Access</li>
-            </ul>
-            <Link href="/register?plan=free" className="btn-pro" style={{ width: '100%', display: 'block', borderRadius: '50px', borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>Start Free</Link>
-          </div>
+          {/* Fancy FREE Plan Card */}
+          <div className="bg-surface animate-float-slow" style={{ 
+            padding: '3.5rem 2rem', 
+            textAlign: 'center', 
+            borderRadius: '24px',
+            background: 'linear-gradient(145deg, rgba(10, 91, 255, 0.1), rgba(0, 0, 0, 0.4))',
+            border: '1px solid rgba(10, 91, 255, 0.3)',
+            boxShadow: '0 20px 50px rgba(10, 91, 255, 0.15), inset 0 0 20px rgba(10, 91, 255, 0.05)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Glow effect in background */}
+            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'var(--accent-blue)', filter: 'blur(80px)', opacity: 0.3, zIndex: 0 }}></div>
+            <div style={{ position: 'absolute', bottom: '-50px', left: '-50px', width: '150px', height: '150px', background: '#00d2ff', filter: 'blur(80px)', opacity: 0.2, zIndex: 0 }}></div>
 
-          {/* PRO Plan */}
-          <div className="bg-surface" style={{ padding: '3rem 2rem', textAlign: 'center', border: '1px solid var(--accent-gold)', position: 'relative', borderRadius: '24px' }}>
-            <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'var(--accent-gold)', color: '#000', padding: '0.4rem 1rem', borderRadius: '9999px', fontWeight: 'bold', fontSize: '0.8rem', boxShadow: '0 2px 10px rgba(212, 175, 55, 0.3)' }}>RECOMMENDED</div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent-gold)', fontWeight: '700' }}>PRO Plan</h3>
-            <div style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '2rem', color: 'var(--accent-gold)' }}>₦500 <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>Activation</span></div>
-            <ul style={{ listStyle: 'none', marginBottom: '3rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '1.1rem' }}>
-              <li>Welcome Bonus: <strong style={{color: 'white'}}>₦100</strong></li>
-              <li>Daily Login Bonus: <strong style={{color: 'white'}}>₦50</strong></li>
-              <li>Sponsored Task: <strong style={{color: 'white'}}>₦120</strong></li>
-              <li className="text-gold">Referral Commission: <strong>₦250</strong></li>
-            </ul>
-            <Link href="/register?plan=pro" className="btn-primary" style={{ width: '100%', display: 'block', borderRadius: '50px', background: 'var(--accent-gold)', color: '#000', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)' }}>Upgrade to PRO</Link>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '50px', background: 'rgba(10, 91, 255, 0.2)', color: '#00d2ff', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1.5rem', border: '1px solid rgba(10, 91, 255, 0.3)' }}>
+                BASIC TIER
+              </div>
+              <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>FREE Plan</h3>
+              <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: '0 4px 20px rgba(10, 91, 255, 0.4)' }}>₦0</div>
+              
+              <ul style={{ listStyle: 'none', marginBottom: '3.5rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '1.1rem', textAlign: 'left', maxWidth: '300px', margin: '0 auto 3.5rem auto' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Welcome Bonus: <strong style={{color: 'white'}}>₦50</strong></span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Sponsored Task: <strong style={{color: 'white'}}>₦80</strong></span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: 0.6 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  <span>No Referral Commission</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Standard Dashboard Access</span>
+                </li>
+              </ul>
+              
+              <Link href="/register?plan=free" className="btn-primary" style={{ width: '100%', display: 'block', padding: '1.2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: '0 10px 30px rgba(10, 91, 255, 0.4)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+                Start Free Now
+              </Link>
+            </div>
           </div>
 
         </div>
       </section>
       
+      {/* Testimonials Section */}
+      <Testimonials />
+
       {/* Footer */}
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
         <p style={{ marginBottom: '1rem' }}>EARNIX Version 1.0 &copy; 2026. All rights reserved.</p>
