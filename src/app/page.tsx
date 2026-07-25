@@ -1,11 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Testimonials from './Testimonials';
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/plans')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPlans(data);
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <main>
@@ -134,55 +144,69 @@ export default function Home() {
           Start Today Here
         </h2>
         
-        <div style={{ width: '100%', maxWidth: '500px' }}>
+        <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           
-          {/* Fancy FREE Plan Card */}
-          <div className="bg-surface animate-float-slow" style={{ 
-            padding: '3.5rem 2rem', 
-            textAlign: 'center', 
-            borderRadius: '24px',
-            background: 'linear-gradient(145deg, rgba(10, 91, 255, 0.1), rgba(0, 0, 0, 0.4))',
-            border: '1px solid rgba(10, 91, 255, 0.3)',
-            boxShadow: '0 20px 50px rgba(10, 91, 255, 0.15), inset 0 0 20px rgba(10, 91, 255, 0.05)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Glow effect in background */}
-            <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'var(--accent-blue)', filter: 'blur(80px)', opacity: 0.3, zIndex: 0 }}></div>
-            <div style={{ position: 'absolute', bottom: '-50px', left: '-50px', width: '150px', height: '150px', background: '#00d2ff', filter: 'blur(80px)', opacity: 0.2, zIndex: 0 }}></div>
+          {plans.map(plan => {
+            const isPremium = plan.level > 1;
+            const primaryColor = isPremium ? 'var(--accent-gold)' : 'var(--accent-blue)';
+            const primaryColorHex = isPremium ? '#d4af37' : '#00d2ff';
+            
+            return (
+              <div key={plan.id} className="bg-surface animate-float-slow" style={{ 
+                flex: '1 1 350px',
+                maxWidth: '450px',
+                padding: '3.5rem 2rem', 
+                textAlign: 'center', 
+                borderRadius: '24px',
+                background: `linear-gradient(145deg, ${isPremium ? 'rgba(212, 175, 55, 0.1)' : 'rgba(10, 91, 255, 0.1)'}, rgba(0, 0, 0, 0.4))`,
+                border: `1px solid ${isPremium ? 'rgba(212, 175, 55, 0.3)' : 'rgba(10, 91, 255, 0.3)'}`,
+                boxShadow: `0 20px 50px ${isPremium ? 'rgba(212, 175, 55, 0.15)' : 'rgba(10, 91, 255, 0.15)'}, inset 0 0 20px ${isPremium ? 'rgba(212, 175, 55, 0.05)' : 'rgba(10, 91, 255, 0.05)'}`,
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Glow effect in background */}
+                <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: primaryColor, filter: 'blur(80px)', opacity: 0.3, zIndex: 0 }}></div>
+                <div style={{ position: 'absolute', bottom: '-50px', left: '-50px', width: '150px', height: '150px', background: primaryColorHex, filter: 'blur(80px)', opacity: 0.2, zIndex: 0 }}></div>
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '50px', background: 'rgba(10, 91, 255, 0.2)', color: '#00d2ff', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1.5rem', border: '1px solid rgba(10, 91, 255, 0.3)' }}>
-                BASIC TIER
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '50px', background: isPremium ? 'rgba(212, 175, 55, 0.2)' : 'rgba(10, 91, 255, 0.2)', color: primaryColorHex, fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1.5rem', border: `1px solid ${isPremium ? 'rgba(212, 175, 55, 0.3)' : 'rgba(10, 91, 255, 0.3)'}` }}>
+                    {isPremium ? 'PREMIUM TIER' : 'BASIC TIER'}
+                  </div>
+                  <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>{plan.name} Plan</h3>
+                  <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: `0 4px 20px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}` }}>₦{plan.price.toLocaleString()}</div>
+                  
+                  <ul style={{ listStyle: 'none', marginBottom: '3.5rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '1.1rem', textAlign: 'left', maxWidth: '300px', margin: '0 auto 3.5rem auto' }}>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Welcome Bonus: <strong style={{color: 'white'}}>₦{plan.welcomeBonus.toLocaleString()}</strong></span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Sponsored Task: <strong style={{color: 'white'}}>₦{plan.taskReward.toLocaleString()}</strong></span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: plan.referralCommission > 0 ? 1 : 0.6 }}>
+                      {plan.referralCommission > 0 ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      )}
+                      <span>{plan.referralCommission > 0 ? `₦${plan.referralCommission.toLocaleString()} Referral` : 'No Referral Commission'}</span>
+                    </li>
+                    {plan.features?.map((feature: string, idx: number) => (
+                      <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Link href={`/register?plan=${plan.id}`} className={isPremium ? 'btn-pro' : 'btn-primary'} style={{ width: '100%', display: 'block', padding: '1.2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: `0 10px 30px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}`, transition: 'transform 0.2s, box-shadow 0.2s', background: isPremium ? 'var(--accent-gold)' : 'var(--accent-blue)', color: isPremium ? '#000' : 'white', border: 'none' }}>
+                    Start {plan.name} Now
+                  </Link>
+                </div>
               </div>
-              <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>FREE Plan</h3>
-              <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: '0 4px 20px rgba(10, 91, 255, 0.4)' }}>₦0</div>
-              
-              <ul style={{ listStyle: 'none', marginBottom: '3.5rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '1.1rem', textAlign: 'left', maxWidth: '300px', margin: '0 auto 3.5rem auto' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Welcome Bonus: <strong style={{color: 'white'}}>₦50</strong></span>
-                </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Sponsored Task: <strong style={{color: 'white'}}>₦80</strong></span>
-                </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: 0.6 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  <span>No Referral Commission</span>
-                </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Standard Dashboard Access</span>
-                </li>
-              </ul>
-              
-              <Link href="/register?plan=free" className="btn-primary" style={{ width: '100%', display: 'block', padding: '1.2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: '0 10px 30px rgba(10, 91, 255, 0.4)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
-                Start Free Now
-              </Link>
-            </div>
-          </div>
-
+            );
+          })}
         </div>
       </section>
       
