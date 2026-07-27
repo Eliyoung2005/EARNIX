@@ -79,6 +79,15 @@ model User {
   accountNumber       String?
   subAdminPermissions Permission[] // PostgreSQL supports enum arrays
   hasSeenWelcomePopup Boolean      @default(false)
+  pendingUpgradeThankYou String?   // Stores upgraded plan name to trigger Thank You message on dashboard
+
+  // Tracking withdrawals on the current plan for the upgrade lock rule
+  currentPlanAffiliateWithdrawals Int @default(0)
+  currentPlanTaskWithdrawals      Int @default(0)
+
+  // Spin & Win Wheel tracking
+  lastSpinDate                    DateTime?
+  freeSpinsRemaining              Int          @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -176,6 +185,10 @@ model PlatformSettings {
   minTaskWithdraw        Float     @default(3500.0)
   freeWithdrawalOpen     Boolean   @default(true)
   proWithdrawalOpen      Boolean   @default(true)
+  withdrawalPortalMode   String    @default("MANUAL") // "MANUAL" | "AUTOMATIC"
+  portalOpenManual       Boolean   @default(true)
+  autoOpenSchedule       String    @default("Fridays at 8:00 AM")
+  autoCloseSchedule      String    @default("Sundays at 11:59 PM")
   scheduledFreeOpenDate  DateTime?
   scheduledFreeCloseDate DateTime?
   scheduledProOpenDate   DateTime?
@@ -192,6 +205,7 @@ model PlatformSettings {
   enableTasks            Boolean   @default(true)
   enableWithdrawals      Boolean   @default(true)
   enableReferrals        Boolean   @default(true)
+  requireUpgradeForWithdrawal Boolean @default(true)
 
   // Welcome Popup
   welcomePopupEnabled      Boolean   @default(true)
@@ -199,6 +213,7 @@ model PlatformSettings {
   welcomePopupMessageFree  String    @default("We are excited to have you on board! Start completing tasks today to earn real cash.")
   welcomePopupTitlePro     String    @default("Welcome to EARNIX PRO!")
   welcomePopupMessagePro   String    @default("Thank you for upgrading! Enjoy exclusive premium tasks and higher earnings.")
+  welcomePopupLink         String?
 
   // AdSense
   adsenseEnabled         Boolean   @default(false)
@@ -215,6 +230,9 @@ model MembershipPlan {
   dailyLoginBonus    Float    @default(0.0)
   taskReward         Float    @default(0.0)
   referralCommission Float    @default(0.0)
+  minTaskWithdrawal  Float    @default(3500.0)
+  minAffiliateWithdrawal Float @default(1000.0)
+  withdrawalPortalOpen   Boolean  @default(true)
   description        String?
   features           String[]
   isActive           Boolean  @default(true)

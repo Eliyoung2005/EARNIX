@@ -28,7 +28,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, isActive, price, welcomeBonus, dailyLoginBonus, taskReward, referralCommission } = body;
+    const { id, isActive, price, welcomeBonus, dailyLoginBonus, taskReward, referralCommission, minTaskWithdrawal, minAffiliateWithdrawal } = body;
 
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
@@ -36,11 +36,14 @@ export async function PATCH(req: Request) {
       where: { id },
       data: {
         isActive,
-        price: Number(price),
-        welcomeBonus: Number(welcomeBonus),
-        dailyLoginBonus: Number(dailyLoginBonus),
-        taskReward: Number(taskReward),
-        referralCommission: Number(referralCommission)
+        withdrawalPortalOpen: body.withdrawalPortalOpen !== undefined ? Boolean(body.withdrawalPortalOpen) : undefined,
+        price: body.price !== undefined ? Number(body.price) : undefined,
+        welcomeBonus: body.welcomeBonus !== undefined ? Number(body.welcomeBonus) : undefined,
+        dailyLoginBonus: body.dailyLoginBonus !== undefined ? Number(body.dailyLoginBonus) : undefined,
+        taskReward: body.taskReward !== undefined ? Number(body.taskReward) : undefined,
+        referralCommission: body.referralCommission !== undefined ? Number(body.referralCommission) : undefined,
+        minTaskWithdrawal: body.minTaskWithdrawal !== undefined ? Number(body.minTaskWithdrawal) : undefined,
+        minAffiliateWithdrawal: body.minAffiliateWithdrawal !== undefined ? Number(body.minAffiliateWithdrawal) : undefined
       }
     });
 

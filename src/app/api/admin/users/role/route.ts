@@ -10,14 +10,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only SUPER ADMINs can change roles
-    if ((session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden. Only Super Admins can promote users.' }, { status: 403 });
+    const role = (session.user as any).role;
+    if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Only Super Admins can manage user roles.' }, { status: 403 });
     }
 
     const { userId, newRole } = await req.json();
 
-    if (!userId || !['USER', 'VENDOR', 'ADMIN', 'SUB_ADMIN'].includes(newRole)) {
+    if (!userId || !['USER', 'VENDOR', 'ADMIN', 'SUB_ADMIN', 'SUPER_ADMIN'].includes(newRole)) {
       return NextResponse.json({ error: 'Invalid user ID or role format.' }, { status: 400 });
     }
 

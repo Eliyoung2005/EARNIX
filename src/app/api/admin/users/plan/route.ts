@@ -11,7 +11,7 @@ export async function PATCH(req: Request) {
     }
 
     const role = (session.user as any).role;
-    if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -29,20 +29,43 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Invalid plan selected.' }, { status: 400 });
     }
 
+    const welcomeBonus = plan.welcomeBonus || 0;
+    const isVipOrElite = plan.name.toUpperCase().includes('VIP') || plan.name.toUpperCase().includes('ELITE');
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { planId: plan.id }
+      data: { 
+        planId: plan.id,
+        freeSpinsRemaining: isVipOrElite ? 3 : 0,
+        taskBalance: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
+        totalEarnings: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
+        currentPlanAffiliateWithdrawals: 0,
+        currentPlanTaskWithdrawals: 0,
+        pendingUpgradeThankYou: newPlan
+      }
     });
     
     await prisma.activityLog.create({
       data: {
         action: 'PLAN_UPGRADED',
-        description: `Admin manually updated ${updatedUser.username}'s plan to ${newPlan}`,
+        description: `Admin manually updated ${updatedUser.username}'s plan to ${newPlan}${isVipOrElite ? ' + 3 Free Spins' : ''}`,
         userId: (session.user as any).id
       }
     });
 
-    return NextResponse.json({ message: `Success! ${updatedUser.username} is now on the ${newPlan} plan.` });
+    if (welcomeBonus > 0) {
+      await prisma.activityLog.create({
+        data: {
+          action: 'UPGRADE_WELCOME_BONUS',
+          description: `Received ₦${welcomeBonus.toLocaleString()} welcome bonus for upgrading to the ${newPlan} plan`,
+          userId: userId
+        }
+      });
+    }
+
+    return NextResponse.json({ 
+      message: `Success! ${updatedUser.username} is now on the ${newPlan} plan${isVipOrElite ? ' with 3 Free Spins' : ''}.` 
+    });
   } catch (error: any) {
     console.error('Plan Update Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

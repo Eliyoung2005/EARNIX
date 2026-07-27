@@ -10,6 +10,7 @@ export async function updateWelcomePopupSettings(data: {
   welcomePopupMessageFree: string;
   welcomePopupTitlePro: string;
   welcomePopupMessagePro: string;
+  welcomePopupLink: string;
 }) {
   const session = await getServerSession(authOptions);
   
@@ -30,7 +31,8 @@ export async function updateWelcomePopupSettings(data: {
         welcomePopupTitleFree: data.welcomePopupTitleFree,
         welcomePopupMessageFree: data.welcomePopupMessageFree,
         welcomePopupTitlePro: data.welcomePopupTitlePro,
-        welcomePopupMessagePro: data.welcomePopupMessagePro
+        welcomePopupMessagePro: data.welcomePopupMessagePro,
+        welcomePopupLink: data.welcomePopupLink.trim() || null,
       }
     });
     return { success: true };

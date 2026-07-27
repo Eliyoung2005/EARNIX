@@ -14,7 +14,7 @@ export default async function AdminCouponsPage() {
   const role = (session.user as any).role;
   const userId = (session.user as any).id;
 
-  if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+  if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
     redirect('/dashboard');
   }
 
@@ -32,6 +32,17 @@ export default async function AdminCouponsPage() {
     orderBy: { createdAt: 'desc' }
   });
 
+  // Fetch used/redeemed coupons for the redemption history log
+  const usedCoupons = await prisma.couponCode.findMany({
+    where: { status: 'USED' },
+    orderBy: { redeemedDate: 'desc' },
+    take: 100,
+    include: {
+      assignedVendor: { select: { username: true, name: true } },
+      redeemedBy: { select: { username: true, email: true, name: true } }
+    }
+  });
+
   // Fetch vendors for the transfer dropdown
   const vendors = await prisma.user.findMany({
     where: { role: 'VENDOR' },
@@ -40,10 +51,10 @@ export default async function AdminCouponsPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Coupon Management</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Generate, track, and assign PRO activation codes.</p>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Coupon Management &amp; Tracking</h1>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Generate, track active codes, assign to vendors, and monitor real-time coupon redemptions.</p>
       
-      <CouponManager initialCoupons={activeCoupons} vendors={vendors} userRole={role} />
+      <CouponManager initialCoupons={activeCoupons} usedCoupons={usedCoupons} vendors={vendors} userRole={role} />
     </div>
   );
 }

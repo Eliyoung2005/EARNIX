@@ -22,7 +22,7 @@ export default withAuth(
       return NextResponse.redirect(new URL(`/login?from=${encodeURIComponent(from)}`, req.url));
     }
 
-    if (isAdminRoute && token?.role !== 'ADMIN' && token?.role !== 'SUB_ADMIN') {
+    if (isAdminRoute && token?.role !== 'ADMIN' && token?.role !== 'SUB_ADMIN' && token?.role !== 'SUPERADMIN') {
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 

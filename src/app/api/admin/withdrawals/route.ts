@@ -11,7 +11,7 @@ export async function PATCH(req: Request) {
     }
 
     const role = (session.user as any).role;
-    if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

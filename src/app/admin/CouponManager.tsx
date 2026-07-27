@@ -11,16 +11,36 @@ interface Coupon {
   assignedVendorId: string | null;
 }
 
+interface UsedCoupon {
+  id: string;
+  code: string;
+  status: string;
+  redeemedDate?: Date | null;
+  assignedVendor?: { name?: string | null; username: string } | null;
+  redeemedBy?: { name?: string | null; username: string; email: string } | null;
+}
+
 interface Vendor {
   id: string;
   username: string;
 }
 
-export default function CouponManager({ initialCoupons, vendors = [], userRole }: { initialCoupons: Coupon[], vendors?: Vendor[], userRole?: string }) {
+export default function CouponManager({ 
+  initialCoupons, 
+  usedCoupons = [], 
+  vendors = [], 
+  userRole 
+}: { 
+  initialCoupons: Coupon[], 
+  usedCoupons?: UsedCoupon[], 
+  vendors?: Vendor[], 
+  userRole?: string 
+}) {
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState(5);
   const [assignToId, setAssignToId] = useState('SELF');
   const [selectedVendors, setSelectedVendors] = useState<Record<string, string>>({});
+  const [searchUsedQuery, setSearchUsedQuery] = useState('');
   const router = useRouter();
 
   const handleGenerate = async () => {
@@ -99,9 +119,20 @@ export default function CouponManager({ initialCoupons, vendors = [], userRole }
   const myCoupons = initialCoupons.filter(c => c.assignedVendorId !== null);
   const poolCoupons = initialCoupons.filter(c => c.assignedVendorId === null);
 
+  const filteredUsedCoupons = usedCoupons.filter(c => {
+    if (!searchUsedQuery.trim()) return true;
+    const q = searchUsedQuery.toLowerCase();
+    return (
+      c.code.toLowerCase().includes(q) ||
+      c.redeemedBy?.username?.toLowerCase().includes(q) ||
+      c.redeemedBy?.email?.toLowerCase().includes(q) ||
+      c.assignedVendor?.username?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', gridColumn: '1 / -1' }}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Coupon Code Management</h2>
+      <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Coupon Code Generator &amp; Tracker</h2>
       
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <input 
@@ -168,7 +199,7 @@ export default function CouponManager({ initialCoupons, vendors = [], userRole }
                     Transfer Coupon
                   </button>
                   
-                  {userRole === 'ADMIN' && (
+                  {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
                     <button
                       onClick={() => handleDelete(coupon.code)}
                       style={{ background: '#ff3b30', color: '#fff', padding: '0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', marginTop: '0.25rem' }}
@@ -183,8 +214,8 @@ export default function CouponManager({ initialCoupons, vendors = [], userRole }
         </div>
       )}
 
-      <div>
-        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Your Assigned Coupons</h3>
+      <div style={{ marginBottom: '3rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Unused Active Coupons ({myCoupons.length})</h3>
         
         {myCoupons.length === 0 ? (
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>You have no unused coupons available.</p>
@@ -221,7 +252,7 @@ export default function CouponManager({ initialCoupons, vendors = [], userRole }
                   Copy Code
                 </button>
 
-                {userRole === 'ADMIN' && (
+                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
                   <button
                     onClick={() => handleDelete(coupon.code)}
                     style={{ 
@@ -249,6 +280,65 @@ export default function CouponManager({ initialCoupons, vendors = [], userRole }
           </div>
         )}
       </div>
+
+      {/* ── REDEEMED / USED COUPONS TRACKING SECTION ── */}
+      {usedCoupons.length > 0 && (
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--success)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Redeemed / Used Coupon Log ({usedCoupons.length})
+            </h3>
+            
+            <input 
+              type="text"
+              placeholder="Search redeemed codes, users, vendors..."
+              value={searchUsedQuery}
+              onChange={(e) => setSearchUsedQuery(e.target.value)}
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.85rem', width: '260px' }}
+            />
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>
+                  <th style={{ padding: '0.75rem 1rem' }}>Code</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Redeemed By</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Vendor Issuer</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Redeemed Date</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsedCoupons.map((coupon) => (
+                  <tr key={coupon.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
+                      {coupon.code}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: 'white' }}>
+                      {coupon.redeemedBy ? (
+                        <span>@{coupon.redeemedBy.username} <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>({coupon.redeemedBy.email})</span></span>
+                      ) : 'Unknown'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>
+                      {coupon.assignedVendor ? `@${coupon.assignedVendor.username}` : 'Direct Admin'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                      {coupon.redeemedDate ? new Date(coupon.redeemedDate).toLocaleString() : 'Used'}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(40,199,111,0.15)', color: 'var(--success)', padding: '0.15rem 0.5rem', borderRadius: '50px', fontWeight: 'bold' }}>
+                        USED
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
     </div>
   );

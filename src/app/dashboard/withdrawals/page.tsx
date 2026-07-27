@@ -2,35 +2,137 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function WithdrawalsPage() {
-  const { data: session, status } = useSession();
-  const userPlan = (session?.user as any)?.plan || 'FREE';
-  const isFreePlan = userPlan === 'FREE';
+  const { status } = useSession();
+  const router = useRouter();
   
+  const [profile, setProfile] = useState<any>(null);
   const [withdrawalType, setWithdrawalType] = useState<'AFFILIATE' | 'TASK'>('TASK');
-  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
-
-  const mockTaskBalance = 4200; // Increased to be above minimum to allow testing
-  const mockAffiliateBalance = 4500;
-  
-  const minTaskWithdraw = 3500;
-  const minAffiliateWithdraw = 1000;
+  const [amount, setAmount] = useState('');
+  const [pin, setPin] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<{message: string, nextPlan: string} | null>(null);
 
   useEffect(() => {
-    if (status === 'authenticated' && !isFreePlan) {
-      setWithdrawalType('AFFILIATE');
+    if (status === 'authenticated') {
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => {
+          setProfile(data);
+          if (data.plan !== 'FREE') {
+            setWithdrawalType('AFFILIATE');
+          }
+          setLoading(false);
+        })
+        .catch(console.error);
     }
-  }, [status, isFreePlan]);
+  }, [status]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading withdrawal portal...</div>;
   }
+
+  const isFreePlan = profile?.plan === 'FREE';
+  const availableBalance = withdrawalType === 'AFFILIATE' ? profile.affiliateBalance : profile.taskBalance;
+  const minWithdrawal = withdrawalType === 'AFFILIATE' ? profile.minAffiliateWithdrawal : profile.minTaskWithdrawal;
+
+  const isPortalClosed = profile?.planWithdrawalOpen === false || 
+    (profile?.settings?.withdrawalPortalMode === 'MANUAL' && 
+    (!profile?.settings?.portalOpenManual || 
+    (isFreePlan && !profile?.settings?.freeWithdrawalOpen) || 
+    (!isFreePlan && !profile?.settings?.proWithdrawalOpen)));
+
+  const isAutoMode = profile?.settings?.withdrawalPortalMode === 'AUTOMATIC';
+  const autoOpenSchedule = profile?.settings?.autoOpenSchedule || 'Fridays at 8:00 AM';
+  const autoCloseSchedule = profile?.settings?.autoCloseSchedule || 'Sundays at 11:59 PM';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isPortalClosed) {
+      alert('The Withdrawal Portal is currently closed. Please check back later.');
+      return;
+    }
+    setUpgradeError(null);
+    const withdrawalAmount = parseFloat(amount);
+
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+
+    if (withdrawalAmount < minWithdrawal) {
+      alert(`Amount is below the minimum withdrawal limit of ₦${minWithdrawal}.`);
+      return;
+    }
+
+    if (withdrawalAmount > availableBalance) {
+      alert('Insufficient balance.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const res = await fetch('/api/user/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: withdrawalAmount, type: withdrawalType, pin })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.error === 'UpgradeRequired') {
+          setUpgradeError({ message: data.message, nextPlan: data.nextPlan });
+        } else {
+          alert(data.error || 'Failed to submit withdrawal');
+        }
+        return;
+      }
+
+      alert('Withdrawal request submitted successfully!');
+      setAmount('');
+      setPin('');
+      // Refresh profile to update balances
+      const profileRes = await fetch('/api/user/profile');
+      setProfile(await profileRes.json());
+      
+    } catch (err) {
+      console.error(err);
+      alert('An unexpected error occurred.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Withdraw Funds</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Request a withdrawal to your local bank account. Please note the minimum limits.</p>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Request a withdrawal to your local bank account. Please note the minimum limits specific to your <strong>{profile?.plan}</strong> plan.</p>
+
+      {/* Withdrawal Portal Status Banner */}
+      {isPortalClosed ? (
+        <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(255, 59, 48, 0.1)', border: '1px solid #ff3b30', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '1.8rem' }}>🔒</span>
+          <div>
+            <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem' }}>Withdrawal Portal is Currently Closed</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>The administrator has temporarily paused withdrawal submissions. Please check back soon.</div>
+          </div>
+        </div>
+      ) : isAutoMode ? (
+        <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.4)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '1.8rem' }}>🗓️</span>
+          <div>
+            <div style={{ fontWeight: 'bold', color: 'var(--accent-gold)', fontSize: '1.05rem' }}>Automatic Weekly Withdrawal Schedule</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              Portal Opens: <strong>{autoOpenSchedule}</strong> — Closes: <strong>{autoCloseSchedule}</strong>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         
@@ -52,68 +154,40 @@ export default function WithdrawalsPage() {
               style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'transparent', color: withdrawalType === 'TASK' ? '#000' : 'white', borderColor: 'rgba(255,255,255,0.2)' }}
               onClick={() => setWithdrawalType('TASK')}
             >
-              Task Wallet
+              Task + Bonus Wallet
             </button>
           </div>
 
-          {/* Mock toggle for UI testing */}
-          <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input type="checkbox" defaultChecked={false} onChange={(e) => {
-                const form = document.getElementById('withdrawal-form');
-                const closedMsg = document.getElementById('closed-message');
-                if (form && closedMsg) {
-                  form.style.display = e.target.checked ? 'none' : 'flex';
-                  closedMsg.style.display = e.target.checked ? 'flex' : 'none';
-                }
-              }} /> 
-              Simulate Portal Closed
-            </label>
-          </div>
-
-          <form id="withdrawal-form" onSubmit={(e) => {
-            e.preventDefault();
-            const amountInput = document.getElementById('amount') as HTMLInputElement;
-            const amount = parseFloat(amountInput.value);
-
-            const availableBalance = withdrawalType === 'AFFILIATE' ? mockAffiliateBalance : mockTaskBalance;
-            const minWithdrawal = withdrawalType === 'AFFILIATE' ? minAffiliateWithdraw : minTaskWithdraw;
-
-            if (isNaN(amount)) {
-              alert('Please enter a valid amount.');
-              return;
-            }
-
-            if (amount < minWithdrawal) {
-              alert('Amount is below the minimum withdrawal limit.');
-              return;
-            }
-
-            if (amount > availableBalance) {
-              alert('Insufficient balance.');
-              return;
-            }
-
-            if (isFreePlan) {
-              setShowUpgradePopup(true);
-              return;
-            }
-
-            alert('Withdrawal request submitted successfully!');
-            amountInput.value = '';
-          }} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             
+            {!profile?.hasPin && (
+              <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid var(--warning)', color: 'var(--warning)', fontSize: '0.9rem' }}>
+                <strong style={{ display: 'block', marginBottom: '0.25rem' }}>⚠️ Withdrawal PIN Required</strong>
+                You must set your 4-digit security PIN in <Link href="/dashboard/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Profile Settings</Link> before submitting a withdrawal request.
+              </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Available Balance</span>
               <span style={{ fontWeight: 'bold', color: withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)' }}>
-                {withdrawalType === 'AFFILIATE' ? `₦${mockAffiliateBalance.toLocaleString()}` : `₦${mockTaskBalance.toLocaleString()}`}
+                ₦{availableBalance?.toLocaleString()}
               </span>
             </div>
+
+            {/* Welcome Bonus note — shown only on Task wallet */}
+            {withdrawalType === 'TASK' && (
+              <div style={{ padding: '0.75rem 1rem', background: 'rgba(212,175,55,0.07)', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.25)', display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+                <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🎁</span>
+                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.5' }}>
+                  <strong style={{ color: 'var(--accent-gold)' }}>Welcome Bonus Included:</strong> Your sign-up welcome bonus is part of this balance and can be withdrawn together with your task earnings once the minimum threshold is met.
+                </p>
+              </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Minimum Withdrawal</span>
               <span style={{ fontWeight: 'bold' }}>
-                {withdrawalType === 'AFFILIATE' ? `₦${minAffiliateWithdraw.toLocaleString()}` : `₦${minTaskWithdraw.toLocaleString()}`}
+                ₦{minWithdrawal?.toLocaleString()}
               </span>
             </div>
 
@@ -122,88 +196,95 @@ export default function WithdrawalsPage() {
               <input 
                 type="number" 
                 id="amount" 
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount" 
                 style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: 'white' }}
               />
             </div>
 
-            {/* Note: Bank details are now pulled from Profile Settings */}
-            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Withdrawing to saved bank details:</p>
-              <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Access Bank - 0123456789 (John Doe)</p>
-              <a href="/dashboard/settings" style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', textDecoration: 'underline' }}>Change Bank Details</a>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label htmlFor="pin" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--warning)' }}>4-Digit Withdrawal Security PIN</label>
+              <input 
+                type="password" 
+                id="pin" 
+                maxLength={4} 
+                required 
+                disabled={!profile?.hasPin}
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="••••" 
+                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.5)', background: 'rgba(0,0,0,0.2)', color: 'white', letterSpacing: '4px', fontSize: '1.1rem' }}
+              />
             </div>
 
-            <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', background: withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'var(--accent-blue)', color: withdrawalType === 'TASK' ? '#000' : '#fff' }}>
-              Request Withdrawal
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Ensure your bank details are correct in your profile settings before withdrawing.</p>
+              <Link href="/dashboard/settings" style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', textDecoration: 'underline' }}>View Profile Settings</Link>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={submitting || isPortalClosed || !profile?.hasPin} 
+              className="btn-primary" 
+              style={{ 
+                marginTop: '1rem', 
+                width: '100%', 
+                background: (isPortalClosed || !profile?.hasPin) ? 'rgba(255,255,255,0.2)' : withdrawalType === 'TASK' ? 'var(--accent-gold)' : 'var(--accent-blue)', 
+                color: (isPortalClosed || !profile?.hasPin) ? '#888' : withdrawalType === 'TASK' ? '#000' : '#fff',
+                cursor: (isPortalClosed || !profile?.hasPin) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isPortalClosed ? 'Portal Closed' : !profile?.hasPin ? 'PIN Required in Profile' : submitting ? 'Processing...' : 'Request Withdrawal'}
             </button>
           </form>
 
-          {/* Closed Portal Message */}
-          <div id="closed-message" style={{ display: 'none', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', textAlign: 'center', background: 'rgba(255, 59, 48, 0.05)', border: '1px solid rgba(255, 59, 48, 0.2)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</span>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#ff3b30', marginBottom: '0.5rem' }}>Withdrawal Portal Closed</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>The {withdrawalType} withdrawal portal is not open at this time. Please check the official Telegram channel for the next automated withdrawal schedule.</p>
-            <button disabled style={{ marginTop: '1.5rem', width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', border: 'none', cursor: 'not-allowed', fontWeight: 'bold' }}>
-              Withdrawal Disabled
-            </button>
-          </div>
-          
-          {/* Upgrade Popup Modal */}
-          {showUpgradePopup && (
-            <div style={{
-              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-              background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-            }}>
-              <div className="bg-surface" style={{ padding: '2.5rem', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center', position: 'relative' }}>
-                <button 
-                  onClick={() => setShowUpgradePopup(false)}
-                  style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}
-                >
-                  ✕
-                </button>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚀</div>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '1rem' }}>Upgrade to PRO</h3>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.5' }}>
-                  Congratulations on reaching the minimum withdrawal threshold! 
-                  Before withdrawing, you must upgrade to the PRO plan to process your payment.
-                </p>
-                <a 
-                  href="/register" 
-                  className="btn-primary" 
-                  style={{ display: 'block', width: '100%', padding: '1rem', borderRadius: '8px', background: 'var(--accent-gold)', color: 'black', fontWeight: 'bold', textDecoration: 'none' }}
-                >
-                  Upgrade to PRO Now
-                </a>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Withdrawal History */}
-        <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>Withdrawal History</h2>
+        {/* Info Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div>
-                <p style={{ fontWeight: 'bold' }}>₦2,500 (Affiliate)</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Jul 12, 2026</p>
-              </div>
-              <div style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>PAID</div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <div>
-                <p style={{ fontWeight: 'bold' }}>₦3,500 (Task)</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Jul 01, 2026</p>
-              </div>
-              <div style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', padding: '0.25rem 0.75rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>PAID</div>
+          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-blue)' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Withdrawal Policy</h3>
+            <ul style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '1.2rem' }}>
+              <li>Payments are processed directly to your provided bank account.</li>
+              <li>Please ensure your account name matches your registered name.</li>
+              <li>Withdrawals usually take between 24-48 hours to reflect in your bank.</li>
+            </ul>
+          </div>
+          
+          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ fontSize: '2.5rem' }}>📞</div>
+            <div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Need Help?</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Contact our 24/7 support team if you experience any issues.</div>
             </div>
           </div>
         </div>
-
       </div>
+
+      {/* Upgrade Required Modal */}
+      {upgradeError && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(5px)' }}>
+          <div className="bg-surface animate-float-slow" style={{ padding: '3rem 2rem', borderRadius: '24px', maxWidth: '400px', textAlign: 'center', border: '1px solid var(--accent-gold)', boxShadow: '0 10px 40px rgba(212, 175, 55, 0.2)' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⭐</div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent-gold)' }}>Upgrade Required</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
+              {upgradeError.message}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Note: User must purchase a coupon code or upgrade via admin. For now, link them to support or plans page */}
+              <Link href="/vendors" className="btn-pro" style={{ width: '100%', padding: '1rem', background: 'var(--accent-gold)', color: '#000', border: 'none' }}>
+                Buy {upgradeError.nextPlan} Code
+              </Link>
+              <button onClick={() => setUpgradeError(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

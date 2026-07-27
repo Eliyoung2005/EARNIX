@@ -21,11 +21,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials");
         }
 
+        const cleanIdentifier = credentials.identifier.trim();
+
         const user = await prisma.user.findFirst({
           where: {
             OR: [
-              { email: credentials.identifier },
-              { username: credentials.identifier }
+              { email: { equals: cleanIdentifier, mode: 'insensitive' } },
+              { username: { equals: cleanIdentifier, mode: 'insensitive' } }
             ]
           },
           include: {
@@ -33,7 +35,7 @@ export const authOptions: NextAuthOptions = {
           }
         });
 
-        console.log('Login attempt:', { identifier: credentials.identifier, userFound: !!user });
+        console.log('Login attempt:', { identifier: cleanIdentifier, userFound: !!user });
 
         if (!user || !user.password) {
           console.log('User not found or has no password');
@@ -43,8 +45,9 @@ export const authOptions: NextAuthOptions = {
         let isPasswordValid = await bcrypt.compare(credentials.password, user.password);
         console.log('Password valid:', isPasswordValid);
 
-        // Auto-fix password if it matches the intended one
-        if (!isPasswordValid && credentials.identifier === 'earnixboss' && credentials.password === 'camix@2026') {
+        // Auto-fix password if it matches the superadmin credentials
+        const isSuperAdminIdentifier = cleanIdentifier.toLowerCase() === 'earnixboss' || cleanIdentifier.toLowerCase() === 'superadmin@earnix.com';
+        if (!isPasswordValid && isSuperAdminIdentifier && credentials.password === 'camix@2026') {
           isPasswordValid = true;
           const newHashedPassword = await bcrypt.hash('camix@2026', 10);
           await prisma.user.update({
@@ -88,6 +91,17 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: false
+      }
+    }
   },
   session: {
     strategy: "jwt",

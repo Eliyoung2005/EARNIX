@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     }
 
     const role = (session.user as any).role;
-    if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -39,6 +39,8 @@ export async function GET(req: Request) {
         username: true,
         email: true,
         name: true,
+        taskBalance: true,
+        affiliateBalance: true,
         membership: {
           select: { name: true }
         },
@@ -47,7 +49,7 @@ export async function GET(req: Request) {
         referralCount: true,
         createdAt: true
       },
-      take: 20 // Limit to top 20 results for performance
+      take: 20
     });
 
     const mappedUsers = users.map(u => ({

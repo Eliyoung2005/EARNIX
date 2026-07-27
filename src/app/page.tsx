@@ -4,15 +4,45 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Testimonials from './Testimonials';
 
+const defaultPlans = [
+  {
+    id: 'FREE',
+    name: 'FREE',
+    level: 1,
+    price: 0,
+    welcomeBonus: 0,
+    taskReward: 10,
+    referralCommission: 0,
+    features: ['Daily Task Access', 'Affiliate Earnings']
+  },
+  {
+    id: 'PRO',
+    name: 'PRO',
+    level: 2,
+    price: 500,
+    welcomeBonus: 100,
+    taskReward: 50,
+    referralCommission: 250,
+    features: ['Premium Task Access', 'High Commission Rate', 'Fast Withdrawal']
+  }
+];
+
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>(defaultPlans);
 
   useEffect(() => {
-    fetch('/api/plans')
+    fetch('/api/plans', {
+      headers: {
+        'Bypass-Tunnel-Reminder': 'true',
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setPlans(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setPlans(data);
+        }
       })
       .catch(console.error);
   }, []);
@@ -35,6 +65,7 @@ export default function Home() {
           <Link href="#about" style={{ color: 'var(--text-secondary)' }}>About Us</Link>
           <Link href="#plans" style={{ color: 'var(--text-secondary)' }}>Plans</Link>
           <Link href="/vendors" style={{ color: 'var(--text-secondary)' }}>Code Vendors</Link>
+          <Link href="/validate-code" style={{ color: 'var(--text-secondary)' }}>Verify Code</Link>
           <Link href="/top-earners" style={{ color: 'var(--text-secondary)' }}>Top EARNIX</Link>
         </div>
 
@@ -49,24 +80,71 @@ export default function Home() {
           
           {/* Hamburger Icon (Mobile Only) */}
           <button 
+            type="button"
             className="mobile-only"
-            onClick={() => setIsMenuOpen(!isMenuOpen)} 
-            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '2rem', cursor: 'pointer', zIndex: 60 }}
+            onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} 
+            onTouchEnd={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
+            aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
+            style={{ 
+              background: isMenuOpen ? '#ff3b30' : 'rgba(255,255,255,0.1)', 
+              border: isMenuOpen ? '1px solid #ff3b30' : '1px solid rgba(255,255,255,0.2)', 
+              color: 'white', 
+              width: '44px', 
+              height: '44px', 
+              borderRadius: '12px', 
+              fontSize: '1.4rem', 
+              fontWeight: 'bold',
+              cursor: 'pointer', 
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'auto',
+              WebkitTapHighlightColor: 'transparent'
+            }}
           >
             {isMenuOpen ? '✕' : '☰'}
           </button>
         </div>
       </nav>
 
+      {/* Drawer Menu Backdrop Overlay */}
+      {isMenuOpen && (
+        <div 
+          className="mobile-only"
+          onClick={() => setIsMenuOpen(false)}
+          onTouchEnd={() => setIsMenuOpen(false)}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', zIndex: 9990, backdropFilter: 'blur(4px)' }}
+        />
+      )}
+
       {/* Drawer Menu (Mobile) */}
       {isMenuOpen && (
-        <div className="mobile-only mobile-flex" style={{ position: 'absolute', top: '80px', right: '0', width: '300px', background: 'var(--surface-color)', padding: '2rem', zIndex: 50, borderLeft: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', flexDirection: 'column', gap: '1.5rem', boxShadow: '-5px 5px 20px rgba(0,0,0,0.5)' }}>
+        <div className="mobile-only mobile-flex" style={{ position: 'fixed', top: '80px', right: '0', width: '300px', background: 'var(--surface-color)', padding: '1.5rem', zIndex: 9999, borderLeft: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', flexDirection: 'column', gap: '1.25rem', boxShadow: '-5px 5px 30px rgba(0,0,0,0.8)', borderRadius: '0 0 0 20px', pointerEvents: 'auto' }}>
+          
+          {/* Drawer Top Header Row with Close X */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--accent-blue)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Menu Navigation
+            </span>
+            <button 
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }} 
+              onTouchEnd={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
+              aria-label="Close Menu"
+              style={{ background: '#ff3b30', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(255,59,48,0.4)', pointerEvents: 'auto', WebkitTapHighlightColor: 'transparent' }}
+            >
+              ✕
+            </button>
+          </div>
+
           <Link href="/" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Home</Link>
           <Link href="#about" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>About Us</Link>
           <Link href="#plans" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Plans</Link>
           <Link href="/vendors" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Code Vendors</Link>
+          <Link href="/validate-code" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Verify Code</Link>
           <Link href="/top-earners" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Top EARNIX</Link>
-          <hr style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.25rem 0' }} />
           <Link href="/login" className="btn-pro" style={{ textAlign: 'center' }} onClick={() => setIsMenuOpen(false)}>Login</Link>
           <Link href="/register" className="btn-primary" style={{ textAlign: 'center' }} onClick={() => setIsMenuOpen(false)}>Register</Link>
         </div>
@@ -133,6 +211,7 @@ export default function Home() {
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Link href="/register" className="btn-primary" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(10, 91, 255, 0.4)' }}>Join Us</Link>
+            <Link href="/validate-code" className="btn-pro" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Verify Code</Link>
             <Link href="#about" className="btn-pro" style={{ padding: '1rem 2.5rem', borderRadius: '50px', fontSize: '1.1rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Learn More</Link>
           </div>
         </div>
@@ -147,7 +226,7 @@ export default function Home() {
         <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           
           {plans.map(plan => {
-            const isPremium = plan.level > 1;
+            const isPremium = Boolean(plan.level > 1 || plan.price > 0 || plan.name.toUpperCase().includes('PRO'));
             const primaryColor = isPremium ? 'var(--accent-gold)' : 'var(--accent-blue)';
             const primaryColorHex = isPremium ? '#d4af37' : '#00d2ff';
             
@@ -170,9 +249,9 @@ export default function Home() {
 
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <div style={{ display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '50px', background: isPremium ? 'rgba(212, 175, 55, 0.2)' : 'rgba(10, 91, 255, 0.2)', color: primaryColorHex, fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1.5rem', border: `1px solid ${isPremium ? 'rgba(212, 175, 55, 0.3)' : 'rgba(10, 91, 255, 0.3)'}` }}>
-                    {isPremium ? 'PREMIUM TIER' : 'BASIC TIER'}
+                    {plan.name.toUpperCase()} TIER
                   </div>
-                  <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>{plan.name} Plan</h3>
+                  <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>{plan.name.toUpperCase().includes('PLAN') ? plan.name : `${plan.name} Plan`}</h3>
                   <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: `0 4px 20px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}` }}>₦{plan.price.toLocaleString()}</div>
                   
                   <ul style={{ listStyle: 'none', marginBottom: '3.5rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '1.1rem', textAlign: 'left', maxWidth: '300px', margin: '0 auto 3.5rem auto' }}>

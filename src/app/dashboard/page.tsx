@@ -3,7 +3,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import QuickActions from "./QuickActions";
+import UpgradeBannerButton from "./UpgradeBannerButton";
 import CouponManager from "../admin/CouponManager";
+import { getBadgeProps } from "@/lib/badgeUtils";
 
 export default async function DashboardOverview(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -79,12 +81,20 @@ export default async function DashboardOverview(props: {
             color: 'white',
             margin: 0,
             wordBreak: 'break-all',
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
           }}>
             @{user.username}
+            {getBadgeProps(userPlanName).icon && (
+              <span title={`${userPlanName} Member`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: getBadgeProps(userPlanName).bg, color: getBadgeProps(userPlanName).color, borderRadius: '50%', width: 'clamp(20px, 4vw, 24px)', height: 'clamp(20px, 4vw, 24px)', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>
+                {getBadgeProps(userPlanName).icon}
+              </span>
+            )}
           </h1>
         </div>
-        <span style={{ padding: '0.3rem 1rem', background: userPlanLevel > 1 ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: userPlanLevel > 1 ? '#000' : 'white', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+        <span style={{ padding: '0.3rem 1rem', background: getBadgeProps(userPlanName).bg, color: getBadgeProps(userPlanName).color, borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
           {userPlanName} PLAN
         </span>
       </div>
@@ -96,9 +106,7 @@ export default async function DashboardOverview(props: {
             <h3 style={{ fontSize: '1.25rem', color: 'var(--accent-gold)', fontWeight: 'bold', marginBottom: '0.25rem' }}>Upgrade to {nextPlan.name}</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{nextPlan.description}</p>
           </div>
-          <button className="btn-primary" style={{ background: 'var(--accent-gold)', color: '#000', padding: '0.75rem 2rem', fontWeight: 'bold', borderRadius: '50px', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)', border: 'none' }}>
-            Activate {nextPlan.name} for ₦{nextPlan.price.toLocaleString()}
-          </button>
+          <UpgradeBannerButton nextPlanName={nextPlan.name} price={nextPlan.price} />
         </div>
       )}
 
@@ -114,14 +122,21 @@ export default async function DashboardOverview(props: {
           </div>
         )}
 
-        {/* Task Earnings */}
-        <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-gold)' }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Task Earnings Balance</p>
+        {/* Task Earnings (includes Welcome Bonus) */}
+        <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-gold)', position: 'relative', overflow: 'hidden' }}>
+          {/* Subtle background glow */}
+          <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '100px', height: '100px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Task + Bonus Balance</p>
+            <span style={{ fontSize: '0.75rem', background: 'rgba(212,175,55,0.15)', color: 'var(--accent-gold)', padding: '0.15rem 0.5rem', borderRadius: '50px', border: '1px solid rgba(212,175,55,0.3)', fontWeight: 'bold' }}>
+              Withdrawable
+            </span>
+          </div>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>₦{user.taskBalance.toLocaleString()}</div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Total Earnings: ₦{user.totalEarnings.toLocaleString()}</p>
         </div>
 
       </div>
+
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         

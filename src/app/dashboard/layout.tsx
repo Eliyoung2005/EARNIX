@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import DashboardNavigation from './DashboardNavigation';
 import WelcomePopup from './WelcomePopup';
+import UpgradeThankYouPopup from './UpgradeThankYouPopup';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardLayout({
@@ -29,7 +30,16 @@ export default async function DashboardLayout({
 
   const dbUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { name: true, username: true, membership: { select: { name: true, level: true } }, taskBalance: true, affiliateBalance: true, hasSeenWelcomePopup: true }
+    select: { 
+      name: true, 
+      username: true, 
+      role: true, 
+      membership: { select: { name: true, level: true } }, 
+      taskBalance: true, 
+      affiliateBalance: true, 
+      hasSeenWelcomePopup: true,
+      pendingUpgradeThankYou: true 
+    }
   });
 
   if (!dbUser) {
@@ -50,13 +60,16 @@ export default async function DashboardLayout({
     balance: dbUser.taskBalance + dbUser.affiliateBalance
   };
 
-  const showPopup = settings?.welcomePopupEnabled && !dbUser.hasSeenWelcomePopup;
-  const popupTitle = isUpgraded ? settings?.welcomePopupTitlePro : settings?.welcomePopupTitleFree;
-  const popupMessage = isUpgraded ? settings?.welcomePopupMessagePro : settings?.welcomePopupMessageFree;
+  const isRegularUser = dbUser.role === 'USER';
+  const showPopup = isRegularUser && settings?.welcomePopupEnabled && !dbUser.hasSeenWelcomePopup;
+  const popupTitle = settings?.welcomePopupTitleFree || 'Welcome to EARNIX!';
+  const popupMessage = settings?.welcomePopupMessageFree || 'We are excited to have you on board! Start completing tasks today to earn real cash.';
+  const popupLink = settings?.welcomePopupLink || null;
 
   return (
     <>
-      {showPopup && <WelcomePopup title={popupTitle || 'Welcome'} message={popupMessage || 'Welcome to EARNIX'} />}
+      {showPopup && <WelcomePopup title={popupTitle} message={popupMessage} link={popupLink} />}
+      {dbUser.pendingUpgradeThankYou && <UpgradeThankYouPopup planName={dbUser.pendingUpgradeThankYou} />}
       <DashboardNavigation user={user}>
         {children}
       </DashboardNavigation>

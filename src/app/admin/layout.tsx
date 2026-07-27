@@ -41,7 +41,7 @@ export default function AdminLayout({
 
       {/* Admin Sidebar */}
       <aside 
-        className={isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}
+        className={`admin-sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}
         style={{ 
           width: '280px', 
           backgroundColor: '#121212', 
@@ -52,7 +52,6 @@ export default function AdminLayout({
           height: '100vh',
           zIndex: 50,
           transition: 'transform 0.3s ease',
-          transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
         <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -102,9 +101,26 @@ export default function AdminLayout({
         {/* Top Header */}
         <header style={{ height: '70px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 1.5rem', justifyContent: 'space-between', backgroundColor: 'var(--bg-color)', position: 'sticky', top: 0, zIndex: 30 }}>
           <button 
+            type="button"
             className="mobile-only"
-            onClick={() => setIsSidebarOpen(true)}
-            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsSidebarOpen(!isSidebarOpen);
+            }}
+            style={{ 
+              background: 'rgba(255,255,255,0.08)', 
+              border: '1px solid rgba(255,255,255,0.2)', 
+              borderRadius: '8px', 
+              color: 'white', 
+              fontSize: '1.6rem', 
+              cursor: 'pointer',
+              padding: '0.4rem 0.75rem',
+              minWidth: '42px',
+              minHeight: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
             ☰
           </button>

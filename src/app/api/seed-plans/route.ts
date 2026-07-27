@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const freePlan = await prisma.membershipPlan.upsert({
       where: { name: 'FREE' },
-      update: {},
+      update: { welcomeBonus: 50, referralCommission: 0 },
       create: {
         name: 'FREE',
         level: 1,
@@ -13,7 +13,7 @@ export async function GET() {
         welcomeBonus: 50,
         dailyLoginBonus: 0,
         taskReward: 80,
-        referralCommission: 250,
+        referralCommission: 0,
         isActive: true,
         description: 'Start earning immediately for free.'
       }

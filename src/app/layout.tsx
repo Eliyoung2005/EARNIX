@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
@@ -13,7 +13,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import Script from 'next/script';
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "EARNIX | SoftLife & Stress-free Earnings",
@@ -32,16 +36,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <head>
-        {/* Google AdSense Script Placeholder */}
-        <Script
-          id="adsense-init"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_ID_HERE"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
       <body>
         <Providers>
           {children}

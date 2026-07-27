@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import WithdrawalManager from "./WithdrawalManager";
+import WithdrawalPortalControl from "./WithdrawalPortalControl";
 
 export default async function AdminWithdrawalsPage() {
   const session = await getServerSession(authOptions);
@@ -13,7 +14,7 @@ export default async function AdminWithdrawalsPage() {
 
   const role = (session.user as any).role;
 
-  if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+  if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
     redirect('/dashboard');
   }
 
@@ -37,6 +38,8 @@ export default async function AdminWithdrawalsPage() {
     <div>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Withdrawal Requests</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Process and manage all user payout requests.</p>
+      
+      <WithdrawalPortalControl />
       
       <WithdrawalManager withdrawals={withdrawals} />
     </div>
