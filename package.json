@@ -10,7 +10,7 @@
     "build": "prisma generate && next build",
     "start": "next start -H 0.0.0.0",
     "postinstall": "prisma generate",
-    "seed": "ts-node seed-plans.ts",
+    "seed": "node seed-plans.js",
     "lint": "eslint"
   },
   "dependencies": {
