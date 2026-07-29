@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import UserSearch from "./UserSearch";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions);
   

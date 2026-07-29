@@ -7,6 +7,8 @@ import UpgradeBannerButton from "./UpgradeBannerButton";
 import CouponManager from "../admin/CouponManager";
 import { getBadgeProps } from "@/lib/badgeUtils";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardOverview(props: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {

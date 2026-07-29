@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import TaskListClient from './TaskListClient';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TasksPage() {
   const session = await getServerSession(authOptions);
   

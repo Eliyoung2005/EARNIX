@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import ManageTasksClient from './ManageTasksClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminTasks() {
   const activeTasks = await prisma.task.findMany({
     where: { status: 'ACTIVE' },
