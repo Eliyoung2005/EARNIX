@@ -13,11 +13,6 @@ export async function GET() {
     }
 
     const userId = (session.user as any).id;
-    const role = (session.user as any).role;
-
-    if (role !== 'VENDOR' && role !== 'ADMIN' && role !== 'SUB_ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     const vendor = await prisma.user.findUnique({
       where: { id: userId },
@@ -26,10 +21,20 @@ export async function GET() {
         name: true,
         username: true,
         email: true,
+        role: true,
         customGreeting: true,
         accountNumber: true,
       },
     });
+
+    if (!vendor) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const isVendorOrAdmin = ['VENDOR', 'ADMIN', 'SUB_ADMIN', 'SUPER_ADMIN'].includes(vendor.role);
+    if (!isVendorOrAdmin) {
+      return NextResponse.json({ error: 'Forbidden. Vendor role required.' }, { status: 403 });
+    }
 
     const coupons = await prisma.couponCode.findMany({
       where: { assignedVendorId: userId },

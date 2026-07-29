@@ -52,7 +52,8 @@ export default function CouponManager({
         body: JSON.stringify({ amount, assignToId })
       });
       
-      if (!res.ok) throw new Error('Failed to generate coupons');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate coupons');
 
       alert(`Successfully generated ${amount} new coupons!`);
       router.refresh();

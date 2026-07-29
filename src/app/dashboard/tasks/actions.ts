@@ -7,15 +7,15 @@ import { revalidatePath } from 'next/cache';
 
 export async function submitTaskProof(taskId: string, proofUrl?: string) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
-    return { success: false, error: 'Unauthorized' };
+    return { success: false, error: 'Unauthorized. Please sign in to submit tasks.' };
   }
 
   const userId = (session.user as any).id;
 
   try {
-    // Check if the task exists
+    // Check if the task exists and is active
     const task = await prisma.task.findUnique({
       where: { id: taskId }
     });
@@ -24,22 +24,61 @@ export async function submitTaskProof(taskId: string, proofUrl?: string) {
       return { success: false, error: 'Task not found' };
     }
 
-    // Check if user already submitted this task
+    if (task.status !== 'ACTIVE') {
+      return { success: false, error: 'This task is no longer active.' };
+    }
+
+    // Check existing submission status
     const existingSubmission = await prisma.taskSubmission.findFirst({
-      where: {
-        userId,
-        taskId
-      }
+      where: { userId, taskId }
     });
 
     if (existingSubmission) {
-      return { success: false, error: 'You have already submitted proof for this task.' };
+      if (existingSubmission.status === 'PENDING') {
+        return { success: false, error: 'Your proof for this task is already under review.' };
+      }
+      if (existingSubmission.status === 'APPROVED') {
+        return { success: false, error: 'You have already completed this task.' };
+      }
+
+      // If status is REJECTED, allow re-submitting with updated proof
+      if (task.requiresProof) {
+        if (!proofUrl) return { success: false, error: 'Proof screenshot is required for this task.' };
+        await prisma.taskSubmission.update({
+          where: { id: existingSubmission.id },
+          data: {
+            proofUrl,
+            status: 'PENDING',
+            createdAt: new Date()
+          }
+        });
+      } else {
+        await prisma.$transaction([
+          prisma.taskSubmission.update({
+            where: { id: existingSubmission.id },
+            data: {
+              status: 'APPROVED',
+              createdAt: new Date()
+            }
+          }),
+          prisma.user.update({
+            where: { id: userId },
+            data: {
+              taskBalance: { increment: task.reward },
+              totalEarnings: { increment: task.reward }
+            }
+          })
+        ]);
+      }
+
+      revalidatePath('/dashboard/tasks');
+      return { success: true };
     }
 
-    // Create the submission
+    // Create new submission
     if (task.requiresProof) {
-      if (!proofUrl) return { success: false, error: 'Proof URL is required for this task.' };
-      
+      if (!proofUrl) return { success: false, error: 'Proof screenshot is required for this task.' };
+
       await prisma.taskSubmission.create({
         data: {
           userId,
@@ -70,8 +109,8 @@ export async function submitTaskProof(taskId: string, proofUrl?: string) {
 
     revalidatePath('/dashboard/tasks');
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting task proof:', error);
-    return { success: false, error: 'Failed to submit proof. Please try again later.' };
+    return { success: false, error: error?.message || 'Failed to submit proof. Please try again later.' };
   }
 }

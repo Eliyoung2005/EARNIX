@@ -187,12 +187,18 @@ model PlatformSettings {
   proWithdrawalOpen      Boolean   @default(true)
   withdrawalPortalMode   String    @default("MANUAL") // "MANUAL" | "AUTOMATIC"
   portalOpenManual       Boolean   @default(true)
+  affiliatePortalOpenManual Boolean @default(true)
+  taskPortalOpenManual      Boolean @default(true)
   autoOpenSchedule       String    @default("Fridays at 8:00 AM")
   autoCloseSchedule      String    @default("Sundays at 11:59 PM")
   scheduledFreeOpenDate  DateTime?
   scheduledFreeCloseDate DateTime?
   scheduledProOpenDate   DateTime?
   scheduledProCloseDate  DateTime?
+  scheduledAffiliateOpenDate  DateTime?
+  scheduledAffiliateCloseDate DateTime?
+  scheduledTaskOpenDate       DateTime?
+  scheduledTaskCloseDate      DateTime?
 
   // System
   maintenanceMode        Boolean   @default(false)
@@ -233,6 +239,12 @@ model MembershipPlan {
   minTaskWithdrawal  Float    @default(3500.0)
   minAffiliateWithdrawal Float @default(1000.0)
   withdrawalPortalOpen   Boolean  @default(true)
+  affiliateWithdrawalOpen Boolean @default(true)
+  taskWithdrawalOpen      Boolean @default(true)
+  affiliateScheduledOpenDate  DateTime?
+  affiliateScheduledCloseDate DateTime?
+  taskScheduledOpenDate       DateTime?
+  taskScheduledCloseDate      DateTime?
   description        String?
   features           String[]
   isActive           Boolean  @default(true)

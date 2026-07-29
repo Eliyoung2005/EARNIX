@@ -21,9 +21,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userId = (session.user as any).id;
     const role = (session.user as any).role;
-    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'VENDOR') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    // 1. Vendors are strictly FORBIDDEN from generating coupon codes on their own
+    if (role === 'VENDOR') {
+      return NextResponse.json({ 
+        error: 'Vendors are not permitted to generate coupon codes on their own. Codes must be generated and allocated to vendors by an Admin.' 
+      }, { status: 403 });
+    }
+
+    // 2. Only ADMIN and SUB_ADMIN roles can proceed
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+      return NextResponse.json({ error: 'Forbidden. Access restricted to authorized admin personnel.' }, { status: 403 });
+    }
+
+    // 3. For SUB_ADMIN, verify that Super Admin has granted the GENERATE_CODES permission
+    if (role === 'SUB_ADMIN') {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { subAdminPermissions: true }
+      });
+
+      const hasPermission = dbUser?.subAdminPermissions?.includes('GENERATE_CODES');
+
+      if (!hasPermission) {
+        return NextResponse.json({ 
+          error: 'Access Denied: Super Admin has not granted you permission to generate coupon codes.' 
+        }, { status: 403 });
+      }
     }
 
     const { amount, assignToId } = await req.json();
@@ -33,7 +59,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid amount. Must be between 1 and 100.' }, { status: 400 });
     }
 
-    const userId = (session.user as any).id;
     let targetVendorId = null;
 
     if (assignToId === 'SELF') {
@@ -50,7 +75,6 @@ export async function POST(req: Request) {
     for (let i = 0; i < count; i++) {
       let unique = false;
       let code = '';
-      // Collision handling (though extremely rare)
       while (!unique) {
         code = generateRandomCode();
         const existing = await prisma.couponCode.findUnique({ where: { code } });
@@ -128,4 +152,3 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

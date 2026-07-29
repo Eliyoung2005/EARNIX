@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 
@@ -16,6 +16,7 @@ export default function DashboardNavigation({
   user: {
     name: string;
     username: string;
+    role?: string;
     plan: string;
     initials: string;
     balance: number;
@@ -23,31 +24,116 @@ export default function DashboardNavigation({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentRole, setCurrentRole] = useState(user.role || 'USER');
 
-  const navLinks = [
+  // Lock body scroll on mobile when sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+    return () => document.body.classList.remove('menu-open');
+  }, [isSidebarOpen]);
+
+  // Handle escape key to close sidebar on mobile
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSidebarOpen]);
+
+  // Keep currentRole in sync with props
+  useEffect(() => {
+    if (user.role) {
+      setCurrentRole(user.role);
+    }
+  }, [user.role]);
+
+  // Real-time polling to check if user role changed in database (e.g. promoted to VENDOR)
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkRole = async () => {
+      try {
+        const res = await fetch('/api/user/profile', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.role) {
+            setCurrentRole(data.role);
+          }
+        }
+      } catch (err) {
+        // Silent catch
+      }
+    };
+
+    checkRole();
+    const intervalId = setInterval(checkRole, 4000);
+
+    const handleFocus = () => checkRole();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  const isVendor = ['VENDOR', 'ADMIN', 'SUB_ADMIN'].includes(currentRole);
+  const showSpinWheel = user.plan === 'VIP' || user.plan === 'ELITE';
+
+  const navLinks: { name: string; href: string; icon: string; badge?: string }[] = [
     { name: 'Overview', href: '/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { name: 'Tasks', href: '/dashboard/tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-    { name: 'Spin & Win', href: '/dashboard/spin', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { name: 'Referrals & Invite', href: '/dashboard/referrals', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-    { name: 'Withdrawals', href: '/dashboard/withdrawals', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' },
-    { name: 'Profile Settings', href: '/dashboard/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
   ];
+
+  if (showSpinWheel) {
+    navLinks.push({
+      name: 'Spin & Win',
+      href: '/dashboard/spin',
+      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+    });
+  }
+
+  navLinks.push(
+    { name: 'Referrals & Invite', href: '/dashboard/referrals', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+    { name: 'Withdrawals', href: '/dashboard/withdrawals', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' }
+  );
+
+  if (isVendor) {
+    navLinks.push({
+      name: 'Vendor Panel',
+      href: '/dashboard/vendor',
+      icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+      badge: 'VENDOR'
+    });
+  }
+
+  navLinks.push({
+    name: 'Profile Settings',
+    href: '/dashboard/settings',
+    icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
+  });
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="mobile-only"
-          onClick={() => setIsSidebarOpen(false)}
-          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 40 }}
-        />
-      )}
+      <div 
+        className={`drawer-backdrop${isSidebarOpen ? ' backdrop-visible' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Sidebar */}
       <aside 
-        className={isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}
+        className={`admin-sidebar ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}
         style={{ 
           width: '280px', 
           backgroundColor: 'var(--surface-color)', 
@@ -56,9 +142,8 @@ export default function DashboardNavigation({
           flexDirection: 'column',
           position: 'fixed',
           height: '100vh',
-          zIndex: 50,
-          transition: 'transform 0.3s ease',
-          transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+          zIndex: 9999,
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -68,31 +153,30 @@ export default function DashboardNavigation({
           <button 
             type="button"
             className="mobile-only" 
-            onClick={(e) => { e.stopPropagation(); setIsSidebarOpen(false); }} 
-            onTouchEnd={(e) => { e.stopPropagation(); setIsSidebarOpen(false); }}
+            onClick={() => setIsSidebarOpen(false)} 
+            aria-label="Close Sidebar"
             style={{ 
-              background: '#ff3b30', 
-              border: 'none', 
-              color: 'white', 
-              width: '40px', 
-              height: '40px', 
+              background: 'rgba(255,59,48,0.15)', 
+              border: '1px solid rgba(255,59,48,0.5)', 
+              color: '#ff3b30', 
+              width: '36px', 
+              height: '36px', 
               borderRadius: '50%', 
-              fontSize: '1.2rem', 
+              fontSize: '1rem', 
               fontWeight: 'bold',
               cursor: 'pointer', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(255,59,48,0.4)',
-              pointerEvents: 'auto',
-              WebkitTapHighlightColor: 'transparent'
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
             }}
           >
             ✕
           </button>
         </div>
 
-        <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto' }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -113,6 +197,21 @@ export default function DashboardNavigation({
                   <path d={link.icon}></path>
                 </svg>
                 {link.name}
+                {link.badge && (
+                  <span style={{ 
+                    marginLeft: 'auto', 
+                    background: 'var(--accent-gold)', 
+                    color: '#000', 
+                    fontSize: '0.65rem', 
+                    fontWeight: 'bold', 
+                    padding: '0.15rem 0.5rem', 
+                    borderRadius: '10px', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -130,7 +229,7 @@ export default function DashboardNavigation({
                   </span>
                 )}
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>@{user.username}</span>
                 <span style={{ 
                   fontSize: '0.65rem', 
@@ -143,6 +242,20 @@ export default function DashboardNavigation({
                 }}>
                   {user.plan}
                 </span>
+                {isVendor && (
+                  <span style={{ 
+                    fontSize: '0.65rem', 
+                    fontWeight: 'bold', 
+                    padding: '0.1rem 0.5rem', 
+                    borderRadius: '10px', 
+                    background: 'rgba(212, 175, 55, 0.2)', 
+                    color: 'var(--accent-gold)',
+                    border: '1px solid var(--accent-gold)',
+                    letterSpacing: '0.5px'
+                  }}>
+                    VENDOR
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -153,30 +266,43 @@ export default function DashboardNavigation({
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: 0, width: '100%' }} className="dashboard-main">
         {/* Top Header */}
         <header style={{ height: '70px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 1.5rem', justifyContent: 'space-between', backgroundColor: 'var(--bg-color)', position: 'sticky', top: 0, zIndex: 30 }}>
-          <button 
-            type="button"
-            className="mobile-only"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsSidebarOpen(!isSidebarOpen);
-            }}
-            style={{ 
-              background: 'rgba(255,255,255,0.08)', 
-              border: '1px solid rgba(255,255,255,0.2)', 
-              borderRadius: '8px', 
-              color: 'white', 
-              fontSize: '1.6rem', 
-              cursor: 'pointer',
-              padding: '0.4rem 0.75rem',
-              minWidth: '42px',
-              minHeight: '42px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            ☰
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button 
+              type="button"
+              className="mobile-only"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSidebarOpen(!isSidebarOpen);
+              }}
+              aria-label="Toggle Navigation Menu"
+              aria-expanded={isSidebarOpen}
+              style={{ 
+                background: 'rgba(255,255,255,0.08)', 
+                border: '1px solid rgba(255,255,255,0.2)', 
+                borderRadius: '12px', 
+                color: 'white', 
+                cursor: 'pointer',
+                width: '44px',
+                height: '44px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                opacity: isSidebarOpen ? 0 : 1,
+                visibility: isSidebarOpen ? 'hidden' : 'visible',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <Link href="/dashboard" className="mobile-only" style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--accent-blue)', letterSpacing: '-0.5px' }}>
+              EARNIX {user.plan && user.plan !== 'FREE' ? <span style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', verticalAlign: 'top' }}>{user.plan}</span> : null}
+            </Link>
+          </div>
           
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button style={{ background: 'var(--surface-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>

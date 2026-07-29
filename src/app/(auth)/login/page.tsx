@@ -1,17 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 export default function Login() {
-  const router = useRouter();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get('error');
+    if (urlError === 'CredentialsSignin' || urlError === 'Callback') {
+      setError('Invalid username/email or password. Please check your credentials.');
+    } else if (urlError) {
+      setError('Authentication failed. Please try again.');
+    }
+  }, []);
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,41 +36,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await signIn('credentials', {
-        redirect: false,
+      const params = new URLSearchParams(window.location.search);
+      let fromUrl = params.get('from');
+      if (fromUrl && fromUrl.includes('/admin/login')) {
+        fromUrl = '/admin';
+      }
+
+      const targetUrl = fromUrl || '/admin';
+
+      // Let NextAuth handle the native form POST redirect so cookies set reliably
+      await signIn('credentials', {
+        callbackUrl: targetUrl,
         identifier: cleanIdentifier,
         password: cleanPassword,
       });
-
-      console.log('SignIn Response:', res);
-
-      if (res?.error) {
-        setError('Invalid username/email or password. Please check your credentials.');
-        setLoading(false);
-      } else if (res?.ok) {
-        const params = new URLSearchParams(window.location.search);
-        const fromUrl = params.get('from');
-
-        if (fromUrl) {
-          window.location.href = fromUrl;
-        } else {
-          try {
-            const sessionRes = await fetch('/api/auth/session');
-            const sessionData = await sessionRes.json();
-            const role = sessionData?.user?.role;
-            if (role === 'SUPERADMIN' || role === 'ADMIN' || role === 'SUB_ADMIN') {
-              window.location.href = '/admin';
-            } else {
-              window.location.href = '/dashboard';
-            }
-          } catch {
-            window.location.href = '/dashboard';
-          }
-        }
-      } else {
-        setError('Login failed. Please check your network connection.');
-        setLoading(false);
-      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.message || 'An error occurred during login.');

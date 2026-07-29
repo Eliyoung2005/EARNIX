@@ -92,19 +92,9 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: false
-      }
-    }
-  },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "earnix-super-secret-key-for-jwt-2026",
 };

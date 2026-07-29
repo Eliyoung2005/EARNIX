@@ -37,6 +37,12 @@ export async function PATCH(req: Request) {
       data: {
         isActive,
         withdrawalPortalOpen: body.withdrawalPortalOpen !== undefined ? Boolean(body.withdrawalPortalOpen) : undefined,
+        affiliateWithdrawalOpen: body.affiliateWithdrawalOpen !== undefined ? Boolean(body.affiliateWithdrawalOpen) : undefined,
+        taskWithdrawalOpen: body.taskWithdrawalOpen !== undefined ? Boolean(body.taskWithdrawalOpen) : undefined,
+        affiliateScheduledOpenDate: body.affiliateScheduledOpenDate !== undefined ? (body.affiliateScheduledOpenDate ? new Date(body.affiliateScheduledOpenDate) : null) : undefined,
+        affiliateScheduledCloseDate: body.affiliateScheduledCloseDate !== undefined ? (body.affiliateScheduledCloseDate ? new Date(body.affiliateScheduledCloseDate) : null) : undefined,
+        taskScheduledOpenDate: body.taskScheduledOpenDate !== undefined ? (body.taskScheduledOpenDate ? new Date(body.taskScheduledOpenDate) : null) : undefined,
+        taskScheduledCloseDate: body.taskScheduledCloseDate !== undefined ? (body.taskScheduledCloseDate ? new Date(body.taskScheduledCloseDate) : null) : undefined,
         price: body.price !== undefined ? Number(body.price) : undefined,
         welcomeBonus: body.welcomeBonus !== undefined ? Number(body.welcomeBonus) : undefined,
         dailyLoginBonus: body.dailyLoginBonus !== undefined ? Number(body.dailyLoginBonus) : undefined,

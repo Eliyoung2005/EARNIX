@@ -55,6 +55,7 @@ export default async function DashboardLayout({
   const user = {
     name: dbUser.name,
     username: dbUser.username,
+    role: dbUser.role,
     plan: userPlanName,
     initials: dbUser.name ? dbUser.name.substring(0, 2).toUpperCase() : 'U',
     balance: dbUser.taskBalance + dbUser.affiliateBalance

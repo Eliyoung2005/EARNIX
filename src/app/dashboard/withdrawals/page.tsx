@@ -18,17 +18,39 @@ export default function WithdrawalsPage() {
   const [upgradeError, setUpgradeError] = useState<{message: string, nextPlan: string} | null>(null);
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetch('/api/user/profile')
-        .then(res => res.json())
-        .then(data => {
-          setProfile(data);
-          if (data.plan !== 'FREE') {
-            setWithdrawalType('AFFILIATE');
+    let isMounted = true;
+    let intervalId: any = null;
+
+    const fetchProfileData = async () => {
+      try {
+        const res = await fetch('/api/user/profile', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setProfile(data);
+            if (!profile && data.plan !== 'FREE') {
+              setWithdrawalType('AFFILIATE');
+            }
+            setLoading(false);
           }
-          setLoading(false);
-        })
-        .catch(console.error);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (status === 'authenticated') {
+      fetchProfileData();
+      intervalId = setInterval(fetchProfileData, 5000);
+
+      const handleFocus = () => fetchProfileData();
+      window.addEventListener('focus', handleFocus);
+
+      return () => {
+        isMounted = false;
+        if (intervalId) clearInterval(intervalId);
+        window.removeEventListener('focus', handleFocus);
+      };
     }
   }, [status]);
 
@@ -40,15 +62,23 @@ export default function WithdrawalsPage() {
   const availableBalance = withdrawalType === 'AFFILIATE' ? profile.affiliateBalance : profile.taskBalance;
   const minWithdrawal = withdrawalType === 'AFFILIATE' ? profile.minAffiliateWithdrawal : profile.minTaskWithdrawal;
 
-  const isPortalClosed = profile?.planWithdrawalOpen === false || 
-    (profile?.settings?.withdrawalPortalMode === 'MANUAL' && 
-    (!profile?.settings?.portalOpenManual || 
-    (isFreePlan && !profile?.settings?.freeWithdrawalOpen) || 
-    (!isFreePlan && !profile?.settings?.proWithdrawalOpen)));
+  const isAffiliate = withdrawalType === 'AFFILIATE';
+  const isPortalClosed = isAffiliate 
+    ? profile?.affiliateWithdrawalOpen === false 
+    : profile?.taskWithdrawalOpen === false;
 
   const isAutoMode = profile?.settings?.withdrawalPortalMode === 'AUTOMATIC';
-  const autoOpenSchedule = profile?.settings?.autoOpenSchedule || 'Fridays at 8:00 AM';
-  const autoCloseSchedule = profile?.settings?.autoCloseSchedule || 'Sundays at 11:59 PM';
+  
+  const openDateRaw = isAffiliate ? profile?.affiliateOpenDate : profile?.taskOpenDate;
+  const closeDateRaw = isAffiliate ? profile?.affiliateCloseDate : profile?.taskCloseDate;
+
+  const autoOpenSchedule = openDateRaw 
+    ? new Date(openDateRaw).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : (profile?.settings?.autoOpenSchedule || 'Fridays at 8:00 AM');
+
+  const autoCloseSchedule = closeDateRaw 
+    ? new Date(closeDateRaw).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : (profile?.settings?.autoCloseSchedule || 'Sundays at 11:59 PM');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,15 +148,15 @@ export default function WithdrawalsPage() {
         <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(255, 59, 48, 0.1)', border: '1px solid #ff3b30', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '1.8rem' }}>🔒</span>
           <div>
-            <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem' }}>Withdrawal Portal is Currently Closed</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>The administrator has temporarily paused withdrawal submissions. Please check back soon.</div>
+            <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem' }}>{isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Portal is Currently Closed</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>The administrator has temporarily paused {isAffiliate ? 'affiliate' : 'task earnings'} withdrawals for your plan. Please check back soon.</div>
           </div>
         </div>
       ) : isAutoMode ? (
         <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.4)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '1.8rem' }}>🗓️</span>
           <div>
-            <div style={{ fontWeight: 'bold', color: 'var(--accent-gold)', fontSize: '1.05rem' }}>Automatic Weekly Withdrawal Schedule</div>
+            <div style={{ fontWeight: 'bold', color: 'var(--accent-gold)', fontSize: '1.05rem' }}>Automatic {isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Schedule</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
               Portal Opens: <strong>{autoOpenSchedule}</strong> — Closes: <strong>{autoCloseSchedule}</strong>
             </div>

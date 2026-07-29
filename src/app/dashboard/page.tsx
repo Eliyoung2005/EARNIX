@@ -50,7 +50,7 @@ export default async function DashboardOverview(props: {
   const nextPlan = plans.find(p => p.level > userPlanLevel);
 
   // Fetch active coupons if the user is a VENDOR or ADMIN
-  const isVendorOrAdmin = role === 'VENDOR' || role === 'ADMIN' || role === 'SUB_ADMIN';
+  const isVendorOrAdmin = user.role === 'VENDOR' || user.role === 'ADMIN' || user.role === 'SUB_ADMIN';
   let activeCoupons: any[] = [];
   
   if (isVendorOrAdmin) {

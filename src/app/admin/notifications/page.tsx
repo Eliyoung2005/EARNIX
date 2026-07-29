@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import WelcomePopupSettingsForm from './WelcomePopupSettingsForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminNotifications() {
   const settings = await prisma.platformSettings.findUnique({ where: { id: "1" } });
 

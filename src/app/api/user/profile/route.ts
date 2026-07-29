@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { isWithdrawalOpen } from '@/lib/withdrawalUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,30 @@ export async function GET() {
     }
 
     const settings = await prisma.platformSettings.findFirst();
+    const mode = settings?.withdrawalPortalMode || 'MANUAL';
+
+    const affiliateOpenDate = user.membership?.affiliateScheduledOpenDate || settings?.scheduledAffiliateOpenDate || settings?.scheduledFreeOpenDate;
+    const affiliateCloseDate = user.membership?.affiliateScheduledCloseDate || settings?.scheduledAffiliateCloseDate || settings?.scheduledFreeCloseDate;
+    const taskOpenDate = user.membership?.taskScheduledOpenDate || settings?.scheduledTaskOpenDate || settings?.scheduledFreeOpenDate;
+    const taskCloseDate = user.membership?.taskScheduledCloseDate || settings?.scheduledTaskCloseDate || settings?.scheduledFreeCloseDate;
+
+    const affiliateStatus = isWithdrawalOpen({
+      mode,
+      type: 'AFFILIATE',
+      manualMasterOpen: settings?.affiliatePortalOpenManual ?? settings?.portalOpenManual ?? true,
+      manualPlanOpen: user.membership?.affiliateWithdrawalOpen ?? user.membership?.withdrawalPortalOpen ?? true,
+      scheduledOpenDate: affiliateOpenDate,
+      scheduledCloseDate: affiliateCloseDate,
+    });
+
+    const taskStatus = isWithdrawalOpen({
+      mode,
+      type: 'TASK',
+      manualMasterOpen: settings?.taskPortalOpenManual ?? settings?.portalOpenManual ?? true,
+      manualPlanOpen: user.membership?.taskWithdrawalOpen ?? user.membership?.withdrawalPortalOpen ?? true,
+      scheduledOpenDate: taskOpenDate,
+      scheduledCloseDate: taskCloseDate,
+    });
 
     return NextResponse.json({
       id: user.id,
@@ -44,6 +69,15 @@ export async function GET() {
       minAffiliateWithdrawal: user.membership?.minAffiliateWithdrawal || 5000,
       minTaskWithdrawal: user.membership?.minTaskWithdrawal || 2000,
       planWithdrawalOpen: user.membership?.withdrawalPortalOpen ?? true,
+      affiliateWithdrawalOpen: affiliateStatus.isOpen,
+      affiliateWithdrawalReason: affiliateStatus.reason || null,
+      taskWithdrawalOpen: taskStatus.isOpen,
+      taskWithdrawalReason: taskStatus.reason || null,
+      affiliateOpenDate,
+      affiliateCloseDate,
+      taskOpenDate,
+      taskCloseDate,
+      withdrawalPortalMode: mode,
       settings: settings || {},
     });
   } catch (error: any) {

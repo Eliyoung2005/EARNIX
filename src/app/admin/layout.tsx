@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 export default function AdminLayout({
@@ -11,6 +11,16 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Lock body scroll on mobile when sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+    return () => document.body.classList.remove('menu-open');
+  }, [isSidebarOpen]);
 
   const navLinks = [
     { name: 'Overview', href: '/admin', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -31,13 +41,11 @@ export default function AdminLayout({
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-color)' }}>
       
       {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="mobile-only"
-          onClick={() => setIsSidebarOpen(false)}
-          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 40 }}
-        />
-      )}
+      <div 
+        className={`drawer-backdrop${isSidebarOpen ? ' backdrop-visible' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Admin Sidebar */}
       <aside 
@@ -50,15 +58,38 @@ export default function AdminLayout({
           flexDirection: 'column',
           position: 'fixed',
           height: '100vh',
-          zIndex: 50,
-          transition: 'transform 0.3s ease',
+          zIndex: 9999,
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Link href="/admin" style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--accent-gold)', letterSpacing: '-1px', textDecoration: 'none' }}>
             EARNIX <span style={{ fontSize: '0.8rem', color: 'white', verticalAlign: 'top' }}>ADMIN</span>
           </Link>
-          <button className="mobile-only" onClick={() => setIsSidebarOpen(false)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+          <button 
+            type="button"
+            className="mobile-only" 
+            onClick={() => setIsSidebarOpen(false)} 
+            aria-label="Close Sidebar"
+            style={{ 
+              background: 'rgba(255,59,48,0.15)', 
+              border: '1px solid rgba(255,59,48,0.5)', 
+              color: '#ff3b30', 
+              width: '36px', 
+              height: '36px', 
+              borderRadius: '50%', 
+              fontSize: '1rem', 
+              fontWeight: 'bold',
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
+          >
+            ✕
+          </button>
         </div>
 
         <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto' }}>
@@ -107,22 +138,30 @@ export default function AdminLayout({
               e.stopPropagation();
               setIsSidebarOpen(!isSidebarOpen);
             }}
+            aria-label="Open Sidebar Menu"
             style={{ 
               background: 'rgba(255,255,255,0.08)', 
               border: '1px solid rgba(255,255,255,0.2)', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               color: 'white', 
-              fontSize: '1.6rem', 
               cursor: 'pointer',
-              padding: '0.4rem 0.75rem',
-              minWidth: '42px',
-              minHeight: '42px',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              transition: 'opacity 0.2s ease, visibility 0.2s ease',
+              opacity: isSidebarOpen ? 0 : 1,
+              visibility: isSidebarOpen ? 'hidden' : 'visible',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
           >
-            ☰
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="19" y2="6" />
+              <line x1="3" y1="11" x2="19" y2="11" />
+              <line x1="3" y1="16" x2="19" y2="16" />
+            </svg>
           </button>
           
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>

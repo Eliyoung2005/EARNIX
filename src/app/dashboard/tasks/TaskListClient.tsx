@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import { submitTaskProof } from './actions';
+import { compressAndConvertToBase64 } from '@/lib/imageUtils';
 
-// We can put the ImgBB API key here or in env. Since it's for frontend upload and it's free, it's generally okay, but env is safer. 
-// For this MVP, we will use a demo key or the user can swap it. 
-// However, the standard practice is to use the environment variable.
-const IMGBB_API_KEY = '5db77a58a623a9d7bb3627702f231e34'; // Using a public/demo or placeholder key. The user should replace this in production.
+const IMGBB_API_KEY = '5db77a58a623a9d7bb3627702f231e34';
 
 type Task = {
   id: string;
@@ -34,6 +32,7 @@ export default function TaskListClient({
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [hasClickedLink, setHasClickedLink] = useState(false);
@@ -57,11 +56,19 @@ export default function TaskListClient({
     setError('');
     setSuccess('');
     setHasClickedLink(false);
+    setUploadProgress('');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selected = e.target.files[0];
+      if (!selected.type.startsWith('image/')) {
+        setError('Please select a valid image screenshot (JPG, PNG, WEBP).');
+        setFile(null);
+        return;
+      }
+      setError('');
+      setFile(selected);
     }
   };
 
@@ -72,39 +79,53 @@ export default function TaskListClient({
     setIsUploading(true);
     setError('');
     setSuccess('');
+    setUploadProgress('Preparing & compressing screenshot proof...');
 
     try {
-      // 1. Upload to ImgBB
-      const formData = new FormData();
-      formData.append('image', file);
+      // 1. Convert & compress image client-side for zero-failure fallback
+      const base64Proof = await compressAndConvertToBase64(file);
+      let proofUrl = base64Proof;
 
-      const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: 'POST',
-        body: formData
-      });
-      const imgbbData = await imgbbRes.json();
+      // 2. Try ImgBB Cloud Uploader (with silent failover to Base64)
+      try {
+        setUploadProgress('Uploading screenshot...');
+        const formData = new FormData();
+        formData.append('image', file);
 
-      if (!imgbbData.success) {
-        throw new Error('Failed to upload image. Please try again.');
+        const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (imgbbRes.ok) {
+          const imgbbData = await imgbbRes.json();
+          if (imgbbData?.success && imgbbData?.data?.url) {
+            proofUrl = imgbbData.data.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('External image uploader failed, falling back to instant secure upload:', uploadErr);
       }
 
-      const proofUrl = imgbbData.data.url;
+      setUploadProgress('Submitting task proof for review...');
 
-      // 2. Submit to our Server Action
+      // 3. Submit to Server Action
       const result = await submitTaskProof(selectedTask.id, proofUrl);
 
       if (result.success) {
-        setSuccess('Task proof submitted successfully! It is now under review.');
+        setSuccess('Task proof submitted successfully! It is now under review by an Admin.');
         setFile(null);
         setSelectedTaskId(null);
         setHasClickedLink(false);
       } else {
-        setError(result.error || 'Failed to submit task proof.');
+        setError(result.error || 'Failed to submit task proof. Please try again.');
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      console.error('Task submission error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsUploading(false);
+      setUploadProgress('');
     }
   };
 
@@ -157,8 +178,8 @@ export default function TaskListClient({
 
       {/* Task Submission Form */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', height: 'fit-content' }}>
-        {error && <div style={{ padding: '1rem', background: 'rgba(255, 59, 48, 0.1)', color: '#ff3b30', borderRadius: '8px', marginBottom: '1rem' }}>{error}</div>}
-        {success && <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', borderRadius: '8px', marginBottom: '1rem' }}>{success}</div>}
+        {error && <div style={{ padding: '1rem', background: 'rgba(255, 59, 48, 0.1)', color: '#ff3b30', borderRadius: '8px', marginBottom: '1rem', fontWeight: 'bold' }}>{error}</div>}
+        {success && <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', borderRadius: '8px', marginBottom: '1rem', fontWeight: 'bold' }}>{success}</div>}
         
         {selectedTask ? (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -166,7 +187,7 @@ export default function TaskListClient({
               Submit Proof for {selectedTask.platform} Task
             </h2>
             
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
               {selectedTask.description}
             </p>
 
@@ -177,16 +198,16 @@ export default function TaskListClient({
                 target="_blank" 
                 rel="noopener noreferrer" 
                 onClick={() => setHasClickedLink(true)}
-                style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}
+                style={{ color: 'var(--accent-blue)', textDecoration: 'underline', fontWeight: 'bold', fontSize: '0.95rem' }}
               >
-                Click here to open the post/video
+                Click here to open task post/link
               </a>
             </div>
 
             {selectedTask.requiresProof ? (
               <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label htmlFor="proof" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Upload Screenshot</label>
+                  <label htmlFor="proof" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Upload Screenshot Proof</label>
                   <input 
                     type="file" 
                     id="proof" 
@@ -195,15 +216,20 @@ export default function TaskListClient({
                     required
                     style={{ padding: '0.75rem', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.4)', background: 'rgba(0,0,0,0.2)', color: 'white', cursor: 'pointer' }}
                   />
+                  {file && (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', margin: 0 }}>
+                      Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={isUploading || !file}
                   className="btn-primary" 
-                  style={{ marginTop: '1rem', width: '100%' }}
+                  style={{ marginTop: '1rem', width: '100%', opacity: (isUploading || !file) ? 0.6 : 1 }}
                 >
-                  {isUploading ? 'Uploading...' : 'Submit for Review'}
+                  {isUploading ? (uploadProgress || 'Uploading...') : 'Submit for Review'}
                 </button>
               </>
             ) : (

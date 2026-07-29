@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Testimonials from './Testimonials';
 
 const defaultPlans = [
@@ -31,6 +31,28 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [plans, setPlans] = useState<any[]>(defaultPlans);
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+    return () => document.body.classList.remove('menu-open');
+  }, [isMenuOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
+
   useEffect(() => {
     fetch('/api/plans', {
       headers: {
@@ -53,7 +75,7 @@ export default function Home() {
       <nav className="container" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         
         {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--accent-blue)', textShadow: '0 0 10px rgba(10, 91, 255, 0.5)', letterSpacing: '-1px' }}>
             EARNIX
           </div>
@@ -76,79 +98,150 @@ export default function Home() {
             Login
           </Link>
 
-
-          
-          {/* Hamburger Icon (Mobile Only) */}
-          <button 
+          {/* Hamburger Button — Mobile Only. Hidden when drawer is open (drawer has its own close X) */}
+          <button
+            id="hamburger-btn"
             type="button"
             className="mobile-only"
-            onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} 
-            onTouchEnd={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
-            aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
-            style={{ 
-              background: isMenuOpen ? '#ff3b30' : 'rgba(255,255,255,0.1)', 
-              border: isMenuOpen ? '1px solid #ff3b30' : '1px solid rgba(255,255,255,0.2)', 
-              color: 'white', 
-              width: '44px', 
-              height: '44px', 
-              borderRadius: '12px', 
-              fontSize: '1.4rem', 
-              fontWeight: 'bold',
-              cursor: 'pointer', 
-              zIndex: 10000,
+            onClick={toggleMenu}
+            aria-label="Open Menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-drawer"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: 'white',
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              zIndex: 10001,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              pointerEvents: 'auto',
-              WebkitTapHighlightColor: 'transparent'
+              flexShrink: 0,
+              transition: 'opacity 0.2s ease, visibility 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              // Hide (but keep layout space) when drawer is open so the nav X doesn't overlap drawer X
+              opacity: isMenuOpen ? 0 : 1,
+              visibility: isMenuOpen ? 'hidden' : 'visible',
             }}
           >
-            {isMenuOpen ? '✕' : '☰'}
+            {/* Always shows ☰ — close X is inside the drawer */}
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            >
+              <line x1="3" y1="6" x2="19" y2="6" />
+              <line x1="3" y1="11" x2="19" y2="11" />
+              <line x1="3" y1="16" x2="19" y2="16" />
+            </svg>
           </button>
         </div>
       </nav>
 
-      {/* Drawer Menu Backdrop Overlay */}
-      {isMenuOpen && (
-        <div 
-          className="mobile-only"
-          onClick={() => setIsMenuOpen(false)}
-          onTouchEnd={() => setIsMenuOpen(false)}
-          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', zIndex: 9990, backdropFilter: 'blur(4px)' }}
-        />
-      )}
+      {/* Backdrop — always in DOM, toggled via class for smooth fade */}
+      <div
+        className={`drawer-backdrop${isMenuOpen ? ' backdrop-visible' : ''}`}
+        onClick={closeMenu}
+        aria-hidden="true"
+      />
 
-      {/* Drawer Menu (Mobile) */}
-      {isMenuOpen && (
-        <div className="mobile-only mobile-flex" style={{ position: 'fixed', top: '80px', right: '0', width: '300px', background: 'var(--surface-color)', padding: '1.5rem', zIndex: 9999, borderLeft: '1px solid rgba(255,255,255,0.15)', borderBottom: '1px solid rgba(255,255,255,0.15)', flexDirection: 'column', gap: '1.25rem', boxShadow: '-5px 5px 30px rgba(0,0,0,0.8)', borderRadius: '0 0 0 20px', pointerEvents: 'auto' }}>
-          
-          {/* Drawer Top Header Row with Close X */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--accent-blue)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Menu Navigation
-            </span>
-            <button 
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }} 
-              onTouchEnd={(e) => { e.stopPropagation(); setIsMenuOpen(false); }}
-              aria-label="Close Menu"
-              style={{ background: '#ff3b30', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(255,59,48,0.4)', pointerEvents: 'auto', WebkitTapHighlightColor: 'transparent' }}
-            >
-              ✕
-            </button>
-          </div>
-
-          <Link href="/" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Home</Link>
-          <Link href="#about" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>About Us</Link>
-          <Link href="#plans" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Plans</Link>
-          <Link href="/vendors" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Code Vendors</Link>
-          <Link href="/validate-code" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Verify Code</Link>
-          <Link href="/top-earners" onClick={() => setIsMenuOpen(false)} style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Top EARNIX</Link>
-          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.25rem 0' }} />
-          <Link href="/login" className="btn-pro" style={{ textAlign: 'center' }} onClick={() => setIsMenuOpen(false)}>Login</Link>
-          <Link href="/register" className="btn-primary" style={{ textAlign: 'center' }} onClick={() => setIsMenuOpen(false)}>Register</Link>
+      {/* Mobile Drawer — always in DOM, slides in/out via CSS transform */}
+      <div
+        id="mobile-drawer"
+        className={`mobile-drawer${isMenuOpen ? ' drawer-open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation Menu"
+      >
+        {/* Drawer Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <span style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--accent-blue)', letterSpacing: '1px' }}>
+            EARNIX
+          </span>
+          <button
+            type="button"
+            onClick={closeMenu}
+            aria-label="Close Menu"
+            style={{
+              background: 'rgba(255,59,48,0.15)',
+              border: '1px solid rgba(255,59,48,0.5)',
+              color: '#ff3b30',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="2" y1="2" x2="14" y2="14" />
+              <line x1="14" y1="2" x2="2" y2="14" />
+            </svg>
+          </button>
         </div>
-      )}
+
+        {/* Nav Links */}
+        {([
+          { href: '/', label: 'Home' },
+          { href: '#about', label: 'About Us' },
+          { href: '#plans', label: 'Plans' },
+          { href: '/vendors', label: 'Code Vendors' },
+          { href: '/validate-code', label: 'Verify Code' },
+          { href: '/top-earners', label: 'Top EARNIX' },
+        ] as { href: string; label: string }[]).map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={closeMenu}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.9rem 0.5rem',
+              fontSize: '1.05rem',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              transition: 'color 0.2s, padding-left 0.2s',
+            }}
+          >
+            {item.label}
+          </Link>
+        ))}
+
+        {/* CTA Buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <Link
+            href="/login"
+            className="btn-primary"
+            style={{ textAlign: 'center', borderRadius: '50px', padding: '0.85rem' }}
+            onClick={closeMenu}
+          >
+            Login
+          </Link>
+          <Link
+            href="/register"
+            className="btn-pro"
+            style={{ textAlign: 'center', borderRadius: '50px', padding: '0.85rem' }}
+            onClick={closeMenu}
+          >
+            Register
+          </Link>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section style={{ 

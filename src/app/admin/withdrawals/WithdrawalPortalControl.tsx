@@ -8,9 +8,11 @@ export default function WithdrawalPortalControl() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Separate state for the schedule datetime inputs so we can save on blur/button
-  const [openDate, setOpenDate] = useState('');
-  const [closeDate, setCloseDate] = useState('');
+  // Datetime input states for Affiliate and Task schedules
+  const [affiliateOpenDate, setAffiliateOpenDate] = useState('');
+  const [affiliateCloseDate, setAffiliateCloseDate] = useState('');
+  const [taskOpenDate, setTaskOpenDate] = useState('');
+  const [taskCloseDate, setTaskCloseDate] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -22,12 +24,16 @@ export default function WithdrawalPortalControl() {
         if (Array.isArray(plansData)) setPlans(plansData);
 
         // Pre-fill datetime inputs from saved scheduled dates
-        if (settingsData?.scheduledFreeOpenDate) {
-          setOpenDate(toLocalDatetimeInput(settingsData.scheduledFreeOpenDate));
-        }
-        if (settingsData?.scheduledFreeCloseDate) {
-          setCloseDate(toLocalDatetimeInput(settingsData.scheduledFreeCloseDate));
-        }
+        const affOpen = settingsData?.scheduledAffiliateOpenDate || settingsData?.scheduledFreeOpenDate;
+        const affClose = settingsData?.scheduledAffiliateCloseDate || settingsData?.scheduledFreeCloseDate;
+        const taskOpen = settingsData?.scheduledTaskOpenDate || settingsData?.scheduledFreeOpenDate;
+        const taskClose = settingsData?.scheduledTaskCloseDate || settingsData?.scheduledFreeCloseDate;
+
+        if (affOpen) setAffiliateOpenDate(toLocalDatetimeInput(affOpen));
+        if (affClose) setAffiliateCloseDate(toLocalDatetimeInput(affClose));
+        if (taskOpen) setTaskOpenDate(toLocalDatetimeInput(taskOpen));
+        if (taskClose) setTaskCloseDate(toLocalDatetimeInput(taskClose));
+
         setLoading(false);
       })
       .catch(err => {
@@ -62,26 +68,40 @@ export default function WithdrawalPortalControl() {
     }
   };
 
-  const handleSaveSchedule = async () => {
-    if (!openDate || !closeDate) {
-      alert('Please set both an Open date/time and a Close date/time.');
+  const handleSaveAffiliateSchedule = async () => {
+    if (!affiliateOpenDate || !affiliateCloseDate) {
+      alert('Please set both an Open date/time and a Close date/time for Affiliate withdrawals.');
       return;
     }
-    const openISO = new Date(openDate).toISOString();
-    const closeISO = new Date(closeDate).toISOString();
-    if (new Date(closeDate) <= new Date(openDate)) {
+    if (new Date(affiliateCloseDate) <= new Date(affiliateOpenDate)) {
       alert('Close date/time must be after the Open date/time.');
       return;
     }
+    const openISO = new Date(affiliateOpenDate).toISOString();
+    const closeISO = new Date(affiliateCloseDate).toISOString();
     await handleUpdateSettings({
-      scheduledFreeOpenDate: openISO,
-      scheduledFreeCloseDate: closeISO,
-      scheduledProOpenDate: openISO,
-      scheduledProCloseDate: closeISO,
-      autoOpenSchedule: new Date(openDate).toLocaleString('en-NG', { weekday: 'long', hour: '2-digit', minute: '2-digit' }),
-      autoCloseSchedule: new Date(closeDate).toLocaleString('en-NG', { weekday: 'long', hour: '2-digit', minute: '2-digit' }),
+      scheduledAffiliateOpenDate: openISO,
+      scheduledAffiliateCloseDate: closeISO,
     });
-    alert('Automatic schedule saved! The portal will open and close at those times.');
+    alert('Affiliate withdrawal schedule saved successfully!');
+  };
+
+  const handleSaveTaskSchedule = async () => {
+    if (!taskOpenDate || !taskCloseDate) {
+      alert('Please set both an Open date/time and a Close date/time for Task withdrawals.');
+      return;
+    }
+    if (new Date(taskCloseDate) <= new Date(taskOpenDate)) {
+      alert('Close date/time must be after the Open date/time.');
+      return;
+    }
+    const openISO = new Date(taskOpenDate).toISOString();
+    const closeISO = new Date(taskCloseDate).toISOString();
+    await handleUpdateSettings({
+      scheduledTaskOpenDate: openISO,
+      scheduledTaskCloseDate: closeISO,
+    });
+    alert('Task (Non-Affiliate) withdrawal schedule saved successfully!');
   };
 
   const handleUpdatePlan = async (planId: string, updatedFields: any) => {
@@ -105,7 +125,8 @@ export default function WithdrawalPortalControl() {
   if (loading) return <div style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Loading Portal Controls...</div>;
 
   const mode = settings?.withdrawalPortalMode || 'MANUAL';
-  const isManualOpen = settings?.portalOpenManual ?? true;
+  const isAffiliateManualOpen = settings?.affiliatePortalOpenManual ?? true;
+  const isTaskManualOpen = settings?.taskPortalOpenManual ?? true;
 
   return (
     <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginBottom: '2.5rem', border: '1px solid rgba(10, 91, 255, 0.3)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
@@ -115,10 +136,10 @@ export default function WithdrawalPortalControl() {
         <div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Withdrawal Portal &amp; Plan Control
+            Withdrawal Portal Control (Affiliate &amp; Task Separated)
           </h2>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Configure whether withdrawals are open manually or automatically, and set rules for each plan.
+            Independent controls &amp; automatic schedules for <strong>Affiliate Earnings</strong> and <strong>Task Earnings</strong> per membership plan.
           </p>
         </div>
         
@@ -145,54 +166,90 @@ export default function WithdrawalPortalControl() {
       {mode === 'MANUAL' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Master Toggle */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', padding: '1.25rem', background: isManualOpen ? 'rgba(40, 199, 111, 0.1)' : 'rgba(255, 59, 48, 0.1)', borderRadius: '12px', border: `1px solid ${isManualOpen ? 'var(--success)' : '#ff3b30'}`, cursor: 'pointer', transition: 'all 0.3s' }}>
-            <input 
-              type="checkbox" 
-              checked={isManualOpen} 
-              onChange={(e) => handleUpdateSettings({ portalOpenManual: e.target.checked })} 
-              style={{ width: '24px', height: '24px', accentColor: isManualOpen ? 'var(--success)' : '#ff3b30', cursor: 'pointer' }}
-            />
-            <div>
-              <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: isManualOpen ? 'var(--success)' : '#ff3b30', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
-                {isManualOpen ? 'Master Portal is OPEN' : 'Master Portal is CLOSED'}
-              </span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {isManualOpen
-                  ? 'Users are allowed to access the withdrawal form unless their specific plan is disabled below.'
-                  : 'All user withdrawal requests are blocked immediately across the platform.'}
-              </span>
-            </div>
-          </label>
+          {/* Master Toggles Grid (Affiliate vs Task) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            {/* Affiliate Master Toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem', background: isAffiliateManualOpen ? 'rgba(10, 91, 255, 0.1)' : 'rgba(255, 59, 48, 0.1)', borderRadius: '12px', border: `1px solid ${isAffiliateManualOpen ? 'var(--accent-blue)' : '#ff3b30'}`, cursor: 'pointer', transition: 'all 0.3s' }}>
+              <input 
+                type="checkbox" 
+                checked={isAffiliateManualOpen} 
+                onChange={(e) => handleUpdateSettings({ affiliatePortalOpenManual: e.target.checked })} 
+                style={{ width: '24px', height: '24px', accentColor: 'var(--accent-blue)', cursor: 'pointer' }}
+              />
+              <div>
+                <span style={{ fontSize: '1rem', fontWeight: 'bold', color: isAffiliateManualOpen ? 'var(--accent-blue)' : '#ff3b30', display: 'block' }}>
+                  Affiliate Portal: {isAffiliateManualOpen ? 'OPEN' : 'CLOSED'}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  {isAffiliateManualOpen ? 'Affiliate withdrawals are accessible.' : 'All affiliate withdrawals are blocked.'}
+                </span>
+              </div>
+            </label>
+
+            {/* Task Master Toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem', background: isTaskManualOpen ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 59, 48, 0.1)', borderRadius: '12px', border: `1px solid ${isTaskManualOpen ? 'var(--accent-gold)' : '#ff3b30'}`, cursor: 'pointer', transition: 'all 0.3s' }}>
+              <input 
+                type="checkbox" 
+                checked={isTaskManualOpen} 
+                onChange={(e) => handleUpdateSettings({ taskPortalOpenManual: e.target.checked })} 
+                style={{ width: '24px', height: '24px', accentColor: 'var(--accent-gold)', cursor: 'pointer' }}
+              />
+              <div>
+                <span style={{ fontSize: '1rem', fontWeight: 'bold', color: isTaskManualOpen ? 'var(--accent-gold)' : '#ff3b30', display: 'block' }}>
+                  Task (Non-Affiliate) Portal: {isTaskManualOpen ? 'OPEN' : 'CLOSED'}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  {isTaskManualOpen ? 'Task earnings withdrawals are accessible.' : 'All task earnings withdrawals are blocked.'}
+                </span>
+              </div>
+            </label>
+          </div>
 
           {/* Individual Plan Toggles */}
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '1rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Individual Plan Withdrawal Control &amp; Limits
+              Per-Plan Withdrawal Controls &amp; Limits
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.25rem' }}>
               {plans.map((plan) => {
-                const isOpen = plan.withdrawalPortalOpen ?? true;
+                const affOpen = plan.affiliateWithdrawalOpen ?? plan.withdrawalPortalOpen ?? true;
+                const taskOpen = plan.taskWithdrawalOpen ?? plan.withdrawalPortalOpen ?? true;
+
                 return (
-                  <div key={plan.id} style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: `1px solid ${isOpen ? 'rgba(255,255,255,0.15)' : 'rgba(255,59,48,0.3)'}`, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}>
+                  <div key={plan.id} style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--accent-gold)', fontSize: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                      {plan.name} Plan
+                    </div>
+
+                    {/* Affiliate toggle per plan */}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', background: affOpen ? 'rgba(10,91,255,0.1)' : 'rgba(255,59,48,0.1)', padding: '0.6rem 0.8rem', borderRadius: '8px' }}>
                       <input 
                         type="checkbox" 
-                        checked={isOpen} 
-                        onChange={(e) => handleUpdatePlan(plan.id, { withdrawalPortalOpen: e.target.checked })} 
-                        style={{ width: '20px', height: '20px', accentColor: isOpen ? 'var(--accent-gold)' : '#ff3b30', cursor: 'pointer' }}
+                        checked={affOpen} 
+                        onChange={(e) => handleUpdatePlan(plan.id, { affiliateWithdrawalOpen: e.target.checked })} 
+                        style={{ width: '18px', height: '18px', accentColor: 'var(--accent-blue)' }}
                       />
-                      <div>
-                        <span style={{ fontWeight: 'bold', color: isOpen ? 'var(--accent-gold)' : '#ff3b30', display: 'block', fontSize: '1.05rem' }}>
-                          {plan.name} Plan
-                        </span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          {isOpen ? 'Allowed to withdraw' : 'Blocked from withdrawing'}
-                        </span>
-                      </div>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: affOpen ? 'var(--accent-blue)' : '#ff3b30' }}>
+                        Affiliate: {affOpen ? 'ENABLED' : 'DISABLED'}
+                      </span>
                     </label>
+
+                    {/* Task toggle per plan */}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', background: taskOpen ? 'rgba(212,175,55,0.1)' : 'rgba(255,59,48,0.1)', padding: '0.6rem 0.8rem', borderRadius: '8px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={taskOpen} 
+                        onChange={(e) => handleUpdatePlan(plan.id, { taskWithdrawalOpen: e.target.checked })} 
+                        style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
+                      />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: taskOpen ? 'var(--accent-gold)' : '#ff3b30' }}>
+                        Task / Non-Affiliate: {taskOpen ? 'ENABLED' : 'DISABLED'}
+                      </span>
+                    </label>
+
+                    {/* Min limits */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
                       <div>
                         <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Min Affiliate (₦)</label>
@@ -224,82 +281,106 @@ export default function WithdrawalPortalControl() {
 
       ) : (
         /* ===== AUTOMATIC MODE ===== */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          <div style={{ background: 'rgba(212, 175, 55, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.25)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+          {/* Affiliate Schedule Card */}
+          <div style={{ background: 'rgba(10, 91, 255, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(10, 91, 255, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--accent-blue)', fontWeight: 'bold', fontSize: '1.1rem' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              Automatic Schedule — Set Open &amp; Close Date/Time
+              Affiliate Withdrawal Schedule
             </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-              The withdrawal portal will automatically open at the <strong style={{ color: 'var(--success)' }}>Open</strong> time and close at the <strong style={{ color: '#ff3b30' }}>Close</strong> time. Users will be shown the schedule on their dashboard.
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+              Set when Affiliate withdrawals automatically open and close.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
-              
-              {/* Open datetime */}
-              <div style={{ background: 'rgba(40,199,111,0.05)', padding: '1.25rem', borderRadius: '10px', border: '1px solid rgba(40,199,111,0.25)' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--success)', marginBottom: '0.75rem' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Portal Opens On
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--accent-blue)', display: 'block', marginBottom: '0.5rem' }}>
+                  Affiliate Opens On
                 </label>
                 <input 
                   type="datetime-local"
-                  value={openDate}
-                  onChange={(e) => setOpenDate(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(40,199,111,0.4)', color: 'white', fontSize: '0.95rem', colorScheme: 'dark' }}
+                  value={affiliateOpenDate}
+                  onChange={(e) => setAffiliateOpenDate(e.target.value)}
+                  style={{ width: '100%', padding: '0.7rem', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(10, 91, 255, 0.4)', color: 'white', colorScheme: 'dark' }}
                 />
-                {openDate && (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--success)', marginTop: '0.4rem' }}>
-                    ✓ {new Date(openDate).toLocaleString('en-NG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                )}
               </div>
 
-              {/* Close datetime */}
-              <div style={{ background: 'rgba(255,59,48,0.05)', padding: '1.25rem', borderRadius: '10px', border: '1px solid rgba(255,59,48,0.25)' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', fontWeight: 'bold', color: '#ff3b30', marginBottom: '0.75rem' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                  Portal Closes On
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#ff3b30', display: 'block', marginBottom: '0.5rem' }}>
+                  Affiliate Closes On
                 </label>
                 <input 
                   type="datetime-local"
-                  value={closeDate}
-                  onChange={(e) => setCloseDate(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,59,48,0.4)', color: 'white', fontSize: '0.95rem', colorScheme: 'dark' }}
+                  value={affiliateCloseDate}
+                  onChange={(e) => setAffiliateCloseDate(e.target.value)}
+                  style={{ width: '100%', padding: '0.7rem', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,59,48,0.4)', color: 'white', colorScheme: 'dark' }}
                 />
-                {closeDate && (
-                  <p style={{ fontSize: '0.8rem', color: '#ff3b30', marginTop: '0.4rem' }}>
-                    ✓ {new Date(closeDate).toLocaleString('en-NG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                )}
               </div>
             </div>
-
-            {/* Current saved schedule */}
-            {(settings?.scheduledFreeOpenDate || settings?.scheduledFreeCloseDate) && (
-              <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                <strong style={{ color: 'white' }}>Currently Saved:</strong>{' '}
-                Opens {settings.scheduledFreeOpenDate ? new Date(settings.scheduledFreeOpenDate).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-                {' '}→ Closes {settings.scheduledFreeCloseDate ? new Date(settings.scheduledFreeCloseDate).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-              </div>
-            )}
 
             <button
               type="button"
-              onClick={handleSaveSchedule}
-              disabled={saving || !openDate || !closeDate}
-              style={{ marginTop: '1.25rem', padding: '0.85rem 2rem', borderRadius: '50px', border: 'none', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', fontSize: '0.95rem', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+              onClick={handleSaveAffiliateSchedule}
+              disabled={saving || !affiliateOpenDate || !affiliateCloseDate}
+              className="btn-primary"
+              style={{ marginTop: '1rem', padding: '0.6rem 1.5rem', fontSize: '0.85rem' }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              {saving ? 'Saving Schedule...' : 'Save Automatic Schedule'}
+              Save Affiliate Schedule
             </button>
           </div>
 
-          {/* Plan limits still visible in auto mode */}
+          {/* Task Schedule Card */}
+          <div style={{ background: 'rgba(212, 175, 55, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Task (Non-Affiliate) Withdrawal Schedule
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+              Set when Task &amp; Bonus earnings withdrawals automatically open and close.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--accent-gold)', display: 'block', marginBottom: '0.5rem' }}>
+                  Task Opens On
+                </label>
+                <input 
+                  type="datetime-local"
+                  value={taskOpenDate}
+                  onChange={(e) => setTaskOpenDate(e.target.value)}
+                  style={{ width: '100%', padding: '0.7rem', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(212, 175, 55, 0.4)', color: 'white', colorScheme: 'dark' }}
+                />
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#ff3b30', display: 'block', marginBottom: '0.5rem' }}>
+                  Task Closes On
+                </label>
+                <input 
+                  type="datetime-local"
+                  value={taskCloseDate}
+                  onChange={(e) => setTaskCloseDate(e.target.value)}
+                  style={{ width: '100%', padding: '0.7rem', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,59,48,0.4)', color: 'white', colorScheme: 'dark' }}
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveTaskSchedule}
+              disabled={saving || !taskOpenDate || !taskCloseDate}
+              className="btn-pro"
+              style={{ marginTop: '1rem', padding: '0.6rem 1.5rem', fontSize: '0.85rem', background: 'var(--accent-gold)', color: '#000', border: 'none', fontWeight: 'bold' }}
+            >
+              Save Task Schedule
+            </button>
+          </div>
+
+          {/* Plan Limits */}
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', marginBottom: '1rem', color: 'rgba(255,255,255,0.7)' }}>
-              Plan Withdrawal Limits (apply in both modes)
+              Plan Minimum Limits (Applies to all modes)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
               {plans.map((plan) => (
@@ -325,6 +406,7 @@ export default function WithdrawalPortalControl() {
               ))}
             </div>
           </div>
+
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { isWithdrawalOpen } from '@/lib/withdrawalUtils';
 
 export async function POST(req: Request) {
   try {
@@ -47,21 +48,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Platform settings not found' }, { status: 500 });
     }
 
-    // PORTAL STATUS CHECK
-    if (settings.withdrawalPortalMode === 'MANUAL') {
-      if (!settings.portalOpenManual) {
-        return NextResponse.json({ error: 'The Withdrawal Portal is currently closed by the Administrator. Please check back later.' }, { status: 403 });
-      }
-      if (user.membership.withdrawalPortalOpen === false) {
-        return NextResponse.json({ error: `Withdrawals for the ${user.membership.name} plan are currently closed by the Administrator. Please check back later.` }, { status: 403 });
-      }
-      const planName = user.membership?.name || 'FREE';
-      if (planName === 'FREE' && !settings.freeWithdrawalOpen) {
-        return NextResponse.json({ error: 'Withdrawals for FREE users are currently closed. Upgrade to PRO or check back later.' }, { status: 403 });
-      }
-      if (planName !== 'FREE' && !settings.proWithdrawalOpen) {
-        return NextResponse.json({ error: 'Withdrawals for PRO users are currently closed. Please check back later.' }, { status: 403 });
-      }
+    // STRICT PORTAL STATUS & SCHEDULE EVALUATION
+    const isAffiliate = type === 'AFFILIATE';
+    const withdrawalStatus = isWithdrawalOpen({
+      mode: settings.withdrawalPortalMode || 'MANUAL',
+      type: isAffiliate ? 'AFFILIATE' : 'TASK',
+      manualMasterOpen: isAffiliate 
+        ? (settings.affiliatePortalOpenManual ?? settings.portalOpenManual ?? true) 
+        : (settings.taskPortalOpenManual ?? settings.portalOpenManual ?? true),
+      manualPlanOpen: isAffiliate 
+        ? (user.membership.affiliateWithdrawalOpen ?? user.membership.withdrawalPortalOpen ?? true) 
+        : (user.membership.taskWithdrawalOpen ?? user.membership.withdrawalPortalOpen ?? true),
+      scheduledOpenDate: isAffiliate 
+        ? (user.membership.affiliateScheduledOpenDate || settings.scheduledAffiliateOpenDate || settings.scheduledFreeOpenDate) 
+        : (user.membership.taskScheduledOpenDate || settings.scheduledTaskOpenDate || settings.scheduledFreeOpenDate),
+      scheduledCloseDate: isAffiliate 
+        ? (user.membership.affiliateScheduledCloseDate || settings.scheduledAffiliateCloseDate || settings.scheduledFreeCloseDate) 
+        : (user.membership.taskScheduledCloseDate || settings.scheduledTaskCloseDate || settings.scheduledFreeCloseDate),
+    });
+
+    if (!withdrawalStatus.isOpen) {
+      return NextResponse.json({ error: withdrawalStatus.reason || 'The withdrawal portal is currently closed.' }, { status: 403 });
     }
 
     // Verify balance
