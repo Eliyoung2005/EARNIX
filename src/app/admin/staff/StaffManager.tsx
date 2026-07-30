@@ -218,7 +218,7 @@ export default function StaffManager({ subAdmins, vendors }: { subAdmins: any[],
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>@{vendor.username} • {vendor.email}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        <span style={{ fontSize: '0.85rem', display: 'block' }}>Codes Sold (Used): <strong style={{ color: 'var(--success)' }}>{vendor.redeemedCoupons.length}</strong></span>
+                        <span style={{ fontSize: '0.85rem', display: 'block' }}>Codes Sold (Used): <strong style={{ color: 'var(--success)' }}>{vendor.assignedCoupons.filter((c:any) => c.status === 'USED').length}</strong></span>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <span style={{ fontSize: '0.85rem', display: 'block' }}>Unused Codes: <strong style={{ color: 'var(--warning)' }}>{vendor.assignedCoupons.filter((c:any) => c.status === 'UNUSED').length}</strong></span>

@@ -142,6 +142,18 @@ export default function VendorDashboard() {
 
         {loading ? (
           <p style={{ color: 'var(--text-secondary)', padding: '2rem', textAlign: 'center' }}>Loading activation codes...</p>
+        ) : coupons.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem 1.5rem', border: '1px dashed rgba(255,255,255,0.15)', borderRadius: '12px', background: 'rgba(0,0,0,0.1)' }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.7 }}>
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <line x1="7" y1="8" x2="17" y2="8" />
+              <line x1="7" y1="12" x2="13" y2="12" />
+            </svg>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '0.5rem' }}>No Activation Codes Assigned Yet</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '480px', margin: '0 auto' }}>
+              Your vendor account currently has 0 activation codes. Please contact the Platform Administrator to receive code allocations.
+            </p>
+          </div>
         ) : filteredCoupons.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', padding: '2rem', textAlign: 'center' }}>No activation codes found matching this filter.</p>
         ) : (

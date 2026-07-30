@@ -51,17 +51,27 @@ export default async function DashboardOverview(props: {
 
   const nextPlan = plans.find(p => p.level > userPlanLevel);
 
-  // Fetch active coupons if the user is a VENDOR or ADMIN
-  const isVendorOrAdmin = user.role === 'VENDOR' || user.role === 'ADMIN' || user.role === 'SUB_ADMIN';
+  // Fetch active coupons if the user is an ADMIN, or vendor summary if VENDOR
+  const userRoleStr = (user.role as string);
+  const isAdmin = ['ADMIN', 'SUB_ADMIN', 'SUPER_ADMIN'].includes(userRoleStr);
+  const isVendor = userRoleStr === 'VENDOR';
   let activeCoupons: any[] = [];
+  let vendorAssignedCount = 0;
   
-  if (isVendorOrAdmin) {
+  if (isAdmin) {
     activeCoupons = await prisma.couponCode.findMany({
       where: { 
         assignedVendorId: userId,
         status: 'UNUSED'
       },
       orderBy: { createdAt: 'desc' }
+    });
+  } else if (isVendor) {
+    vendorAssignedCount = await prisma.couponCode.count({
+      where: { 
+        assignedVendorId: userId,
+        status: 'UNUSED'
+      }
     });
   }
 
@@ -142,9 +152,33 @@ export default async function DashboardOverview(props: {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         
-        {/* Vendor Coupon Panel (Only visible to Vendors/Admins) */}
-        {isVendorOrAdmin && (
-          <CouponManager initialCoupons={activeCoupons} />
+        {/* Admin Coupon Panel (Only visible to Admins) */}
+        {isAdmin && (
+          <CouponManager initialCoupons={activeCoupons} userRole={user.role} />
+        )}
+
+        {/* Vendor Quick Card (Only visible to Vendors) */}
+        {isVendor && (
+          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-gold)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.25rem', color: 'var(--accent-gold)', margin: 0 }}>Vendor Operations</h2>
+              <span style={{ fontSize: '0.75rem', background: 'rgba(212, 175, 55, 0.2)', color: 'var(--accent-gold)', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold' }}>
+                AUTHORIZED VENDOR
+              </span>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Manage your allocated activation codes, set custom WhatsApp sales greetings, and track live redemptions.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Available Unused Codes</span>
+                <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--accent-blue)' }}>{vendorAssignedCount}</span>
+              </div>
+              <a href="/dashboard/vendor" className="btn-primary" style={{ padding: '0.75rem 1.5rem', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', textDecoration: 'none', borderRadius: '8px' }}>
+                Go to Vendor Dashboard
+              </a>
+            </div>
+          </div>
         )}
 
         <QuickActions username={user.username} plan={userPlanName} />
