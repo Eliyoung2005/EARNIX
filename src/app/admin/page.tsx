@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAdminSession } from "@/lib/adminSession";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -7,7 +6,7 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOverview() {
-  const session = await getServerSession(authOptions);
+  const session = await getAdminSession();
   
   if (!session?.user) {
     redirect('/login');

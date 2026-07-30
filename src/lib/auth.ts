@@ -4,6 +4,8 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 
+import { setAdminSessionCookie } from "./adminSession";
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -77,6 +79,11 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role;
         token.plan = (user as any).plan;
+
+        const roleStr = ((user as any).role as string) || '';
+        if (['ADMIN', 'SUB_ADMIN', 'SUPER_ADMIN'].includes(roleStr)) {
+          setAdminSessionCookie(token).catch(err => console.error('Admin cookie set error:', err));
+        }
       }
       return token;
     },

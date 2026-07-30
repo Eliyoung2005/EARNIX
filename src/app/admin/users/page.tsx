@@ -1,12 +1,11 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAdminSession } from "@/lib/adminSession";
 import { redirect } from "next/navigation";
 import UserSearch from "./UserSearch";
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminUsersPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getAdminSession();
   
   if (!session?.user) {
     redirect('/login');

@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getAdminSession } from "@/lib/adminSession";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CouponManager from "../CouponManager";
@@ -7,7 +6,7 @@ import CouponManager from "../CouponManager";
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCouponsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getAdminSession();
   
   if (!session?.user) {
     redirect('/login');
