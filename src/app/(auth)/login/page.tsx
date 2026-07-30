@@ -42,14 +42,27 @@ export default function Login() {
         fromUrl = '/admin';
       }
 
-      const targetUrl = fromUrl || '/admin';
+      const targetUrl = fromUrl || '/dashboard';
 
-      // Let NextAuth handle the native form POST redirect so cookies set reliably
-      await signIn('credentials', {
-        callbackUrl: targetUrl,
+      const result = await signIn('credentials', {
+        redirect: false,
         identifier: cleanIdentifier,
         password: cleanPassword,
       });
+
+      if (result?.error) {
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email/username or password. Please try again.');
+        } else {
+          setError(result.error || 'Authentication failed. Please check your details.');
+        }
+        setLoading(false);
+      } else if (result?.ok) {
+        window.location.href = targetUrl;
+      } else {
+        setError('Login failed. Please try again.');
+        setLoading(false);
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.message || 'An error occurred during login.');
