@@ -177,21 +177,40 @@ export async function POST(req: Request) {
       if (referrerId && selectedPlan.referralCommission > 0) {
         const refComm = selectedPlan.referralCommission;
         try {
-          await prisma.user.update({
+          const refUser = await prisma.user.findUnique({
             where: { id: referrerId },
-            data: {
-              referralCount: { increment: 1 },
-              weeklyReferralCount: { increment: 1 },
-              affiliateBalance: { increment: refComm }
-            }
+            include: { membership: true }
           });
-          await prisma.activityLog.create({
-            data: {
-              action: 'REFERRAL_BONUS',
-              description: `Received ₦${refComm.toLocaleString()} referral commission for new user (${username})`,
-              userId: referrerId
-            }
-          });
+
+          const isRefUserFree = !refUser?.membership || refUser.membership.name === 'FREE' || (refUser.membership.price || 0) <= 0;
+
+          if (!isRefUserFree) {
+            // Paid member referrer: credit referral commission + increment counts
+            await prisma.user.update({
+              where: { id: referrerId },
+              data: {
+                referralCount: { increment: 1 },
+                weeklyReferralCount: { increment: 1 },
+                affiliateBalance: { increment: refComm }
+              }
+            });
+            await prisma.activityLog.create({
+              data: {
+                action: 'REFERRAL_BONUS',
+                description: `Received ₦${refComm.toLocaleString()} referral commission for new user (${username})`,
+                userId: referrerId
+              }
+            });
+          } else {
+            // Free plan referrer: increment referral count only, NO referral commission credited
+            await prisma.user.update({
+              where: { id: referrerId },
+              data: {
+                referralCount: { increment: 1 },
+                weeklyReferralCount: { increment: 1 }
+              }
+            });
+          }
         } catch (err) {
           console.error('Referral bonus error:', err);
         }

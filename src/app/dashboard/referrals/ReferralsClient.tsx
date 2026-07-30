@@ -233,7 +233,7 @@ export default function ReferralsClient({
             <strong style={{ color: '#fff' }}>Share anywhere:</strong> Post it on WhatsApp, Telegram, Facebook, or send it directly to friends.
           </li>
           <li>
-            <strong style={{ color: '#fff' }}>Earn automatically:</strong> Whenever someone registers and activates their account, you automatically earn an instant referral commission in your Affiliate Balance.
+            <strong style={{ color: '#fff' }}>Earn automatically:</strong> Whenever someone registers and activates a paid plan, upgraded members automatically earn instant referral commissions in their Affiliate Balance. (Note: FREE plan accounts track referral counts but do not earn cash referral commissions until upgraded to a paid plan).
           </li>
         </ol>
       </div>
