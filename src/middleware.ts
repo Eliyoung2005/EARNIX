@@ -15,7 +15,7 @@ export default withAuth(
     // Always allow auth pages and admin login page
     if (isAuthPage || isAdminLoginPage) {
       // If already logged in as admin, skip admin/login and go straight to /admin
-      if (isAdminLoginPage && isAuth && (token?.role === 'ADMIN' || token?.role === 'SUB_ADMIN')) {
+      if (isAdminLoginPage && isAuth && (token?.role === 'ADMIN' || token?.role === 'SUB_ADMIN' || token?.role === 'SUPER_ADMIN')) {
         return NextResponse.redirect(new URL('/admin', req.url));
       }
       return NextResponse.next();
@@ -28,7 +28,7 @@ export default withAuth(
     }
 
     // Block non-admins from /admin routes
-    if (isAdminRoute && token?.role !== 'ADMIN' && token?.role !== 'SUB_ADMIN') {
+    if (isAdminRoute && token?.role !== 'ADMIN' && token?.role !== 'SUB_ADMIN' && token?.role !== 'SUPER_ADMIN') {
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 

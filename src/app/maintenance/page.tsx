@@ -1,8 +1,22 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function MaintenancePage() {
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/maintenance')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.maintenanceMessage) {
+          setMessage(data.maintenanceMessage);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg-color)', padding: '2rem' }}>
       
@@ -16,7 +30,7 @@ export default function MaintenancePage() {
         <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--accent-gold)', marginBottom: '1rem', letterSpacing: '-1px' }}>System Maintenance</h1>
         
         <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
-          We are currently upgrading our servers to serve you better. We're adding exciting new features and optimizing performance. Please check back in a few hours!
+          {message || "We are currently upgrading our servers to serve you better. We're adding exciting new features and optimizing performance. Please check back soon!"}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
