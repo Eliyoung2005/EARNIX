@@ -74,6 +74,7 @@ model User {
   lastWeeklyReset     DateTime     @default(now())
   profilePic          String?
   customGreeting      String?
+  telegramLink        String?
   bankName            String?
   accountName         String?
   accountNumber       String?

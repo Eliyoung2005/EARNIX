@@ -14,6 +14,7 @@ export async function GET() {
         email: true,
         accountNumber: true,
         customGreeting: true,
+        telegramLink: true,
         profilePic: true,
         createdAt: true,
       },

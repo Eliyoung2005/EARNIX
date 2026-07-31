@@ -23,6 +23,7 @@ export async function GET() {
         email: true,
         role: true,
         customGreeting: true,
+        telegramLink: true,
         accountNumber: true,
       },
     });
@@ -73,16 +74,20 @@ export async function PATCH(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const { customGreeting } = await req.json();
+    const { customGreeting, telegramLink, accountNumber } = await req.json();
 
     await prisma.user.update({
       where: { id: userId },
-      data: { customGreeting: customGreeting || '' },
+      data: {
+        customGreeting: customGreeting ?? '',
+        telegramLink: telegramLink ?? '',
+        accountNumber: accountNumber ?? undefined,
+      },
     });
 
-    return NextResponse.json({ message: 'Greeting updated successfully' });
+    return NextResponse.json({ message: 'Vendor settings updated successfully' });
   } catch (error: any) {
-    console.error('Vendor Greeting Update Error:', error);
-    return NextResponse.json({ error: 'Failed to update custom greeting' }, { status: 500 });
+    console.error('Vendor Settings Update Error:', error);
+    return NextResponse.json({ error: 'Failed to update vendor settings' }, { status: 500 });
   }
 }

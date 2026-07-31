@@ -19,18 +19,13 @@ export default async function AdminCouponsPage() {
     redirect('/dashboard');
   }
 
-  const orConditions: any[] = [{ assignedVendorId: null }];
-  if (userId) {
-    orConditions.push({ assignedVendorId: userId });
-  }
-
-  // Fetch all active unassigned coupons AND coupons assigned to this admin
+  // Fetch all active unused coupons (unassigned pool + all vendor assigned)
   const activeCoupons = await prisma.couponCode.findMany({
-    where: { 
-      status: 'UNUSED',
-      OR: orConditions
-    },
-    orderBy: { createdAt: 'desc' }
+    where: { status: 'UNUSED' },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      assignedVendor: { select: { id: true, username: true } }
+    }
   });
 
   // Fetch used/redeemed coupons for the redemption history log
@@ -39,7 +34,7 @@ export default async function AdminCouponsPage() {
     orderBy: { redeemedDate: 'desc' },
     take: 100,
     include: {
-      assignedVendor: { select: { username: true, name: true } },
+      assignedVendor: { select: { id: true, username: true, name: true } },
       redeemedBy: { select: { username: true, email: true, name: true } }
     }
   });
@@ -55,7 +50,8 @@ export default async function AdminCouponsPage() {
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Coupon Management &amp; Tracking</h1>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Generate, track active codes, assign to vendors, and monitor real-time coupon redemptions.</p>
       
-      <CouponManager initialCoupons={activeCoupons} usedCoupons={usedCoupons} vendors={vendors} userRole={role} />
+      <CouponManager initialCoupons={activeCoupons as any} usedCoupons={usedCoupons} vendors={vendors} userRole={role} />
     </div>
   );
 }
+

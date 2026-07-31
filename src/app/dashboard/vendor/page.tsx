@@ -8,6 +8,8 @@ export default function VendorDashboard() {
   const [coupons, setCoupons] = useState<any[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'AVAILABLE' | 'SOLD'>('ALL');
   const [customGreeting, setCustomGreeting] = useState('');
+  const [telegramLink, setTelegramLink] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -19,25 +21,27 @@ export default function VendorDashboard() {
           setStats(data.stats || { totalAssigned: 0, soldCount: 0, availableCount: 0 });
           setCoupons(data.coupons || []);
           setCustomGreeting(data.vendor?.customGreeting || 'Hello! I would like to purchase an EARNIX PRO Activation Code.');
+          setTelegramLink(data.vendor?.telegramLink || '');
+          setAccountNumber(data.vendor?.accountNumber || '');
         }
       })
       .catch(err => console.error('Failed to load vendor dashboard', err))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSaveGreeting = async () => {
+  const handleSaveSettings = async () => {
     setSaving(true);
     setMessage('');
     try {
       const res = await fetch('/api/vendor/dashboard', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customGreeting }),
+        body: JSON.stringify({ customGreeting, telegramLink, accountNumber }),
       });
       if (res.ok) {
-        setMessage('Custom WhatsApp DM message saved successfully!');
+        setMessage('Vendor contact details & settings saved successfully!');
       } else {
-        setMessage('Failed to save message.');
+        setMessage('Failed to save settings.');
       }
     } catch (err) {
       setMessage('An error occurred while saving.');
@@ -82,31 +86,69 @@ export default function VendorDashboard() {
 
       </div>
 
-      {/* Vendor Profile Settings */}
+      {/* Vendor Contact & Profile Settings */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--accent-gold)' }}>Custom WhatsApp DM Message</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>This message will be pre-filled when users click your link from the Verified Code Vendors page to chat with you.</p>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--accent-gold)' }}>Vendor Contact &amp; Public Links</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Users looking to buy activation codes will click your Telegram or WhatsApp links directly from the Verified Vendors page.</p>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <textarea 
-            value={customGreeting}
-            onChange={(e) => setCustomGreeting(e.target.value)}
-            placeholder="Hello! I would like to purchase an EARNIX PRO Activation Code."
-            style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '100px', fontSize: '1rem' }}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
+                ✈️ Telegram Link or Username
+              </label>
+              <input 
+                type="text"
+                value={telegramLink}
+                onChange={(e) => setTelegramLink(e.target.value)}
+                placeholder="e.g. @your_telegram_username or https://t.me/your_link"
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Users can click &quot;Contact on Telegram&quot; to buy codes.</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
+                💬 WhatsApp Phone Number
+              </label>
+              <input 
+                type="text"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="e.g. 2348012345678"
+                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Include country code without + sign (e.g., 23480...).</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
+              Custom WhatsApp DM Message
+            </label>
+            <textarea 
+              value={customGreeting}
+              onChange={(e) => setCustomGreeting(e.target.value)}
+              placeholder="Hello! I would like to purchase an EARNIX PRO Activation Code."
+              style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '80px', fontSize: '0.95rem' }}
+            />
+          </div>
+
           {message && (
             <p style={{ color: message.includes('success') ? 'var(--success)' : '#ff3b30', fontWeight: 'bold', fontSize: '0.9rem' }}>
               {message}
             </p>
           )}
+
           <button 
             type="button" 
-            onClick={handleSaveGreeting} 
+            onClick={handleSaveSettings} 
             disabled={saving}
             className="btn-primary" 
-            style={{ alignSelf: 'flex-start', padding: '0.8rem 2rem', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', border: 'none' }}
+            style={{ alignSelf: 'flex-start', padding: '0.8rem 2rem', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}
           >
-            {saving ? 'Saving...' : 'Save Message'}
+            {saving ? 'Saving...' : 'Save Vendor Contact Settings'}
           </button>
         </div>
       </div>
