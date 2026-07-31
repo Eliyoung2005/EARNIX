@@ -363,13 +363,18 @@ export default function WithdrawalPortalControl() {
                   onChange={(e) => setTaskCloseDate(e.target.value)}
                   style={{ width: '100%', padding: '0.7rem', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,59,48,0.4)', color: 'white', colorScheme: 'dark' }}
                 />
+                {taskCloseDate && taskOpenDate && new Date(taskCloseDate) <= new Date(taskOpenDate) && (
+                  <p style={{ color: '#ff3b30', fontSize: '0.75rem', marginTop: '0.4rem', fontWeight: 'bold', margin: '0.4rem 0 0 0' }}>
+                    ⚠️ Close time must be later than open time ({taskOpenDate ? taskOpenDate.replace('T', ' ') : ''}).
+                  </p>
+                )}
               </div>
             </div>
 
             <button
               type="button"
               onClick={handleSaveTaskSchedule}
-              disabled={saving || !taskOpenDate || !taskCloseDate}
+              disabled={saving || !taskOpenDate || !taskCloseDate || (!!taskOpenDate && !!taskCloseDate && new Date(taskCloseDate) <= new Date(taskOpenDate))}
               className="btn-pro"
               style={{ marginTop: '1rem', padding: '0.6rem 1.5rem', fontSize: '0.85rem', background: 'var(--accent-gold)', color: '#000', border: 'none', fontWeight: 'bold' }}
             >
