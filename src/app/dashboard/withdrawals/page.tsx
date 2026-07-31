@@ -65,20 +65,53 @@ export default function WithdrawalsPage() {
   const minWithdrawal = withdrawalType === 'AFFILIATE' ? profile.minAffiliateWithdrawal : profile.minTaskWithdrawal;
 
   const isAffiliate = withdrawalType === 'AFFILIATE';
-  const isPortalClosed = isAffiliate 
-    ? profile?.affiliateWithdrawalOpen === false 
-    : profile?.taskWithdrawalOpen === false;
-
   const isAutoMode = profile?.settings?.withdrawalPortalMode === 'AUTOMATIC';
-  
+
+  // For AUTOMATIC mode: re-evaluate live on client using raw schedule dates
+  let isPortalClosed: boolean;
+  let livePortalReason: string | null = null;
+
+  if (isAutoMode) {
+    const openDateRawAuto = isAffiliate ? profile?.affiliateOpenDate : profile?.taskOpenDate;
+    const closeDateRawAuto = isAffiliate ? profile?.affiliateCloseDate : profile?.taskCloseDate;
+    const planOpen = isAffiliate
+      ? (profile?.affiliateWithdrawalOpen !== false)
+      : (profile?.taskWithdrawalOpen !== false);
+
+    if (!planOpen) {
+      isPortalClosed = true;
+      livePortalReason = `${isAffiliate ? 'Affiliate' : 'Task'} withdrawals for your membership plan are currently disabled.`;
+    } else if (!openDateRawAuto || !closeDateRawAuto) {
+      isPortalClosed = true;
+      livePortalReason = `No automatic withdrawal schedule has been configured yet. Please check back later.`;
+    } else {
+      const now = new Date();
+      const openTime = new Date(openDateRawAuto);
+      const closeTime = new Date(closeDateRawAuto);
+      if (now < openTime) {
+        isPortalClosed = true;
+        livePortalReason = `${isAffiliate ? 'Affiliate' : 'Task'} withdrawals are scheduled to open on ${openTime.toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}.`;
+      } else if (now > closeTime) {
+        isPortalClosed = true;
+        livePortalReason = `${isAffiliate ? 'Affiliate' : 'Task'} withdrawal window closed on ${closeTime.toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}.`;
+      } else {
+        isPortalClosed = false;
+      }
+    }
+  } else {
+    isPortalClosed = isAffiliate
+      ? profile?.affiliateWithdrawalOpen === false
+      : profile?.taskWithdrawalOpen === false;
+  }
+
   const openDateRaw = isAffiliate ? profile?.affiliateOpenDate : profile?.taskOpenDate;
   const closeDateRaw = isAffiliate ? profile?.affiliateCloseDate : profile?.taskCloseDate;
 
-  const autoOpenSchedule = openDateRaw 
+  const autoOpenSchedule = openDateRaw
     ? new Date(openDateRaw).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : (profile?.settings?.autoOpenSchedule || 'Fridays at 8:00 AM');
 
-  const autoCloseSchedule = closeDateRaw 
+  const autoCloseSchedule = closeDateRaw
     ? new Date(closeDateRaw).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : (profile?.settings?.autoCloseSchedule || 'Sundays at 11:59 PM');
 
@@ -152,17 +185,17 @@ export default function WithdrawalsPage() {
           <div>
             <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem', marginBottom: '0.25rem' }}>{isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Portal is Currently Closed</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              {(isAffiliate ? profile?.affiliateWithdrawalReason : profile?.taskWithdrawalReason) || `The administrator has temporarily paused ${isAffiliate ? 'affiliate' : 'task earnings'} withdrawals for your plan. Please check back soon.`}
+              {livePortalReason || (isAffiliate ? profile?.affiliateWithdrawalReason : profile?.taskWithdrawalReason) || `The administrator has temporarily paused ${isAffiliate ? 'affiliate' : 'task earnings'} withdrawals for your plan. Please check back soon.`}
             </div>
           </div>
         </div>
       ) : isAutoMode ? (
-        <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.4)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>🗓️</span>
+        <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(52, 199, 89, 0.1)', border: '1px solid rgba(52, 199, 89, 0.4)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '1.8rem' }}>✅</span>
           <div>
-            <div style={{ fontWeight: 'bold', color: 'var(--accent-gold)', fontSize: '1.05rem' }}>Automatic {isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Schedule</div>
+            <div style={{ fontWeight: 'bold', color: '#34c759', fontSize: '1.05rem' }}>Withdrawal Portal is OPEN</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Portal Opens: <strong>{autoOpenSchedule}</strong> — Closes: <strong>{autoCloseSchedule}</strong>
+              Closes: <strong>{autoCloseSchedule}</strong>
             </div>
           </div>
         </div>
