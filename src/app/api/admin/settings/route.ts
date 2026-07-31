@@ -36,9 +36,24 @@ export async function PATCH(req: Request) {
     const current = await prisma.platformSettings.findFirst();
     if (!current) return NextResponse.json({ error: 'Settings not initialized' }, { status: 400 });
 
+    const updateData: any = { ...body };
+
+    const dateFields = [
+      'scheduledFreeOpenDate', 'scheduledFreeCloseDate',
+      'scheduledProOpenDate', 'scheduledProCloseDate',
+      'scheduledAffiliateOpenDate', 'scheduledAffiliateCloseDate',
+      'scheduledTaskOpenDate', 'scheduledTaskCloseDate'
+    ];
+
+    for (const field of dateFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field] ? new Date(body[field]) : null;
+      }
+    }
+
     const updated = await prisma.platformSettings.update({
       where: { id: current.id },
-      data: body
+      data: updateData
     });
 
     return NextResponse.json({ message: 'Settings updated successfully', settings: updated });
