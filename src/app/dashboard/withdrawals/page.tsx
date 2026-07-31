@@ -150,8 +150,10 @@ export default function WithdrawalsPage() {
         <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(255, 59, 48, 0.1)', border: '1px solid #ff3b30', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '1.8rem' }}>🔒</span>
           <div>
-            <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem' }}>{isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Portal is Currently Closed</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>The administrator has temporarily paused {isAffiliate ? 'affiliate' : 'task earnings'} withdrawals for your plan. Please check back soon.</div>
+            <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem', marginBottom: '0.25rem' }}>{isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Portal is Currently Closed</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              {(isAffiliate ? profile?.affiliateWithdrawalReason : profile?.taskWithdrawalReason) || `The administrator has temporarily paused ${isAffiliate ? 'affiliate' : 'task earnings'} withdrawals for your plan. Please check back soon.`}
+            </div>
           </div>
         </div>
       ) : isAutoMode ? (
