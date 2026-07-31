@@ -30,8 +30,8 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    // 2. Only ADMIN and SUB_ADMIN roles can proceed
-    if (role !== 'ADMIN' && role !== 'SUB_ADMIN') {
+    // 2. Only ADMIN, SUB_ADMIN, and SUPER_ADMIN roles can proceed
+    if (role !== 'ADMIN' && role !== 'SUB_ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden. Access restricted to authorized admin personnel.' }, { status: 403 });
     }
 
@@ -116,7 +116,7 @@ export async function DELETE(req: Request) {
     }
 
     const role = (session.user as any).role;
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden. Only Super Admins can delete coupons.' }, { status: 403 });
     }
 
