@@ -116,8 +116,19 @@ export default function AdminSettings() {
           </label>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Maintenance Message / Reason</label>
-            <input type="text" value={settings?.maintenanceMessage || ''} onChange={e => setSettings({...settings, maintenanceMessage: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.3rem', fontWeight: 'bold' }}>
+              Maintenance Statement / Announcement for Users
+            </label>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.6rem' }}>
+              Write your custom statement below. This message will be displayed directly to public users on the maintenance screen when Maintenance Mode is active.
+            </p>
+            <textarea 
+              rows={4}
+              value={settings?.maintenanceMessage || ''} 
+              onChange={e => setSettings({...settings, maintenanceMessage: e.target.value})} 
+              placeholder="e.g. We are currently carrying out scheduled system maintenance and server upgrades. All user funds are 100% safe. Please check back in a few hours!"
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontFamily: 'inherit', resize: 'vertical' }} 
+            />
           </div>
 
           <button onClick={() => handleSaveText('maintenanceMessage', settings.maintenanceMessage)} disabled={saving} className="btn-primary" style={{ padding: '0.8rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#ff3b30', color: 'white' }}>Update Maintenance Settings</button>

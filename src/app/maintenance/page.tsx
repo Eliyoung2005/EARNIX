@@ -30,15 +30,9 @@ export default function MaintenancePage() {
           System Maintenance & Upgrade
         </h1>
         
-        <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-          We are currently carrying out scheduled system maintenance and platform upgrades to enhance your experience, improve security, and roll out exciting new features.
+        <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem', whiteSpace: 'pre-line' }}>
+          {message || "We are currently carrying out scheduled system maintenance and platform upgrades to enhance your experience, improve security, and roll out exciting new features. Please check back soon!"}
         </p>
-
-        {message && (
-          <div style={{ background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '1rem 1.5rem', borderRadius: '12px', marginBottom: '2rem', color: 'var(--accent-gold)', fontSize: '0.95rem' }}>
-            <strong>Update Note:</strong> {message}
-          </div>
-        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
           <a 
