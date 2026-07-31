@@ -10,6 +10,7 @@ export default function VendorDashboard() {
   const [customGreeting, setCustomGreeting] = useState('');
   const [telegramLink, setTelegramLink] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
+  const [profilePic, setProfilePic] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -23,11 +24,30 @@ export default function VendorDashboard() {
           setCustomGreeting(data.vendor?.customGreeting || 'Hello! I would like to purchase an EARNIX PRO Activation Code.');
           setTelegramLink(data.vendor?.telegramLink || '');
           setAccountNumber(data.vendor?.accountNumber || '');
+          setProfilePic(data.vendor?.profilePic || '');
         }
       })
       .catch(err => console.error('Failed to load vendor dashboard', err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert('Image file is too large. Please select an image under 3MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setProfilePic(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveSettings = async () => {
     setSaving(true);
@@ -36,10 +56,10 @@ export default function VendorDashboard() {
       const res = await fetch('/api/vendor/dashboard', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customGreeting, telegramLink, accountNumber }),
+        body: JSON.stringify({ customGreeting, telegramLink, accountNumber, profilePic }),
       });
       if (res.ok) {
-        setMessage('Vendor contact details & settings saved successfully!');
+        setMessage('Vendor profile picture, contact details & settings saved successfully!');
       } else {
         setMessage('Failed to save settings.');
       }
@@ -64,7 +84,7 @@ export default function VendorDashboard() {
   return (
     <div>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent-gold)' }}>Vendor Dashboard</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Manage your assigned Activation Codes and track your live sales performance.</p>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Manage your assigned Activation Codes, profile picture, and live sales performance.</p>
 
       {/* Vendor Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
@@ -86,13 +106,59 @@ export default function VendorDashboard() {
 
       </div>
 
-      {/* Vendor Contact & Profile Settings */}
+      {/* Vendor Contact & Profile Picture Settings */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--accent-gold)' }}>Vendor Contact &amp; Public Links</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Users looking to buy activation codes will click your Telegram or WhatsApp links directly from the Verified Vendors page.</p>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--accent-gold)' }}>Vendor Profile Picture &amp; Public Links</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          Upload your official vendor picture to be showcased on the EARNIX Home Landing Page and Verified Vendors Showcase.
+        </p>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
+          {/* Profile Picture Upload & Preview Card */}
+          <div style={{ background: 'rgba(0,0,0,0.25)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center' }}>
+            
+            {/* Avatar Preview */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', border: '3px solid var(--accent-gold)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem auto' }}>
+                {profilePic ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={profilePic} alt="Vendor Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>V</span>
+                )}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Landing Page Avatar</span>
+            </div>
+
+            {/* Upload Controls */}
+            <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'white' }}>
+                Upload Vendor Picture
+              </label>
+              
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageFileChange}
+                style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}
+              />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>OR paste Image URL:</span>
+              </div>
+              <input 
+                type="text" 
+                value={profilePic}
+                onChange={(e) => setProfilePic(e.target.value)}
+                placeholder="https://example.com/your-picture.jpg"
+                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.85rem' }}
+              />
+            </div>
+
+          </div>
+
+          {/* Social Contact Inputs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
@@ -105,7 +171,7 @@ export default function VendorDashboard() {
                 placeholder="e.g. @your_telegram_username or https://t.me/your_link"
                 style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
               />
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Users can click &quot;Contact on Telegram&quot; to buy codes.</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Users click &quot;Contact on Telegram&quot; to buy codes.</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -131,7 +197,7 @@ export default function VendorDashboard() {
               value={customGreeting}
               onChange={(e) => setCustomGreeting(e.target.value)}
               placeholder="Hello! I would like to purchase an EARNIX PRO Activation Code."
-              style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '80px', fontSize: '0.95rem' }}
+              style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '75px', fontSize: '0.95rem' }}
             />
           </div>
 
@@ -148,7 +214,7 @@ export default function VendorDashboard() {
             className="btn-primary" 
             style={{ alignSelf: 'flex-start', padding: '0.8rem 2rem', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}
           >
-            {saving ? 'Saving...' : 'Save Vendor Contact Settings'}
+            {saving ? 'Saving...' : 'Save Profile Picture & Settings'}
           </button>
         </div>
       </div>

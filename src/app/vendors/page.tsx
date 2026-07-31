@@ -132,8 +132,13 @@ export default function VendorsPage() {
                 <div key={vendor.id} style={{ background: 'var(--surface-color)', borderRadius: '16px', padding: '1.5rem 1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   
                   {/* Avatar */}
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.1)', border: '2px solid var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
-                    {avatarLetter}
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.1)', border: '2px solid var(--accent-gold)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
+                    {vendor.profilePic ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={vendor.profilePic} alt={vendor.name || vendor.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      avatarLetter
+                    )}
                   </div>
 
                   {/* Name & Username */}

@@ -30,6 +30,7 @@ const defaultPlans = [
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [plans, setPlans] = useState<any[]>(defaultPlans);
+  const [vendors, setVendors] = useState<any[]>([]);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -64,6 +65,15 @@ export default function Home() {
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setPlans(data);
+        }
+      })
+      .catch(console.error);
+
+    fetch('/api/vendors')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setVendors(data);
         }
       })
       .catch(console.error);
@@ -381,7 +391,103 @@ export default function Home() {
           })}
         </div>
       </section>
-      
+
+      {/* Verified Code Vendors Section */}
+      {vendors.length > 0 && (
+        <section style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '5rem 1.5rem', background: 'rgba(0,0,0,0.2)' }}>
+          <div className="container" style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '-1px', marginBottom: '0.5rem' }}>
+              Official <span style={{ color: 'var(--accent-gold)', textShadow: '0 0 10px rgba(212, 175, 55, 0.3)' }}>Verified Code Vendors</span>
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', marginBottom: '3rem', maxWidth: '650px', margin: '0 auto 3rem auto' }}>
+              Purchase instant EARNIX PRO activation codes directly from our authorized vendor partners.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
+              {vendors.slice(0, 8).map((vendor: any) => {
+                const avatarLetter = (vendor.name || vendor.username || 'V')[0].toUpperCase();
+                const phone = vendor.accountNumber ? vendor.accountNumber.replace(/[^0-9]/g, '') : '';
+                const whatsappText = encodeURIComponent(vendor.customGreeting || 'Hello! I would like to purchase an EARNIX PRO Activation Code.');
+                const whatsappLink = phone 
+                  ? `https://wa.me/${phone}?text=${whatsappText}` 
+                  : `mailto:${vendor.email}?subject=EARNIX%20Activation%20Code`;
+
+                let telegramHref = '';
+                if (vendor.telegramLink && vendor.telegramLink.trim()) {
+                  const raw = vendor.telegramLink.trim();
+                  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+                    telegramHref = raw;
+                  } else {
+                    const handle = raw.replace(/^@/, '');
+                    telegramHref = `https://t.me/${handle}`;
+                  }
+                }
+
+                return (
+                  <div key={vendor.id} className="bg-surface animate-float-slow" style={{ borderRadius: '16px', padding: '1.5rem 1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 25px rgba(0,0,0,0.3)' }}>
+                    
+                    {/* Vendor Profile Picture */}
+                    <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.1)', border: '2.5 solid var(--accent-gold)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
+                      {vendor.profilePic ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={vendor.profilePic} alt={vendor.name || vendor.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        avatarLetter
+                      )}
+                    </div>
+
+                    {/* Name & Username */}
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: 0 }}>
+                        {vendor.name || vendor.username}
+                      </h3>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>
+                        @{vendor.username}
+                      </p>
+                    </div>
+
+                    {/* Badge */}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', background: 'rgba(212, 175, 55, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold' }}>
+                      ✓ Verified Vendor
+                    </div>
+
+                    {/* Direct Links */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%', marginTop: '0.5rem' }}>
+                      {telegramHref && (
+                        <a 
+                          href={telegramHref} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ padding: '0.5rem', fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '50px', width: '100%', textDecoration: 'none', background: '#0088cc', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                        >
+                          Telegram
+                        </a>
+                      )}
+                      <a 
+                        href={whatsappLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ padding: '0.5rem', fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '50px', width: '100%', textDecoration: 'none', background: '#25D366', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop: '2.5rem' }}>
+              <Link href="/vendors" className="btn-pro" style={{ padding: '0.75rem 2rem', borderRadius: '50px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>
+                View All Verified Vendors &rarr;
+              </Link>
+            </div>
+
+          </div>
+        </section>
+      )}
+
       {/* Testimonials Section */}
       <Testimonials />
 
