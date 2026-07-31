@@ -33,13 +33,13 @@ export default function QuickActions({ username, plan }: { username: string, pla
       <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>Quick Actions</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {plan !== 'FREE' && (
-          <button onClick={() => handleWithdraw('Affiliate')} className="btn-primary" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', padding: '1rem', borderRadius: '12px' }}>
-            Withdraw Affiliate Funds <span>→</span>
-          </button>
+          <a href="/dashboard/withdrawals?type=affiliate" className="btn-primary" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', padding: '1rem', borderRadius: '12px', textDecoration: 'none', alignItems: 'center' }}>
+            <span>Withdraw Affiliate Funds</span> <span>→</span>
+          </a>
         )}
-        <button onClick={() => handleWithdraw('Task')} className="btn-pro" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--surface-color-light)', padding: '1rem', borderRadius: '12px' }}>
-          Withdraw Task Earnings <span>→</span>
-        </button>
+        <a href="/dashboard/withdrawals?type=task" className="btn-pro" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--surface-color-light)', padding: '1rem', borderRadius: '12px', textDecoration: 'none', color: '#fff', alignItems: 'center' }}>
+          <span>Withdraw Task Earnings</span> <span>→</span>
+        </a>
 
         {/* Stable Referral Link Section - Available for ALL users on any device */}
         <div style={{

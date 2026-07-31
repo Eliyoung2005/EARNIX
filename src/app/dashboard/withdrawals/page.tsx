@@ -28,7 +28,9 @@ export default function WithdrawalsPage() {
           const data = await res.json();
           if (isMounted) {
             setProfile(data);
-            if (!profile && data.plan !== 'FREE') {
+            if (data.plan === 'FREE') {
+              setWithdrawalType('TASK');
+            } else if (!profile) {
               setWithdrawalType('AFFILIATE');
             }
             setLoading(false);

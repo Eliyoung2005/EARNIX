@@ -50,6 +50,10 @@ export async function POST(req: Request) {
 
     // STRICT PORTAL STATUS & SCHEDULE EVALUATION
     const isAffiliate = type === 'AFFILIATE';
+
+    if (isAffiliate && user.membership.name === 'FREE') {
+      return NextResponse.json({ error: 'FREE plan members do not have referral benefits or affiliate wallet withdrawals. Please upgrade to PRO to unlock affiliate earnings.' }, { status: 403 });
+    }
     const withdrawalStatus = isWithdrawalOpen({
       mode: settings.withdrawalPortalMode || 'MANUAL',
       type: isAffiliate ? 'AFFILIATE' : 'TASK',
