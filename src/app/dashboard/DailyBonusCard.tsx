@@ -7,7 +7,11 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [claimedToday, setClaimedToday] = useState(false);
-  const [bonusAmount, setBonusAmount] = useState(initialBonus);
+  const [activeStreak, setActiveStreak] = useState(0);
+  const [dayIndexInCycle, setDayIndexInCycle] = useState(1);
+  const [baseBonus, setBaseBonus] = useState(initialBonus);
+  const [todayBonus, setTodayBonus] = useState(initialBonus);
+  const [isMilestone, setIsMilestone] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
 
@@ -17,7 +21,11 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
       .then(data => {
         if (data && !data.error) {
           setClaimedToday(data.claimedToday);
-          setBonusAmount(data.bonusAmount || initialBonus);
+          setActiveStreak(data.activeStreak || 0);
+          setDayIndexInCycle(data.dayIndexInCycle || 1);
+          setBaseBonus(data.baseBonus || initialBonus);
+          setTodayBonus(data.todayBonus || initialBonus);
+          setIsMilestone(data.isMilestone || false);
         }
       })
       .catch(err => console.error('Failed to load daily bonus status', err))
@@ -42,6 +50,8 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
       setMessage(data.message);
       if (data.claimed) {
         setClaimedToday(true);
+        setActiveStreak(data.newStreak || activeStreak + 1);
+        if (data.dayIndexInCycle) setDayIndexInCycle(data.dayIndexInCycle);
         router.refresh();
       }
     } catch (err: any) {
@@ -51,30 +61,36 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
     }
   };
 
+  const days = [1, 2, 3, 4, 5, 6, 7];
+
   return (
     <div 
       className="bg-surface" 
       style={{ 
-        padding: '1.5rem', 
+        padding: '1.75rem', 
         borderRadius: '16px', 
         borderLeft: '4px solid #10b981', 
-        background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(0,0,0,0.3))',
+        background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(0,0,0,0.35))',
         border: '1px solid rgba(16, 185, 129, 0.25)',
-        boxShadow: '0 8px 25px rgba(16, 185, 129, 0.1)',
+        boxShadow: '0 8px 25px rgba(16, 185, 129, 0.12)',
         marginBottom: '2rem'
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Header & Streak Counter */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
         <div>
-          <div style={{ marginBottom: '0.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981', margin: 0 }}>
-              Daily Login Bonus (₦{bonusAmount})
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#10b981', margin: 0 }}>
+              Daily Login Streak
             </h3>
+            <span style={{ fontSize: '0.78rem', background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', padding: '0.2rem 0.75rem', borderRadius: '50px', fontWeight: 'bold', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
+              {activeStreak} Day Streak
+            </span>
           </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.35rem 0 0 0' }}>
             {claimedToday 
-              ? `You claimed your ₦${bonusAmount} daily bonus today! Return tomorrow for your next reward.`
-              : `Earn ₦${bonusAmount} cash credited directly to your withdrawable task balance every day!`}
+              ? `You claimed your Day ${dayIndexInCycle} bonus today! Return tomorrow to keep your streak going.`
+              : `Claim your Day ${dayIndexInCycle} bonus today! Reach Day 7 for a ₦100 Milestone Reward.`}
           </p>
         </div>
 
@@ -86,7 +102,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 background: 'rgba(16, 185, 129, 0.15)', 
                 color: '#10b981', 
                 border: '1px solid #10b981', 
-                padding: '0.65rem 1.25rem', 
+                padding: '0.65rem 1.35rem', 
                 borderRadius: '50px', 
                 fontSize: '0.85rem', 
                 fontWeight: 'bold',
@@ -113,14 +129,76 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
               }}
             >
-              {claiming ? 'Claiming...' : `Claim ₦${bonusAmount} Daily Bonus`}
+              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (₦${todayBonus})`}
             </button>
           )}
         </div>
       </div>
 
+      {/* 7-Day Streak Calendar Grid */}
+      <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '0.75rem' }}>
+          7-Day Login Calendar Cycle
+        </span>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: '0.6rem' }}>
+          {days.map((dayNum) => {
+            const isCurrent = dayNum === dayIndexInCycle;
+            const isCompleted = claimedToday 
+              ? dayNum <= dayIndexInCycle 
+              : dayNum < dayIndexInCycle;
+            const isDay7 = dayNum === 7;
+            const dayBonusVal = isDay7 ? baseBonus + 50 : baseBonus;
+
+            let bgColor = 'rgba(255,255,255,0.04)';
+            let borderColor = 'rgba(255,255,255,0.1)';
+            let textColor = 'var(--text-secondary)';
+
+            if (isCompleted) {
+              bgColor = 'rgba(16, 185, 129, 0.2)';
+              borderColor = 'rgba(16, 185, 129, 0.5)';
+              textColor = '#10b981';
+            } else if (isCurrent) {
+              bgColor = 'rgba(212, 175, 55, 0.15)';
+              borderColor = 'var(--accent-gold)';
+              textColor = 'var(--accent-gold)';
+            }
+
+            return (
+              <div 
+                key={dayNum}
+                style={{ 
+                  background: bgColor, 
+                  border: `1.5px solid ${borderColor}`, 
+                  borderRadius: '12px', 
+                  padding: '0.6rem 0.4rem', 
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  position: 'relative'
+                }}
+              >
+                <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: textColor }}>
+                  Day {dayNum}
+                </span>
+
+                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent-gold)' : 'white' }}>
+                  ₦{dayBonusVal}
+                </span>
+
+                <span style={{ fontSize: '0.7rem', color: textColor, fontWeight: 'bold' }}>
+                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : isDay7 ? 'Bonus' : ''}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {message && (
-        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: message.includes('Success') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold', margin: '0.75rem 0 0 0' }}>
+        <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: message.includes('Success') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold' }}>
           {message}
         </p>
       )}

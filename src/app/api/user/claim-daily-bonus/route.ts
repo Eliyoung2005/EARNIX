@@ -5,6 +5,18 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+function getStartOfDay(date: Date = new Date()) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getYesterdayStart() {
+  const d = getStartOfDay();
+  d.setDate(d.getDate() - 1);
+  return d;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -22,28 +34,36 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const bonusAmount = user.membership?.dailyLoginBonus || 50;
+    const baseBonus = user.membership?.dailyLoginBonus || 50;
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfToday = getStartOfDay();
+    const startOfYesterday = getYesterdayStart();
 
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    const lastClaim = user.lastDailyBonusClaim ? new Date(user.lastDailyBonusClaim) : null;
+    const claimedToday = lastClaim ? lastClaim >= startOfToday : false;
 
-    const existingClaim = await prisma.activityLog.findFirst({
-      where: {
-        userId: user.id,
-        action: 'DAILY_LOGIN_BONUS',
-        createdAt: {
-          gte: startOfDay,
-          lte: endOfDay
-        }
-      }
-    });
+    let activeStreak = user.loginStreak || 0;
+
+    // Check if user missed a day
+    if (!claimedToday && lastClaim && lastClaim < startOfYesterday) {
+      activeStreak = 0; // Streak reset due to missed day
+    }
+
+    // Determine current day position in 7-day calendar (1 to 7)
+    const dayIndexInCycle = claimedToday 
+      ? (((activeStreak - 1) % 7) + 1)
+      : (((activeStreak) % 7) + 1);
+
+    const isMilestone = dayIndexInCycle === 7;
+    const todayBonus = isMilestone ? baseBonus + 50 : baseBonus;
 
     return NextResponse.json({
-      claimedToday: Boolean(existingClaim),
-      bonusAmount,
+      claimedToday,
+      activeStreak,
+      dayIndexInCycle,
+      baseBonus,
+      todayBonus,
+      isMilestone,
       planName: user.membership?.name || 'FREE'
     });
   } catch (error: any) {
@@ -69,47 +89,48 @@ export async function POST() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const bonusAmount = user.membership?.dailyLoginBonus || 50;
+    const baseBonus = user.membership?.dailyLoginBonus || 50;
+    const startOfToday = getStartOfDay();
+    const startOfYesterday = getYesterdayStart();
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const lastClaim = user.lastDailyBonusClaim ? new Date(user.lastDailyBonusClaim) : null;
+    const claimedToday = lastClaim ? lastClaim >= startOfToday : false;
 
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const existingClaim = await prisma.activityLog.findFirst({
-      where: {
-        userId: user.id,
-        action: 'DAILY_LOGIN_BONUS',
-        createdAt: {
-          gte: startOfDay,
-          lte: endOfDay
-        }
-      }
-    });
-
-    if (existingClaim) {
+    if (claimedToday) {
       return NextResponse.json({
         claimed: false,
         alreadyClaimed: true,
-        message: `You have already claimed your ₦${bonusAmount} daily login bonus today! Come back tomorrow for your next reward.`
+        message: 'You have already claimed your daily bonus today! Return tomorrow to keep your streak going.'
       });
     }
+
+    // Calculate new streak
+    let newStreak = 1;
+    if (lastClaim && lastClaim >= startOfYesterday) {
+      newStreak = (user.loginStreak || 0) + 1;
+    }
+
+    // 7-Day Cycle Calculation
+    const dayIndexInCycle = ((newStreak - 1) % 7) + 1;
+    const isMilestone = dayIndexInCycle === 7;
+    const rewardAmount = isMilestone ? baseBonus + 50 : baseBonus;
 
     const updatedUser = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
         where: { id: user.id },
         data: {
-          taskBalance: { increment: bonusAmount },
-          totalEarnings: { increment: bonusAmount }
+          loginStreak: newStreak,
+          lastDailyBonusClaim: new Date(),
+          taskBalance: { increment: rewardAmount },
+          totalEarnings: { increment: rewardAmount }
         },
-        select: { taskBalance: true }
+        select: { taskBalance: true, loginStreak: true }
       });
 
       await tx.activityLog.create({
         data: {
           action: 'DAILY_LOGIN_BONUS',
-          description: `Claimed ₦${bonusAmount} Daily Login Bonus`,
+          description: `Claimed ₦${rewardAmount} Daily Bonus (Day ${newStreak} Streak${isMilestone ? ' - 7-Day Milestone!' : ''})`,
           userId: user.id
         }
       });
@@ -119,9 +140,14 @@ export async function POST() {
 
     return NextResponse.json({
       claimed: true,
-      amount: bonusAmount,
+      amount: rewardAmount,
+      newStreak: updatedUser.loginStreak,
+      dayIndexInCycle,
+      isMilestone,
       newTaskBalance: updatedUser.taskBalance,
-      message: `Success! ₦${bonusAmount} Daily Login Bonus credited to your task balance!`
+      message: isMilestone
+        ? `Success! 7-Day Streak Milestone Reached! ₦${rewardAmount} Bonus credited to your task balance!`
+        : `Success! Day ${dayIndexInCycle} streak bonus of ₦${rewardAmount} credited to your task balance!`
     });
 
   } catch (error: any) {

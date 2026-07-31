@@ -90,6 +90,10 @@ model User {
   lastSpinDate                    DateTime?
   freeSpinsRemaining              Int          @default(0)
 
+  // Daily Login Streak tracking
+  loginStreak                     Int          @default(0)
+  lastDailyBonusClaim             DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
