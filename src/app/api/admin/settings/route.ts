@@ -36,7 +36,25 @@ export async function PATCH(req: Request) {
     const current = await prisma.platformSettings.findFirst();
     if (!current) return NextResponse.json({ error: 'Settings not initialized' }, { status: 400 });
 
-    const updateData: any = { ...body };
+    // Whitelist of all allowed PlatformSettings fields
+    const allowedFields = [
+      'name', 'tagline', 'logo',
+      'minAffiliateWithdraw', 'minTaskWithdraw',
+      'freeWithdrawalOpen', 'proWithdrawalOpen',
+      'withdrawalPortalMode', 'portalOpenManual',
+      'affiliatePortalOpenManual', 'taskPortalOpenManual',
+      'autoOpenSchedule', 'autoCloseSchedule',
+      'scheduledFreeOpenDate', 'scheduledFreeCloseDate',
+      'scheduledProOpenDate', 'scheduledProCloseDate',
+      'scheduledAffiliateOpenDate', 'scheduledAffiliateCloseDate',
+      'scheduledTaskOpenDate', 'scheduledTaskCloseDate',
+      'maintenanceMode', 'maintenanceMessage', 'registrationMessage',
+      'enableFreeReg', 'enableProReg', 'enableTasks',
+      'enableWithdrawals', 'enableReferrals', 'requireUpgradeForWithdrawal',
+      'welcomePopupEnabled', 'welcomePopupTitleFree', 'welcomePopupMessageFree',
+      'welcomePopupTitlePro', 'welcomePopupMessagePro', 'welcomePopupLink',
+      'adsenseEnabled', 'adsenseClientId'
+    ];
 
     const dateFields = [
       'scheduledFreeOpenDate', 'scheduledFreeCloseDate',
@@ -45,9 +63,15 @@ export async function PATCH(req: Request) {
       'scheduledTaskOpenDate', 'scheduledTaskCloseDate'
     ];
 
-    for (const field of dateFields) {
+    // Build clean update object with only known fields
+    const updateData: any = {};
+    for (const field of allowedFields) {
       if (body[field] !== undefined) {
-        updateData[field] = body[field] ? new Date(body[field]) : null;
+        if (dateFields.includes(field)) {
+          updateData[field] = body[field] ? new Date(body[field]) : null;
+        } else {
+          updateData[field] = body[field];
+        }
       }
     }
 
@@ -57,8 +81,8 @@ export async function PATCH(req: Request) {
     });
 
     return NextResponse.json({ message: 'Settings updated successfully', settings: updated });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update settings:', error);
-    return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update', detail: error?.message || String(error) }, { status: 500 });
   }
 }

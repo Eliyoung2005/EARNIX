@@ -59,10 +59,13 @@ export default function WithdrawalPortalControl() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedFields)
       });
-      if (!res.ok) throw new Error('Failed to update');
-    } catch (err) {
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.detail || errData?.error || 'Failed to update');
+      }
+    } catch (err: any) {
       console.error(err);
-      alert('Failed to update withdrawal portal settings');
+      alert(`Failed to update withdrawal portal settings: ${err?.message || err}`);
     } finally {
       setSaving(false);
     }
@@ -79,11 +82,27 @@ export default function WithdrawalPortalControl() {
     }
     const openISO = new Date(affiliateOpenDate).toISOString();
     const closeISO = new Date(affiliateCloseDate).toISOString();
-    await handleUpdateSettings({
-      scheduledAffiliateOpenDate: openISO,
-      scheduledAffiliateCloseDate: closeISO,
-    });
-    alert('Affiliate withdrawal schedule saved successfully!');
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduledAffiliateOpenDate: openISO,
+          scheduledAffiliateCloseDate: closeISO,
+        })
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.detail || errData?.error || 'Failed to update');
+      }
+      setSettings((prev: any) => ({ ...prev, scheduledAffiliateOpenDate: openISO, scheduledAffiliateCloseDate: closeISO }));
+      alert('Affiliate withdrawal schedule saved successfully!');
+    } catch (err: any) {
+      alert(`Failed to save Affiliate schedule: ${err?.message || err}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSaveTaskSchedule = async () => {
@@ -97,11 +116,27 @@ export default function WithdrawalPortalControl() {
     }
     const openISO = new Date(taskOpenDate).toISOString();
     const closeISO = new Date(taskCloseDate).toISOString();
-    await handleUpdateSettings({
-      scheduledTaskOpenDate: openISO,
-      scheduledTaskCloseDate: closeISO,
-    });
-    alert('Task (Non-Affiliate) withdrawal schedule saved successfully!');
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduledTaskOpenDate: openISO,
+          scheduledTaskCloseDate: closeISO,
+        })
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.detail || errData?.error || 'Failed to update');
+      }
+      setSettings((prev: any) => ({ ...prev, scheduledTaskOpenDate: openISO, scheduledTaskCloseDate: closeISO }));
+      alert('Task withdrawal schedule saved successfully!');
+    } catch (err: any) {
+      alert(`Failed to save Task schedule: ${err?.message || err}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleUpdatePlan = async (planId: string, updatedFields: any) => {
