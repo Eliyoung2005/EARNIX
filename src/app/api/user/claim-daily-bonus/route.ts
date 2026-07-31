@@ -54,8 +54,7 @@ export async function GET() {
       ? (((activeStreak - 1) % 7) + 1)
       : (((activeStreak) % 7) + 1);
 
-    const isMilestone = dayIndexInCycle === 7;
-    const todayBonus = isMilestone ? baseBonus + 50 : baseBonus;
+    const todayBonus = baseBonus;
 
     return NextResponse.json({
       claimedToday,
@@ -63,7 +62,6 @@ export async function GET() {
       dayIndexInCycle,
       baseBonus,
       todayBonus,
-      isMilestone,
       planName: user.membership?.name || 'FREE'
     });
   } catch (error: any) {
@@ -112,8 +110,7 @@ export async function POST() {
 
     // 7-Day Cycle Calculation
     const dayIndexInCycle = ((newStreak - 1) % 7) + 1;
-    const isMilestone = dayIndexInCycle === 7;
-    const rewardAmount = isMilestone ? baseBonus + 50 : baseBonus;
+    const rewardAmount = baseBonus;
 
     const updatedUser = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
@@ -130,7 +127,7 @@ export async function POST() {
       await tx.activityLog.create({
         data: {
           action: 'DAILY_LOGIN_BONUS',
-          description: `Claimed ₦${rewardAmount} Daily Bonus (Day ${newStreak} Streak${isMilestone ? ' - 7-Day Milestone!' : ''})`,
+          description: `Claimed ₦${rewardAmount} Daily Bonus (Day ${newStreak} Streak)`,
           userId: user.id
         }
       });
@@ -143,11 +140,8 @@ export async function POST() {
       amount: rewardAmount,
       newStreak: updatedUser.loginStreak,
       dayIndexInCycle,
-      isMilestone,
       newTaskBalance: updatedUser.taskBalance,
-      message: isMilestone
-        ? `Success! 7-Day Streak Milestone Reached! ₦${rewardAmount} Bonus credited to your task balance!`
-        : `Success! Day ${dayIndexInCycle} streak bonus of ₦${rewardAmount} credited to your task balance!`
+      message: `Success! Day ${dayIndexInCycle} streak bonus of ₦${rewardAmount} credited to your task balance!`
     });
 
   } catch (error: any) {

@@ -10,8 +10,6 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
   const [activeStreak, setActiveStreak] = useState(0);
   const [dayIndexInCycle, setDayIndexInCycle] = useState(1);
   const [baseBonus, setBaseBonus] = useState(initialBonus);
-  const [todayBonus, setTodayBonus] = useState(initialBonus);
-  const [isMilestone, setIsMilestone] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
 
@@ -24,8 +22,6 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
           setActiveStreak(data.activeStreak || 0);
           setDayIndexInCycle(data.dayIndexInCycle || 1);
           setBaseBonus(data.baseBonus || initialBonus);
-          setTodayBonus(data.todayBonus || initialBonus);
-          setIsMilestone(data.isMilestone || false);
         }
       })
       .catch(err => console.error('Failed to load daily bonus status', err))
@@ -90,7 +86,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.35rem 0 0 0' }}>
             {claimedToday 
               ? `You claimed your Day ${dayIndexInCycle} bonus today! Return tomorrow to keep your streak going.`
-              : `Claim your Day ${dayIndexInCycle} bonus today! Reach Day 7 for a ₦100 Milestone Reward.`}
+              : `Claim your Day ${dayIndexInCycle} bonus of ₦${baseBonus} today! Log in every day to maintain your streak.`}
           </p>
         </div>
 
@@ -129,7 +125,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
               }}
             >
-              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (₦${todayBonus})`}
+              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (₦${baseBonus})`}
             </button>
           )}
         </div>
@@ -147,8 +143,6 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
             const isCompleted = claimedToday 
               ? dayNum <= dayIndexInCycle 
               : dayNum < dayIndexInCycle;
-            const isDay7 = dayNum === 7;
-            const dayBonusVal = isDay7 ? baseBonus + 50 : baseBonus;
 
             let bgColor = 'rgba(255,255,255,0.04)';
             let borderColor = 'rgba(255,255,255,0.1)';
@@ -185,11 +179,11 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 </span>
 
                 <span style={{ fontSize: '0.85rem', fontWeight: '800', color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent-gold)' : 'white' }}>
-                  ₦{dayBonusVal}
+                  ₦{baseBonus}
                 </span>
 
                 <span style={{ fontSize: '0.7rem', color: textColor, fontWeight: 'bold' }}>
-                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : isDay7 ? 'Bonus' : ''}
+                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : ''}
                 </span>
               </div>
             );
