@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 export default function MaintenancePage() {
   const [message, setMessage] = useState<string | null>(null);
@@ -42,10 +41,6 @@ export default function MaintenancePage() {
           >
             Join Telegram for Updates
           </a>
-          
-          <Link href="/login" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textDecoration: 'underline' }}>
-            Admin Login
-          </Link>
         </div>
 
       </div>
