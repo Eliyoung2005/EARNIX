@@ -121,7 +121,7 @@ export async function POST() {
       claimed: true,
       amount: bonusAmount,
       newTaskBalance: updatedUser.taskBalance,
-      message: `🎉 Success! ₦${bonusAmount} Daily Login Bonus credited to your task balance!`
+      message: `Success! ₦${bonusAmount} Daily Login Bonus credited to your task balance!`
     });
 
   } catch (error: any) {
