@@ -26,8 +26,19 @@ export async function POST(req: Request) {
       include: { membership: true }
     });
 
-    if (!user || !user.membership) {
-      return NextResponse.json({ error: 'User or membership plan not found' }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    let membership = user.membership;
+    if (!membership) {
+      membership = await prisma.membershipPlan.findFirst({
+        where: { name: 'FREE' }
+      });
+    }
+
+    if (!membership) {
+      return NextResponse.json({ error: 'Membership plan not found' }, { status: 404 });
     }
 
     if (!user.withdrawalPin) {
@@ -51,7 +62,7 @@ export async function POST(req: Request) {
     // STRICT PORTAL STATUS & SCHEDULE EVALUATION
     const isAffiliate = type === 'AFFILIATE';
 
-    if (isAffiliate && user.membership.name === 'FREE') {
+    if (isAffiliate && membership.name === 'FREE') {
       return NextResponse.json({ error: 'FREE plan members do not have referral benefits or affiliate wallet withdrawals. Please upgrade to PRO to unlock affiliate earnings.' }, { status: 403 });
     }
     const withdrawalStatus = isWithdrawalOpen({
@@ -61,14 +72,14 @@ export async function POST(req: Request) {
         ? (settings.affiliatePortalOpenManual ?? settings.portalOpenManual ?? true) 
         : (settings.taskPortalOpenManual ?? settings.portalOpenManual ?? true),
       manualPlanOpen: isAffiliate 
-        ? (user.membership.affiliateWithdrawalOpen ?? user.membership.withdrawalPortalOpen ?? true) 
-        : (user.membership.taskWithdrawalOpen ?? user.membership.withdrawalPortalOpen ?? true),
+        ? (membership.affiliateWithdrawalOpen ?? membership.withdrawalPortalOpen ?? true) 
+        : (membership.taskWithdrawalOpen ?? membership.withdrawalPortalOpen ?? true),
       scheduledOpenDate: isAffiliate 
-        ? (user.membership.affiliateScheduledOpenDate || settings.scheduledAffiliateOpenDate || settings.scheduledFreeOpenDate) 
-        : (user.membership.taskScheduledOpenDate || settings.scheduledTaskOpenDate || settings.scheduledFreeOpenDate),
+        ? (membership.affiliateScheduledOpenDate || settings.scheduledAffiliateOpenDate || settings.scheduledFreeOpenDate) 
+        : (membership.taskScheduledOpenDate || settings.scheduledTaskOpenDate || settings.scheduledFreeOpenDate),
       scheduledCloseDate: isAffiliate 
-        ? (user.membership.affiliateScheduledCloseDate || settings.scheduledAffiliateCloseDate || settings.scheduledFreeCloseDate) 
-        : (user.membership.taskScheduledCloseDate || settings.scheduledTaskCloseDate || settings.scheduledFreeCloseDate),
+        ? (membership.affiliateScheduledCloseDate || settings.scheduledAffiliateCloseDate || settings.scheduledFreeCloseDate) 
+        : (membership.taskScheduledCloseDate || settings.scheduledTaskCloseDate || settings.scheduledFreeCloseDate),
     });
 
     if (!withdrawalStatus.isOpen) {
@@ -82,7 +93,7 @@ export async function POST(req: Request) {
     }
 
     // Check minimum withdrawal limits based on the user's specific plan
-    const minRequired = type === 'AFFILIATE' ? user.membership.minAffiliateWithdrawal : user.membership.minTaskWithdrawal;
+    const minRequired = type === 'AFFILIATE' ? (membership.minAffiliateWithdrawal ?? 5000) : (membership.minTaskWithdrawal ?? 2000);
     if (withdrawalAmount < minRequired) {
       return NextResponse.json({ error: `Minimum withdrawal is ₦${minRequired}` }, { status: 400 });
     }
@@ -96,7 +107,7 @@ export async function POST(req: Request) {
         const higherPlan = await prisma.membershipPlan.findFirst({
           where: { 
             isActive: true,
-            level: { gt: user.membership.level }
+            level: { gt: membership.level }
           },
           orderBy: { level: 'asc' }
         });

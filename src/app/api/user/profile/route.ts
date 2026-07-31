@@ -27,19 +27,33 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    let membership = user.membership;
+    if (!membership) {
+      membership = await prisma.membershipPlan.findFirst({
+        where: { name: 'FREE' }
+      });
+      if (membership && !user.planId) {
+        // Link user to FREE plan
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { planId: membership.id }
+        }).catch(err => console.error('Failed auto-assigning free planId:', err));
+      }
+    }
+
     const settings = await prisma.platformSettings.findFirst();
     const mode = settings?.withdrawalPortalMode || 'MANUAL';
 
-    const affiliateOpenDate = user.membership?.affiliateScheduledOpenDate || settings?.scheduledAffiliateOpenDate || settings?.scheduledFreeOpenDate;
-    const affiliateCloseDate = user.membership?.affiliateScheduledCloseDate || settings?.scheduledAffiliateCloseDate || settings?.scheduledFreeCloseDate;
-    const taskOpenDate = user.membership?.taskScheduledOpenDate || settings?.scheduledTaskOpenDate || settings?.scheduledFreeOpenDate;
-    const taskCloseDate = user.membership?.taskScheduledCloseDate || settings?.scheduledTaskCloseDate || settings?.scheduledFreeCloseDate;
+    const affiliateOpenDate = membership?.affiliateScheduledOpenDate || settings?.scheduledAffiliateOpenDate || settings?.scheduledFreeOpenDate;
+    const affiliateCloseDate = membership?.affiliateScheduledCloseDate || settings?.scheduledAffiliateCloseDate || settings?.scheduledFreeCloseDate;
+    const taskOpenDate = membership?.taskScheduledOpenDate || settings?.scheduledTaskOpenDate || settings?.scheduledFreeOpenDate;
+    const taskCloseDate = membership?.taskScheduledCloseDate || settings?.scheduledTaskCloseDate || settings?.scheduledFreeCloseDate;
 
     const affiliateStatus = isWithdrawalOpen({
       mode,
       type: 'AFFILIATE',
       manualMasterOpen: settings?.affiliatePortalOpenManual ?? settings?.portalOpenManual ?? true,
-      manualPlanOpen: user.membership?.affiliateWithdrawalOpen ?? user.membership?.withdrawalPortalOpen ?? true,
+      manualPlanOpen: membership?.affiliateWithdrawalOpen ?? membership?.withdrawalPortalOpen ?? true,
       scheduledOpenDate: affiliateOpenDate,
       scheduledCloseDate: affiliateCloseDate,
     });
@@ -48,7 +62,7 @@ export async function GET() {
       mode,
       type: 'TASK',
       manualMasterOpen: settings?.taskPortalOpenManual ?? settings?.portalOpenManual ?? true,
-      manualPlanOpen: user.membership?.taskWithdrawalOpen ?? user.membership?.withdrawalPortalOpen ?? true,
+      manualPlanOpen: membership?.taskWithdrawalOpen ?? membership?.withdrawalPortalOpen ?? true,
       scheduledOpenDate: taskOpenDate,
       scheduledCloseDate: taskCloseDate,
     });
@@ -63,12 +77,12 @@ export async function GET() {
       accountNumber: user.accountNumber || '',
       hasPin: !!user.withdrawalPin,
       role: user.role,
-      plan: user.membership?.name || 'FREE',
+      plan: membership?.name || 'FREE',
       affiliateBalance: user.affiliateBalance,
       taskBalance: user.taskBalance,
-      minAffiliateWithdrawal: user.membership?.minAffiliateWithdrawal || 5000,
-      minTaskWithdrawal: user.membership?.minTaskWithdrawal || 2000,
-      planWithdrawalOpen: user.membership?.withdrawalPortalOpen ?? true,
+      minAffiliateWithdrawal: membership?.minAffiliateWithdrawal ?? 5000,
+      minTaskWithdrawal: membership?.minTaskWithdrawal ?? 2000,
+      planWithdrawalOpen: membership?.withdrawalPortalOpen ?? true,
       affiliateWithdrawalOpen: affiliateStatus.isOpen,
       affiliateWithdrawalReason: affiliateStatus.reason || null,
       taskWithdrawalOpen: taskStatus.isOpen,
