@@ -6,13 +6,13 @@ async function main() {
 
   const freePlan = await prisma.membershipPlan.upsert({
     where: { name: 'FREE' },
-    update: {},
+    update: { dailyLoginBonus: 50 },
     create: {
       name: 'FREE',
       level: 1,
       price: 0,
       welcomeBonus: 50,
-      dailyLoginBonus: 0,
+      dailyLoginBonus: 50,
       taskReward: 80,
       referralCommission: 250,
       isActive: true,

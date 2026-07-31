@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import QuickActions from "./QuickActions";
 import UpgradeBannerButton from "./UpgradeBannerButton";
 import CouponManager from "../admin/CouponManager";
+import DailyBonusCard from "./DailyBonusCard";
 import { getBadgeProps } from "@/lib/badgeUtils";
 
 export const dynamic = 'force-dynamic';
@@ -121,6 +122,9 @@ export default async function DashboardOverview(props: {
           <UpgradeBannerButton nextPlanName={nextPlan.name} price={nextPlan.price} />
         </div>
       )}
+
+      {/* Daily Login Bonus Card */}
+      <DailyBonusCard initialBonus={user.membership?.dailyLoginBonus || 50} />
 
       {/* Wallet Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>

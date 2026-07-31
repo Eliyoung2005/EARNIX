@@ -10,10 +10,11 @@ const defaultPlans = [
     name: 'FREE',
     level: 1,
     price: 0,
-    welcomeBonus: 0,
+    welcomeBonus: 50,
+    dailyLoginBonus: 50,
     taskReward: 10,
     referralCommission: 0,
-    features: ['Daily Task Access', 'Affiliate Earnings']
+    features: ['₦50 Daily Login Bonus', 'Daily Task Access', 'Affiliate Earnings']
   },
   {
     id: 'PRO',
@@ -21,6 +22,7 @@ const defaultPlans = [
     level: 2,
     price: 500,
     welcomeBonus: 100,
+    dailyLoginBonus: 100,
     taskReward: 50,
     referralCommission: 250,
     features: ['Premium Task Access', 'High Commission Rate', 'Fast Withdrawal']

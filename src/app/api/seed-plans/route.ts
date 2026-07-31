@@ -5,13 +5,13 @@ export async function GET() {
   try {
     const freePlan = await prisma.membershipPlan.upsert({
       where: { name: 'FREE' },
-      update: { welcomeBonus: 50, referralCommission: 0 },
+      update: { welcomeBonus: 50, dailyLoginBonus: 50, referralCommission: 0 },
       create: {
         name: 'FREE',
         level: 1,
         price: 0,
         welcomeBonus: 50,
-        dailyLoginBonus: 0,
+        dailyLoginBonus: 50,
         taskReward: 80,
         referralCommission: 0,
         isActive: true,
