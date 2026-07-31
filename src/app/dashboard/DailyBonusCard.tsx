@@ -66,8 +66,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span style={{ fontSize: '1.25rem' }}>🎁</span>
+          <div style={{ marginBottom: '0.25rem' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981', margin: 0 }}>
               Daily Login Bonus (₦{bonusAmount})
             </h3>
