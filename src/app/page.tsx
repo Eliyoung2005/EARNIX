@@ -22,7 +22,7 @@ const defaultPlans = [
     level: 2,
     price: 500,
     welcomeBonus: 100,
-    dailyLoginBonus: 100,
+    dailyLoginBonus: 50,
     taskReward: 50,
     referralCommission: 250,
     features: ['Premium Task Access', 'High Commission Rate', 'Fast Withdrawal']

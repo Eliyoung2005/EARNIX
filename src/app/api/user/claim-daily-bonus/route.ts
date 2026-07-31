@@ -34,7 +34,7 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const baseBonus = user.membership?.dailyLoginBonus || 50;
+    const baseBonus = 50;
 
     const startOfToday = getStartOfDay();
     const startOfYesterday = getYesterdayStart();
@@ -87,7 +87,7 @@ export async function POST() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const baseBonus = user.membership?.dailyLoginBonus || 50;
+    const baseBonus = 50;
     const startOfToday = getStartOfDay();
     const startOfYesterday = getYesterdayStart();
 
