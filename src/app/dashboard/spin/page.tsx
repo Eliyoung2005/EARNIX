@@ -2,10 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import UpgradeBannerButton from '../UpgradeBannerButton';
 import { Disc, Lock, Gift, Zap, Trophy } from 'lucide-react';
 
+const SEGMENTS = [
+  { index: 0, label: '₦200', startX: 50, startY: 0, endX: 97.55, endY: 34.55, tx: 69.1, ty: 23.7, mid: 36, color: '#1042a3', textColor: '#ffffff' },
+  { index: 1, label: '₦500', startX: 97.55, startY: 34.55, endX: 79.39, endY: 90.45, tx: 80.9, ty: 60.0, mid: 108, color: '#d4af37', textColor: '#000000' },
+  { index: 2, label: '₦150', startX: 79.39, startY: 90.45, endX: 20.61, endY: 90.45, tx: 50.0, ty: 82.5, mid: 180, color: '#28c76f', textColor: '#ffffff' },
+  { index: 3, label: '₦1,000', startX: 20.61, startY: 90.45, endX: 2.45, endY: 34.55, tx: 19.1, ty: 60.0, mid: 252, color: '#ff9f43', textColor: '#000000' },
+  { index: 4, label: '₦2,000', startX: 2.45, startY: 34.55, endX: 50.00, endY: 0.00, tx: 30.9, ty: 23.7, mid: 324, color: '#ff3b30', textColor: '#ffffff' },
+];
+
 export default function SpinWheelPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<any>(null);
   const [walletChoice, setWalletChoice] = useState<'TASK' | 'AFFILIATE'>('TASK');
@@ -50,13 +60,11 @@ export default function SpinWheelPage() {
       }
 
       // Calculate Rotation Angle
-      // 5 segments = 72 degrees per segment
-      const segmentAngle = 360 / 5;
+      // 5 segments of 72 degrees each, midAngle = winningIndex * 72 + 36
       const winningIndex = data.winningIndex;
-      
-      const targetSegmentCenter = (winningIndex * segmentAngle) + (segmentAngle / 2);
+      const midAngle = winningIndex * 72 + 36;
       const extraRotations = 360 * 5; // 5 full spins
-      const finalRotation = rotation + extraRotations + (360 - targetSegmentCenter);
+      const finalRotation = rotation + extraRotations + (360 - midAngle);
 
       setRotation(finalRotation);
 
@@ -65,6 +73,10 @@ export default function SpinWheelPage() {
         setSpinning(false);
         setWinResult(data);
         fetchStatus();
+        router.refresh();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('balance-updated'));
+        }
       }, 4200);
 
     } catch (err: any) {
@@ -209,30 +221,30 @@ export default function SpinWheelPage() {
               position: 'relative'
             }}>
 
-              <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                {/* 5 Segments: 72deg each */}
-                <g>
-                  {/* Segment 0: ₦200 */}
-                  <path d="M 50 50 L 100 50 A 50 50 0 0 1 65.45 97.55 Z" fill="#1042a3" stroke="#0a0f1d" strokeWidth="0.5" />
-                  {/* Segment 1: ₦500 */}
-                  <path d="M 50 50 L 65.45 97.55 A 50 50 0 0 1 9.55 79.39 Z" fill="#d4af37" stroke="#0a0f1d" strokeWidth="0.5" />
-                  {/* Segment 2: ₦150 */}
-                  <path d="M 50 50 L 9.55 79.39 A 50 50 0 0 1 9.55 20.61 Z" fill="#28c76f" stroke="#0a0f1d" strokeWidth="0.5" />
-                  {/* Segment 3: ₦1,000 */}
-                  <path d="M 50 50 L 9.55 20.61 A 50 50 0 0 1 65.45 2.45 Z" fill="#ff9f43" stroke="#0a0f1d" strokeWidth="0.5" />
-                  {/* Segment 4: ₦2,000 Jackpot */}
-                  <path d="M 50 50 L 65.45 2.45 A 50 50 0 0 1 100 50 Z" fill="#ff3b30" stroke="#0a0f1d" strokeWidth="0.5" />
-                </g>
+              <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}>
+                {SEGMENTS.map((seg) => (
+                  <g key={seg.index}>
+                    <path
+                      d={`M 50 50 L ${seg.startX} ${seg.startY} A 50 50 0 0 1 ${seg.endX} ${seg.endY} Z`}
+                      fill={seg.color}
+                      stroke="#0a0f1d"
+                      strokeWidth="0.75"
+                    />
+                    <text
+                      x={seg.tx}
+                      y={seg.ty}
+                      fill={seg.textColor}
+                      fontSize="4.2"
+                      fontWeight="900"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      transform={`rotate(${seg.mid}, ${seg.tx}, ${seg.ty})`}
+                    >
+                      {seg.label}
+                    </text>
+                  </g>
+                ))}
               </svg>
-
-              {/* Labels overlay */}
-              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                <span style={{ position: 'absolute', top: '22%', right: '20%', color: 'white', fontWeight: '900', fontSize: '0.85rem' }}>₦200</span>
-                <span style={{ position: 'absolute', bottom: '20%', right: '30%', color: 'black', fontWeight: '900', fontSize: '0.85rem' }}>₦500</span>
-                <span style={{ position: 'absolute', bottom: '35%', left: '15%', color: 'white', fontWeight: '900', fontSize: '0.85rem' }}>₦150</span>
-                <span style={{ position: 'absolute', top: '35%', left: '15%', color: 'black', fontWeight: '900', fontSize: '0.85rem' }}>₦1,000</span>
-                <span style={{ position: 'absolute', top: '18%', left: '38%', color: 'white', fontWeight: '900', fontSize: '0.85rem' }}>₦2,000</span>
-              </div>
 
             </div>
 

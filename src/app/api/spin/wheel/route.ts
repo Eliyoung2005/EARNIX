@@ -113,17 +113,19 @@ export async function POST(req: Request) {
     // Execute Spin Transaction
     const updatedUser = await prisma.$transaction(async (tx) => {
       const updateData: any = {
-        taskBalance: { increment: winningPrize.amount },
-        totalEarnings: { increment: winningPrize.amount },
         lastSpinDate: new Date()
       };
 
       if (isFreeSpin) {
+        updateData.taskBalance = { increment: winningPrize.amount };
+        updateData.totalEarnings = { increment: winningPrize.amount };
         updateData.freeSpinsRemaining = { decrement: 1 };
       } else {
+        updateData.totalEarnings = { increment: winningPrize.amount };
         if (walletChoice === 'TASK') {
           updateData.taskBalance = { increment: winningPrize.amount - SPIN_FEE };
         } else {
+          updateData.taskBalance = { increment: winningPrize.amount };
           updateData.affiliateBalance = { decrement: SPIN_FEE };
         }
       }

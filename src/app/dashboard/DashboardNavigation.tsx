@@ -47,14 +47,19 @@ export default function DashboardNavigation({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSidebarOpen]);
 
-  // Keep currentRole in sync with props
+  const [currentBalance, setCurrentBalance] = useState(user.balance);
+
+  // Keep currentRole & currentBalance in sync with props
   useEffect(() => {
     if (user.role) {
       setCurrentRole(user.role);
     }
-  }, [user.role]);
+    if (typeof user.balance === 'number') {
+      setCurrentBalance(user.balance);
+    }
+  }, [user.role, user.balance]);
 
-  // Real-time polling to check if user role changed in database (e.g. promoted to VENDOR)
+  // Real-time polling to check if user role or balance changed in database
   useEffect(() => {
     let isMounted = true;
 
@@ -63,8 +68,11 @@ export default function DashboardNavigation({
         const res = await fetch('/api/user/profile', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && data.role) {
-            setCurrentRole(data.role);
+          if (isMounted) {
+            if (data.role) setCurrentRole(data.role);
+            if (typeof data.taskBalance === 'number' && typeof data.affiliateBalance === 'number') {
+              setCurrentBalance(data.taskBalance + data.affiliateBalance);
+            }
           }
         }
       } catch (err) {
@@ -73,15 +81,19 @@ export default function DashboardNavigation({
     };
 
     checkRole();
-    const intervalId = setInterval(checkRole, 4000);
+    const intervalId = setInterval(checkRole, 3000);
 
     const handleFocus = () => checkRole();
+    const handleBalanceEvent = () => checkRole();
+
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('balance-updated', handleBalanceEvent);
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('balance-updated', handleBalanceEvent);
     };
   }, []);
 
@@ -306,7 +318,7 @@ export default function DashboardNavigation({
           
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button style={{ background: 'var(--surface-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              Balance: <span style={{ color: 'var(--success)' }}>₦{user.balance.toLocaleString()}</span>
+              Balance: <span style={{ color: 'var(--success)' }}>₦{currentBalance.toLocaleString()}</span>
             </button>
             <button onClick={() => signOut({ callbackUrl: '/login' })} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>Logout</button>
           </div>
