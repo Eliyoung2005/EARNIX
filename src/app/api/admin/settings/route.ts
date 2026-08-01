@@ -53,7 +53,8 @@ export async function PATCH(req: Request) {
       'enableWithdrawals', 'enableReferrals', 'requireUpgradeForWithdrawal',
       'welcomePopupEnabled', 'welcomePopupTitleFree', 'welcomePopupMessageFree',
       'welcomePopupTitlePro', 'welcomePopupMessagePro', 'welcomePopupLink',
-      'adsenseEnabled', 'adsenseClientId'
+      'adsenseEnabled', 'adsenseClientId',
+      'supportEmail', 'whatsappSupport'
     ];
 
     const dateFields = [

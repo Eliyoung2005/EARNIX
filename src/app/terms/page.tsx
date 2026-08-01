@@ -51,7 +51,7 @@ export default function TermsOfServicePage() {
         </p>
 
         <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-          <p>If you have any questions about these Terms, please contact support.</p>
+          <p>If you have any questions about these Terms, please contact support at <a href="mailto:Supportearnix@gmail.com" style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}>Supportearnix@gmail.com</a>.</p>
           <Link href="/" className="btn-primary" style={{ display: 'inline-block', marginTop: '1.5rem', borderRadius: '50px', padding: '0.8rem 2rem' }}>Back to Home</Link>
         </div>
 

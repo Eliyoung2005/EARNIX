@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star } from 'lucide-react';
+import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star, Mail, MessageSquare } from 'lucide-react';
 import WithdrawalSuccessModal from './WithdrawalSuccessModal';
 
 export default function WithdrawalsPage() {
@@ -343,11 +343,64 @@ export default function WithdrawalsPage() {
             </ul>
           </div>
           
-          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <PhoneCall size={32} style={{ color: 'var(--accent-blue)', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Need Help?</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Contact our 24/7 support team if you experience any issues.</div>
+          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <PhoneCall size={20} style={{ color: 'var(--accent-blue)' }} /> Customer Support &amp; Help
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+              Have questions about your withdrawal or account? Contact our official support team.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Official Support Email */}
+              <a 
+                href={`mailto:${profile?.settings?.supportEmail || 'Supportearnix@gmail.com'}`}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.6rem', 
+                  padding: '0.75rem 1rem', 
+                  borderRadius: '10px', 
+                  background: 'rgba(10, 91, 255, 0.1)', 
+                  border: '1px solid rgba(10, 91, 255, 0.3)', 
+                  color: 'white', 
+                  textDecoration: 'none', 
+                  fontWeight: 'bold', 
+                  fontSize: '0.85rem' 
+                }}
+              >
+                <Mail size={16} style={{ color: 'var(--accent-blue)' }} />
+                <span>{profile?.settings?.supportEmail || 'Supportearnix@gmail.com'}</span>
+              </a>
+
+              {/* WhatsApp Support Link */}
+              <a 
+                href={
+                  profile?.settings?.whatsappSupport 
+                    ? (profile.settings.whatsappSupport.startsWith('http') 
+                        ? profile.settings.whatsappSupport 
+                        : `https://wa.me/${profile.settings.whatsappSupport.replace(/\+/g, '').replace(/\s/g, '')}`)
+                    : 'https://wa.me/2348000000000'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.6rem', 
+                  padding: '0.75rem 1rem', 
+                  borderRadius: '10px', 
+                  background: 'rgba(37, 211, 102, 0.12)', 
+                  border: '1px solid rgba(37, 211, 102, 0.4)', 
+                  color: '#25D366', 
+                  textDecoration: 'none', 
+                  fontWeight: 'bold', 
+                  fontSize: '0.85rem' 
+                }}
+              >
+                <MessageSquare size={16} style={{ color: '#25D366' }} />
+                <span>Contact WhatsApp Support</span>
+              </a>
             </div>
           </div>
         </div>

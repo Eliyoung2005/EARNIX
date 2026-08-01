@@ -155,7 +155,7 @@ export default function UserProfile() {
             </div>
 
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-              Note: Contact Support if you need to change your registered email address or username.
+              Note: Contact Support at <a href="mailto:Supportearnix@gmail.com" style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}>Supportearnix@gmail.com</a> if you need to change your registered email address or username.
             </p>
           </div>
         </div>

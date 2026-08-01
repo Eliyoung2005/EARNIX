@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Mail, MessageSquare } from 'lucide-react';
 
 import WithdrawalPortalControl from '../withdrawals/WithdrawalPortalControl';
 
@@ -79,6 +80,74 @@ export default function AdminSettings() {
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>If enabled, users can only withdraw ONCE per wallet (Affiliate & Task) on their current plan. Their second attempt will require upgrading to the next plan.</span>
             </div>
           </label>
+        </form>
+      </div>
+
+      {/* Official Support Channels */}
+      <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Mail size={20} /> Support Contacts &amp; Help Channels
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+          Configure official EARNIX customer support email and WhatsApp support contact link displayed across user dashboards, withdrawal pages, and public screens.
+        </p>
+
+        <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} onSubmit={e => e.preventDefault()}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'white', marginBottom: '0.4rem' }}>
+              Official Support Email Address
+            </label>
+            <input 
+              type="email"
+              value={settings?.supportEmail ?? 'Supportearnix@gmail.com'}
+              onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
+              placeholder="e.g. Supportearnix@gmail.com"
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <MessageSquare size={16} style={{ color: '#25D366' }} /> WhatsApp Support Link / Phone Number
+            </label>
+            <input 
+              type="text"
+              value={settings?.whatsappSupport ?? ''}
+              onChange={(e) => setSettings({ ...settings, whatsappSupport: e.target.value })}
+              placeholder="e.g. https://wa.me/2348012345678 or 2348012345678"
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
+            />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+              Enter full WhatsApp link (e.g. https://wa.me/234...) or WhatsApp phone number with country code.
+            </span>
+          </div>
+
+          <button 
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await fetch('/api/admin/settings', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    supportEmail: settings?.supportEmail || 'Supportearnix@gmail.com',
+                    whatsappSupport: settings?.whatsappSupport || ''
+                  })
+                });
+                alert('Support contacts saved successfully!');
+              } catch (err) {
+                console.error(err);
+                alert('Failed to save support contacts');
+              } finally {
+                setSaving(false);
+              }
+            }} 
+            disabled={saving} 
+            className="btn-primary" 
+            style={{ padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#10b981', color: 'black' }}
+          >
+            {saving ? 'Saving...' : 'Save Support Channels'}
+          </button>
         </form>
       </div>
 

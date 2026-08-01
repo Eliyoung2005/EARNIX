@@ -230,6 +230,10 @@ model PlatformSettings {
   adsenseEnabled         Boolean   @default(false)
   adsenseClientId        String?
 
+  // Support Contacts
+  supportEmail           String?   @default("Supportearnix@gmail.com")
+  whatsappSupport        String?
+
   updatedAt              DateTime  @updatedAt
 }
 
