@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UpgradeBannerButton from '../UpgradeBannerButton';
+import { Disc, Lock, Gift, Zap, Trophy } from 'lucide-react';
 
 export default function SpinWheelPage() {
   const [loading, setLoading] = useState(true);
@@ -94,7 +95,7 @@ export default function SpinWheelPage() {
       {/* Page Header */}
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', padding: '0.4rem 1.25rem', borderRadius: '50px', color: 'var(--accent-gold)', fontSize: '0.85rem', fontWeight: '900', marginBottom: '1rem' }}>
-          <span>🎡</span> VIP &amp; ELITE EXCLUSIVE SPIN &amp; WIN
+          <Disc size={18} /> VIP &amp; ELITE EXCLUSIVE SPIN &amp; WIN
         </div>
         <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>
           Spin &amp; Win Cash Wheel
@@ -107,8 +108,8 @@ export default function SpinWheelPage() {
       {/* Non-Eligible Access Lock Card (For FREE / PRO Users) */}
       {!isEligible ? (
         <div className="bg-surface" style={{ padding: '3rem 2rem', borderRadius: '24px', textAlign: 'center', border: '1px solid rgba(212, 175, 55, 0.35)', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', fontSize: '2.5rem', marginBottom: '1.5rem' }}>
-            🔒
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', marginBottom: '1.5rem' }}>
+            <Lock size={36} />
           </div>
 
           <h2 style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'white', marginBottom: '0.75rem' }}>
@@ -135,11 +136,11 @@ export default function SpinWheelPage() {
           <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             {isFreeSpin ? (
               <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'linear-gradient(135deg, rgba(40,199,111,0.2), rgba(40,199,111,0.05))', border: '1px solid rgba(40,199,111,0.5)', color: 'var(--success)', fontWeight: '900', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>🎁</span> FREE SPINS REMAINING: {freeSpins} / 3
+                <Gift size={18} /> FREE SPINS REMAINING: {freeSpins} / 3
               </div>
             ) : (
-              <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>
-                ⚡ Spin Fee: ₦{spinFee} per spin (Deducted from selected wallet)
+              <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Zap size={16} /> Spin Fee: ₦{spinFee} per spin (Deducted from selected wallet)
               </div>
             )}
           </div>
@@ -273,7 +274,10 @@ export default function SpinWheelPage() {
           {/* Win Announcement Modal */}
           {winResult && (
             <div style={{ marginTop: '2rem', padding: '1.75rem', borderRadius: '16px', background: 'rgba(40,199,111,0.12)', border: '1px solid rgba(40,199,111,0.4)', textAlign: 'center', width: '100%', maxWidth: '480px', animation: 'fadeIn 0.4s ease-in-out' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉 🎁</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                <Trophy size={36} style={{ color: 'var(--accent-gold)' }} />
+                <Gift size={36} style={{ color: 'var(--accent-blue)' }} />
+              </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>
                 CONGRATULATIONS!
               </h3>

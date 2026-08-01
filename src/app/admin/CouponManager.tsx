@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Zap } from 'lucide-react';
 
 interface Coupon {
   id: string;
@@ -228,7 +229,7 @@ export default function CouponManager({
       {poolCoupons.length > 0 && vendors.length > 0 && (
         <div style={{ background: 'rgba(10, 91, 255, 0.05)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2.5rem', border: '1px solid rgba(10, 91, 255, 0.2)' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            ⚡ Batch Assign Pool Codes to Vendor
+            <Zap size={16} /> Batch Assign Pool Codes to Vendor
           </h3>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             Select a vendor and number of unassigned pool codes to allocate. When assigned, each code is automatically regenerated into a fresh unique code for that vendor.

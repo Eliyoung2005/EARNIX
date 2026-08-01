@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { markWelcomePopupAsSeen } from './actions';
 
 export default function WelcomePopup({ 
@@ -108,7 +109,7 @@ export default function WelcomePopup({
           margin: '0 auto 2rem auto',
           boxShadow: '0 0 30px rgba(10, 91, 255, 0.4)'
         }}>
-          <span style={{ fontSize: '2.5rem' }}>👋</span>
+          <Sparkles size={40} style={{ color: '#fff' }} />
         </div>
 
         {/* Title */}

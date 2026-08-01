@@ -179,7 +179,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
 
   // Handle Delete User Account
   const handleDeleteUser = async (userId: string, username: string) => {
-    if (!confirm(`⚠️ DANGER: Are you sure you want to PERMANENTLY DELETE user @${username}? This action cannot be undone!`)) {
+    if (!confirm(`DANGER: Are you sure you want to PERMANENTLY DELETE user @${username}? This action cannot be undone!`)) {
       return;
     }
 

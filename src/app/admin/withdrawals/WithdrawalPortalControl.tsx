@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 export default function WithdrawalPortalControl() {
   const [settings, setSettings] = useState<any>(null);
@@ -400,7 +401,7 @@ export default function WithdrawalPortalControl() {
                 />
                 {taskCloseDate && taskOpenDate && new Date(taskCloseDate) <= new Date(taskOpenDate) && (
                   <p style={{ color: '#ff3b30', fontSize: '0.75rem', marginTop: '0.4rem', fontWeight: 'bold', margin: '0.4rem 0 0 0' }}>
-                    ⚠️ Close time must be later than open time ({taskOpenDate ? taskOpenDate.replace('T', ' ') : ''}).
+                    <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '4px' }} /> Close time must be later than open time ({taskOpenDate ? taskOpenDate.replace('T', ' ') : ''}).
                   </p>
                 )}
               </div>

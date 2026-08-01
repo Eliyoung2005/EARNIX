@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Crown } from 'lucide-react';
 import { dismissUpgradeThankYou } from './actions';
 
 export default function UpgradeThankYouPopup({ planName }: { planName: string }) {
@@ -81,7 +82,7 @@ export default function UpgradeThankYouPopup({ planName }: { planName: string })
           margin: '0 auto 1.5rem auto',
           boxShadow: '0 0 35px rgba(245, 158, 11, 0.5)'
         }}>
-          <span style={{ fontSize: '3rem' }}>👑</span>
+          <Crown size={44} style={{ color: '#fff' }} />
         </div>
 
         <div style={{

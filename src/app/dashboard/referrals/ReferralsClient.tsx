@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { MessageSquare, Send } from 'lucide-react';
 
 export default function ReferralsClient({
   username,
@@ -147,7 +148,7 @@ export default function ReferralsClient({
               gap: '0.4rem'
             }}
           >
-            <span>💬</span> Share on WhatsApp
+            <MessageSquare size={16} /> Share on WhatsApp
           </button>
           <button
             onClick={handleShareTelegram}
@@ -165,7 +166,7 @@ export default function ReferralsClient({
               gap: '0.4rem'
             }}
           >
-            <span>✈️</span> Share on Telegram
+            <Send size={16} /> Share on Telegram
           </button>
         </div>
       </div>

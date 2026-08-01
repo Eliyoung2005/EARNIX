@@ -161,8 +161,8 @@ export async function POST(req: Request) {
       newTaskBalance: updatedUser.taskBalance,
       newAffiliateBalance: updatedUser.affiliateBalance,
       message: isFreeSpin 
-        ? `🎉 Free Spin Result: You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance. (${updatedUser.freeSpinsRemaining} free spin${updatedUser.freeSpinsRemaining !== 1 ? 's' : ''} left)`
-        : `🎉 You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance.`
+        ? `Free Spin Result: You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance. (${updatedUser.freeSpinsRemaining} free spin${updatedUser.freeSpinsRemaining !== 1 ? 's' : ''} left)`
+        : `You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance.`
     });
 
   } catch (error: any) {

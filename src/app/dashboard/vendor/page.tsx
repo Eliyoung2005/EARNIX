@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Send, MessageSquare } from 'lucide-react';
 
 export default function VendorDashboard() {
   const [loading, setLoading] = useState(true);
@@ -161,8 +162,8 @@ export default function VendorDashboard() {
           {/* Social Contact Inputs */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
-                ✈️ Telegram Link or Username
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Send size={15} /> Telegram Link or Username
               </label>
               <input 
                 type="text"
@@ -175,8 +176,8 @@ export default function VendorDashboard() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
-                💬 WhatsApp Phone Number
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <MessageSquare size={15} /> WhatsApp Phone Number
               </label>
               <input 
                 type="text"

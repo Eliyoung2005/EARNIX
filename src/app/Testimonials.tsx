@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Info } from 'lucide-react';
 
 const testimonials = [
   {
@@ -151,8 +152,8 @@ export default function Testimonials() {
         </div>
       </div>
 
-      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '1.5rem' }}>
-        💡 Hover or touch cards to pause scrolling motion
+      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+        <Info size={14} style={{ color: 'var(--accent-gold)' }} /> Hover or touch cards to pause scrolling motion
       </div>
     </section>
   );

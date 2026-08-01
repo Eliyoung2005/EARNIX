@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
 export default function ValidateCodePage() {
   const [code, setCode] = useState('');
@@ -104,18 +105,18 @@ export default function ValidateCodePage() {
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                 {result.status === 'VALID' && (
-                  <span style={{ background: 'var(--success)', color: 'black', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem' }}>
-                    🟢 VALID &amp; UNUSED
+                  <span style={{ background: 'var(--success)', color: 'black', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <CheckCircle2 size={14} /> VALID &amp; UNUSED
                   </span>
                 )}
                 {result.status === 'USED' && (
-                  <span style={{ background: '#ff3b30', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem' }}>
-                    🔴 ALREADY REDEEMED
+                  <span style={{ background: '#ff3b30', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <XCircle size={14} /> ALREADY REDEEMED
                   </span>
                 )}
                 {result.status === 'INVALID' && (
-                  <span style={{ background: '#f59e0b', color: 'black', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem' }}>
-                    ⚠️ INVALID CODE
+                  <span style={{ background: '#f59e0b', color: 'black', padding: '0.3rem 0.8rem', borderRadius: '50px', fontWeight: '900', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <AlertCircle size={14} /> INVALID CODE
                   </span>
                 )}
               </div>

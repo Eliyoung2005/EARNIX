@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star } from 'lucide-react';
+import WithdrawalSuccessModal from './WithdrawalSuccessModal';
 
 export default function WithdrawalsPage() {
   const { status } = useSession();
@@ -16,6 +18,14 @@ export default function WithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [upgradeError, setUpgradeError] = useState<{message: string, nextPlan: string} | null>(null);
+  const [successModal, setSuccessModal] = useState<{
+    isOpen: boolean;
+    amount: number;
+    type: 'AFFILIATE' | 'TASK';
+    date: Date;
+    bankName?: string;
+    accountNumber?: string;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -158,9 +168,22 @@ export default function WithdrawalsPage() {
         return;
       }
 
-      alert('Withdrawal request submitted successfully!');
+      const submittedAmount = withdrawalAmount;
+      const submittedType = withdrawalType;
+      const submittedDate = new Date();
+
       setAmount('');
       setPin('');
+
+      setSuccessModal({
+        isOpen: true,
+        amount: submittedAmount,
+        type: submittedType,
+        date: submittedDate,
+        bankName: profile?.bankName,
+        accountNumber: profile?.accountNumber,
+      });
+
       // Refresh profile to update balances
       const profileRes = await fetch('/api/user/profile');
       setProfile(await profileRes.json());
@@ -176,12 +199,10 @@ export default function WithdrawalsPage() {
   return (
     <div>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Withdraw Funds</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Request a withdrawal to your local bank account. Please note the minimum limits specific to your <strong>{profile?.plan}</strong> plan.</p>
-
-      {/* Withdrawal Portal Status Banner */}
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Request a withdrawal to your local bank account. Please note the minimum limits specific to your <strong>{profile?.plan}</strong> plan.</p>      {/* Withdrawal Portal Status Banner */}
       {isPortalClosed ? (
         <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(255, 59, 48, 0.1)', border: '1px solid #ff3b30', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>🔒</span>
+          <Lock size={28} style={{ color: '#ff3b30', flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 'bold', color: '#ff3b30', fontSize: '1.05rem', marginBottom: '0.25rem' }}>{isAffiliate ? 'Affiliate' : 'Task'} Withdrawal Portal is Currently Closed</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -191,7 +212,7 @@ export default function WithdrawalsPage() {
         </div>
       ) : isAutoMode ? (
         <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(52, 199, 89, 0.1)', border: '1px solid rgba(52, 199, 89, 0.4)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>✅</span>
+          <CheckCircle2 size={28} style={{ color: '#34c759', flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 'bold', color: '#34c759', fontSize: '1.05rem' }}>Withdrawal Portal is OPEN</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -229,7 +250,9 @@ export default function WithdrawalsPage() {
             
             {!profile?.hasPin && (
               <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid var(--warning)', color: 'var(--warning)', fontSize: '0.9rem' }}>
-                <strong style={{ display: 'block', marginBottom: '0.25rem' }}>⚠️ Withdrawal PIN Required</strong>
+                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                  <AlertTriangle size={18} /> Withdrawal PIN Required
+                </strong>
                 You must set your 4-digit security PIN in <Link href="/dashboard/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Profile Settings</Link> before submitting a withdrawal request.
               </div>
             )}
@@ -244,7 +267,7 @@ export default function WithdrawalsPage() {
             {/* Welcome Bonus note — shown only on Task wallet */}
             {withdrawalType === 'TASK' && (
               <div style={{ padding: '0.75rem 1rem', background: 'rgba(212,175,55,0.07)', borderRadius: '8px', border: '1px solid rgba(212,175,55,0.25)', display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🎁</span>
+                <Gift size={18} style={{ color: 'var(--accent-gold)', flexShrink: 0, marginTop: '2px' }} />
                 <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: '1.5' }}>
                   <strong style={{ color: 'var(--accent-gold)' }}>Welcome Bonus Included:</strong> Your sign-up welcome bonus is part of this balance and can be withdrawn together with your task earnings once the minimum threshold is met.
                 </p>
@@ -321,7 +344,7 @@ export default function WithdrawalsPage() {
           </div>
           
           <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ fontSize: '2.5rem' }}>📞</div>
+            <PhoneCall size={32} style={{ color: 'var(--accent-blue)', flexShrink: 0 }} />
             <div>
               <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Need Help?</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Contact our 24/7 support team if you experience any issues.</div>
@@ -334,7 +357,9 @@ export default function WithdrawalsPage() {
       {upgradeError && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(5px)' }}>
           <div className="bg-surface animate-float-slow" style={{ padding: '3rem 2rem', borderRadius: '24px', maxWidth: '400px', textAlign: 'center', border: '1px solid var(--accent-gold)', boxShadow: '0 10px 40px rgba(212, 175, 55, 0.2)' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⭐</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <Star size={48} style={{ color: 'var(--accent-gold)' }} />
+            </div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent-gold)' }}>Upgrade Required</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
               {upgradeError.message}
@@ -350,6 +375,19 @@ export default function WithdrawalsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Withdrawal Success Modal */}
+      {successModal && (
+        <WithdrawalSuccessModal
+          isOpen={successModal.isOpen}
+          onClose={() => setSuccessModal(null)}
+          amount={successModal.amount}
+          type={successModal.type}
+          date={successModal.date}
+          bankName={successModal.bankName}
+          accountNumber={successModal.accountNumber}
+        />
       )}
 
     </div>

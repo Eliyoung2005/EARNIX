@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Wrench } from 'lucide-react';
 
 export default function MaintenancePage() {
   const [message, setMessage] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export default function MaintenancePage() {
         
         {/* Animated Icon */}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '120px', height: '120px', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '50%', marginBottom: '2rem', animation: 'pulse 2s infinite' }}>
-          <span style={{ fontSize: '4rem' }}>🛠️</span>
+          <Wrench size={56} style={{ color: 'var(--accent-gold)' }} />
         </div>
 
         <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--accent-gold)', marginBottom: '1rem', letterSpacing: '-1px' }}>
