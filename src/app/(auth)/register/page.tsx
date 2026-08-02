@@ -142,7 +142,11 @@ export default function Register() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem 1rem',
-      color: 'white'
+      color: 'white',
+      backgroundImage: "linear-gradient(rgba(5, 5, 5, 0.88), rgba(5, 5, 5, 0.92)), url('/earnix-logo.jpg')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
     }}>
       <div className="bg-surface" style={{
         maxWidth: '480px',
