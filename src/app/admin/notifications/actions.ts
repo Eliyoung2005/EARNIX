@@ -77,7 +77,7 @@ export async function broadcastGlobalPopup(data: {
         title: data.title.trim(),
         message: data.message.trim(),
         link: data.link.trim() || null,
-        targetAudience: data.targetAudience as any,
+        targetAudience: data.targetAudience,
         targetUserId
       }
     });

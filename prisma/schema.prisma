@@ -11,6 +11,7 @@ enum Role {
   VENDOR
   ADMIN
   SUB_ADMIN
+  SUPER_ADMIN
 }
 
 
@@ -22,12 +23,7 @@ enum Permission {
   SEND_NOTIFICATIONS
 }
 
-enum TargetAudience {
-  ALL
-  FREE
-  PRO
-  SPECIFIC_USER
-}
+
 
 enum TaskStatus {
   ACTIVE
