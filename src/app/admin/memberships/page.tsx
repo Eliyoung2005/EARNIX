@@ -31,6 +31,13 @@ export default function MembershipsPage() {
       });
       if (!res.ok) throw new Error('Failed to update');
       alert('Plan updated successfully!');
+      
+      // Sync local state with fresh data from database
+      const freshRes = await fetch(`/api/admin/memberships?t=${Date.now()}`, { cache: 'no-store' });
+      const freshData = await freshRes.json();
+      if (Array.isArray(freshData)) {
+        setPlans(freshData);
+      }
     } catch (err) {
       alert('Error updating plan');
     } finally {
