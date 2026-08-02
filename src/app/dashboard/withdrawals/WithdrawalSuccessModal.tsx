@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { ThumbsUp, Calendar, Clock, CheckCircle2, ShieldCheck, ArrowRight, Wallet } from 'lucide-react';
+import { ThumbsUp, Calendar, Clock, CheckCircle2, ShieldCheck, ArrowRight, Wallet, Download, Share2 } from 'lucide-react';
 
 interface WithdrawalSuccessModalProps {
   isOpen: boolean;
@@ -44,6 +43,114 @@ export default function WithdrawalSuccessModal({
 
   const walletLabel = type === 'AFFILIATE' ? 'Affiliate Wallet' : 'Task + Bonus Wallet';
   const refCode = `WD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const downloadReceipt = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 700;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Draw Background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 600, 700);
+
+    // Draw Top Decorative Bar
+    const gradient = ctx.createLinearGradient(0, 0, 600, 0);
+    gradient.addColorStop(0, '#10b981');
+    gradient.addColorStop(0.5, '#3b82f6');
+    gradient.addColorStop(1, '#10b981');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 600, 10);
+
+    // Draw Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('EARNIX DIGITAL RECEIPT', 300, 60);
+
+    ctx.fillStyle = '#34d399';
+    ctx.font = '800 16px sans-serif';
+    ctx.fillText('✓ WITHDRAWAL SUCCESSFUL', 300, 100);
+
+    // Draw Divider
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.beginPath();
+    ctx.moveTo(50, 130);
+    ctx.lineTo(550, 130);
+    ctx.stroke();
+
+    // Draw Amount Withdrawn
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('AMOUNT WITHDRAWN', 300, 170);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 44px sans-serif';
+    ctx.fillText(`₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`, 300, 230);
+
+    // Draw Detail Box Background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.fillRect(50, 270, 500, 320);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(50, 270, 500, 320);
+
+    // Detail Fields Helper
+    const drawRow = (label: string, value: string, y: number) => {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, 80, y);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(value, 520, y);
+    };
+
+    drawRow('Date', formattedFullDate, 320);
+    drawRow('Time', formattedTime, 370);
+    drawRow('Source Wallet', walletLabel, 420);
+    drawRow('Destination', bankName ? `${bankName} (${accountNumber})` : 'N/A', 470);
+    drawRow('Ref Code', refCode, 520);
+    drawRow('Status', 'PAID / PROCESSED', 570);
+
+    // Draw Footer Message
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.font = 'italic 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Thank you for choosing EARNIX - SoftLife & Stress-Free Earnings', 300, 640);
+
+    // Create Download Link
+    const dataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `EARNIX-Receipt-${refCode}.png`;
+    link.href = dataUrl;
+    link.click();
+  };
+
+  const shareReceipt = async () => {
+    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ₦${amount.toLocaleString('en-NG')}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${refCode}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'EARNIX Withdrawal Receipt',
+          text: text,
+        });
+      } catch (err) {
+        console.error('Sharing failed:', err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Receipt details copied to clipboard! You can paste and share it anywhere.');
+      } catch (err) {
+        alert('Failed to copy to clipboard.');
+      }
+    }
+  };
 
   return (
     <div 
@@ -233,6 +340,51 @@ export default function WithdrawalSuccessModal({
               {refCode}
             </span>
           </div>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <button
+            onClick={downloadReceipt}
+            style={{
+              padding: '0.8rem',
+              borderRadius: '50px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem',
+              transition: 'background 0.2s'
+            }}
+          >
+            <Download size={16} /> Download
+          </button>
+          
+          <button
+            onClick={shareReceipt}
+            style={{
+              padding: '0.8rem',
+              borderRadius: '50px',
+              background: 'rgba(59, 130, 246, 0.12)',
+              border: '1px solid rgba(59, 130, 246, 0.35)',
+              color: '#3b82f6',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.4rem',
+              transition: 'background 0.2s'
+            }}
+          >
+            <Share2 size={16} /> Share Receipt
+          </button>
         </div>
 
         {/* Action Button */}
