@@ -54,9 +54,7 @@ export default function Testimonials() {
 
   return (
     <section id="about" className="container" style={{ padding: '6rem 1.5rem', textAlign: 'center', overflow: 'hidden' }}>
-      <div style={{ color: 'var(--accent-blue)', fontWeight: 'bold', letterSpacing: '2px', fontSize: '0.9rem', marginBottom: '0.75rem', textTransform: 'uppercase' }}>
-        Live Earner Testimonials
-      </div>
+
       <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: '900', marginBottom: '1rem', letterSpacing: '-1px' }}>
         What Our <span className="text-blue">SoftLife</span> Earners Say
       </h2>
@@ -152,9 +150,6 @@ export default function Testimonials() {
         </div>
       </div>
 
-      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-        <Info size={14} style={{ color: 'var(--accent-gold)' }} /> Hover or touch cards to pause scrolling motion
-      </div>
     </section>
   );
 }

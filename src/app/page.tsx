@@ -58,6 +58,7 @@ export default function Home() {
 
   useEffect(() => {
     fetch('/api/plans', {
+      cache: 'no-store',
       headers: {
         'Bypass-Tunnel-Reminder': 'true',
         'ngrok-skip-browser-warning': 'true'
@@ -495,6 +496,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <p style={{ marginBottom: '0.5rem' }}>Support Contact: <a href="mailto:Supportearnix@gmail.com" style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}>Supportearnix@gmail.com</a></p>
         <p style={{ marginBottom: '1rem' }}>EARNIX Version 1.0 &copy; 2026. All rights reserved.</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', fontSize: '0.9rem' }}>
           <Link href="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>Terms of Service</Link>

@@ -6,11 +6,14 @@ import { prisma } from '@/lib/prisma';
 const SPIN_FEE = 100; // ₦100 per paid spin after free spins
 
 const PRIZES = [
-  { index: 0, label: '₦200 Cash Bonus', amount: 200, weight: 35, color: '#1042a3' },
-  { index: 1, label: '₦500 Cash Bonus', amount: 500, weight: 25, color: '#d4af37' },
-  { index: 2, label: '₦150 Cash Bonus', amount: 150, weight: 25, color: '#28c76f' },
-  { index: 3, label: '₦1,000 Big Reward', amount: 1000, weight: 10, color: '#ff9f43' },
-  { index: 4, label: '₦2,000 JACKPOT!', amount: 2000, weight: 5, color: '#ff3b30' },
+  { index: 0, label: '₦200 Cash Bonus', amount: 200, isFreeTicket: false, isTryAgain: false, weight: 0.0002, color: '#1042a3' },
+  { index: 1, label: '₦500 Cash Bonus', amount: 500, isFreeTicket: false, isTryAgain: false, weight: 0.0002, color: '#d4af37' },
+  { index: 2, label: 'Try Again', amount: 0, isFreeTicket: false, isTryAgain: true, weight: 55, color: '#6e7d88' },
+  { index: 3, label: '₦1,000 Big Reward', amount: 1000, isFreeTicket: false, isTryAgain: false, weight: 0.0000003, color: '#ff9f43' },
+  { index: 4, label: 'Free Spin Ticket', amount: 0, isFreeTicket: true, isTryAgain: false, weight: 30, color: '#9b5de5' },
+  { index: 5, label: '₦2,000 JACKPOT!', amount: 2000, isFreeTicket: false, isTryAgain: false, weight: 0.0000003, color: '#ff3b30' },
+  { index: 6, label: '₦150 Cash Bonus', amount: 150, isFreeTicket: false, isTryAgain: false, weight: 0.0002, color: '#28c76f' },
+  { index: 7, label: 'Try Again', amount: 0, isFreeTicket: false, isTryAgain: true, weight: 15, color: '#6e7d88' },
 ];
 
 export async function GET(req: Request) {
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
 
     if (!isEligible) {
       return NextResponse.json({
-        error: 'Spin & Win is exclusive to VIP & ELITE membership plans! Please upgrade your plan to unlock 3 free spins and cash rewards.'
+        error: 'Spin & Win is exclusive to VIP & ELITE membership plans! Please upgrade your plan to unlock free spins and cash rewards.'
       }, { status: 403 });
     }
 
@@ -116,17 +119,38 @@ export async function POST(req: Request) {
         lastSpinDate: new Date()
       };
 
+      let finalFreeSpins = user.freeSpinsRemaining || 0;
       if (isFreeSpin) {
-        updateData.taskBalance = { increment: winningPrize.amount };
-        updateData.totalEarnings = { increment: winningPrize.amount };
-        updateData.freeSpinsRemaining = { decrement: 1 };
+        finalFreeSpins -= 1;
+      }
+
+      if (winningPrize.isFreeTicket) {
+        finalFreeSpins += 1;
+      }
+
+      updateData.freeSpinsRemaining = finalFreeSpins;
+
+      if (winningPrize.isFreeTicket || winningPrize.isTryAgain) {
+        // No cash amount won
+        if (!isFreeSpin) {
+          if (walletChoice === 'TASK') {
+            updateData.taskBalance = { decrement: SPIN_FEE };
+          } else {
+            updateData.affiliateBalance = { decrement: SPIN_FEE };
+          }
+        }
       } else {
+        // Cash prize won
         updateData.totalEarnings = { increment: winningPrize.amount };
-        if (walletChoice === 'TASK') {
-          updateData.taskBalance = { increment: winningPrize.amount - SPIN_FEE };
-        } else {
+        if (isFreeSpin) {
           updateData.taskBalance = { increment: winningPrize.amount };
-          updateData.affiliateBalance = { decrement: SPIN_FEE };
+        } else {
+          if (walletChoice === 'TASK') {
+            updateData.taskBalance = { increment: winningPrize.amount - SPIN_FEE };
+          } else {
+            updateData.taskBalance = { increment: winningPrize.amount };
+            updateData.affiliateBalance = { decrement: SPIN_FEE };
+          }
         }
       }
 
@@ -144,8 +168,8 @@ export async function POST(req: Request) {
         data: {
           action: 'SPIN_WHEEL_REWARD',
           description: isFreeSpin 
-            ? `Won ${winningPrize.label} (₦${winningPrize.amount}) on FREE SPIN! (${resUser.freeSpinsRemaining} free spins remaining)`
-            : `Won ${winningPrize.label} (₦${winningPrize.amount}) via ₦${SPIN_FEE} spin fee from ${walletChoice} wallet`,
+            ? `Spin result: ${winningPrize.label} (₦${winningPrize.amount}) on FREE SPIN. (${resUser.freeSpinsRemaining} remaining)`
+            : `Spin result: ${winningPrize.label} (₦${winningPrize.amount}) via ₦${SPIN_FEE} fee from ${walletChoice} wallet.`,
           userId: userId
         }
       });
@@ -158,12 +182,16 @@ export async function POST(req: Request) {
       winningIndex: winningPrize.index,
       prizeLabel: winningPrize.label,
       prizeAmount: winningPrize.amount,
+      isFreeTicket: winningPrize.isFreeTicket,
+      isTryAgain: winningPrize.isTryAgain,
       wasFreeSpin: isFreeSpin,
       freeSpinsRemaining: updatedUser.freeSpinsRemaining,
       newTaskBalance: updatedUser.taskBalance,
       newAffiliateBalance: updatedUser.affiliateBalance,
-      message: isFreeSpin 
-        ? `Free Spin Result: You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance. (${updatedUser.freeSpinsRemaining} free spin${updatedUser.freeSpinsRemaining !== 1 ? 's' : ''} left)`
+      message: winningPrize.isFreeTicket
+        ? `Congratulations! You won a Free Spin Ticket! Max limit of 2 free spins.`
+        : winningPrize.isTryAgain
+        ? `Try Again! You won nothing this time.`
         : `You won ${winningPrize.label}! ₦${winningPrize.amount.toLocaleString()} added to your task balance.`
     });
 

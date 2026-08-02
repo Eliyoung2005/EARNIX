@@ -74,15 +74,16 @@ export default function UpgradeThankYouPopup({ planName }: { planName: string })
         <div style={{
           width: '90px',
           height: '90px',
-          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
           borderRadius: '50%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           margin: '0 auto 1.5rem auto',
-          boxShadow: '0 0 35px rgba(245, 158, 11, 0.5)'
+          boxShadow: '0 0 35px rgba(245, 158, 11, 0.5)',
+          overflow: 'hidden'
         }}>
-          <Crown size={44} style={{ color: '#fff' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/earnix-logo.jpg" alt="Earnix Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         <div style={{

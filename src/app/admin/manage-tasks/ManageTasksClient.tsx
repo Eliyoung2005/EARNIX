@@ -82,6 +82,7 @@ export default function ManageTasksClient({ initialTasks }: { initialTasks: Task
             <select name="platform" value={formData.platform} onChange={handleChange} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
               <option value="Facebook">Facebook</option>
               <option value="Twitter">X (Twitter)</option>
+              <option value="Telegram">Telegram</option>
               <option value="TikTok">TikTok</option>
               <option value="Instagram">Instagram</option>
               <option value="WhatsApp">WhatsApp</option>

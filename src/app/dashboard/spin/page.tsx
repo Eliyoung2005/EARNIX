@@ -7,11 +7,14 @@ import UpgradeBannerButton from '../UpgradeBannerButton';
 import { Disc, Lock, Gift, Zap, Trophy } from 'lucide-react';
 
 const SEGMENTS = [
-  { index: 0, label: '₦200', startX: 50, startY: 0, endX: 97.55, endY: 34.55, tx: 69.1, ty: 23.7, mid: 36, color: '#1042a3', textColor: '#ffffff' },
-  { index: 1, label: '₦500', startX: 97.55, startY: 34.55, endX: 79.39, endY: 90.45, tx: 80.9, ty: 60.0, mid: 108, color: '#d4af37', textColor: '#000000' },
-  { index: 2, label: '₦150', startX: 79.39, startY: 90.45, endX: 20.61, endY: 90.45, tx: 50.0, ty: 82.5, mid: 180, color: '#28c76f', textColor: '#ffffff' },
-  { index: 3, label: '₦1,000', startX: 20.61, startY: 90.45, endX: 2.45, endY: 34.55, tx: 19.1, ty: 60.0, mid: 252, color: '#ff9f43', textColor: '#000000' },
-  { index: 4, label: '₦2,000', startX: 2.45, startY: 34.55, endX: 50.00, endY: 0.00, tx: 30.9, ty: 23.7, mid: 324, color: '#ff3b30', textColor: '#ffffff' },
+  { index: 0, label: '₦200', startX: 50, startY: 0, endX: 85.36, endY: 14.64, tx: 63.4, ty: 17.7, mid: 22.5, color: '#1042a3', textColor: '#ffffff' },
+  { index: 1, label: '₦500', startX: 85.36, startY: 14.64, endX: 100, endY: 50, tx: 82.3, ty: 36.6, mid: 67.5, color: '#d4af37', textColor: '#000000' },
+  { index: 2, label: 'Try Again', startX: 100, startY: 50, endX: 85.36, endY: 85.36, tx: 82.3, ty: 63.4, mid: 112.5, color: '#6e7d88', textColor: '#ffffff' },
+  { index: 3, label: '₦1,000', startX: 85.36, startY: 85.36, endX: 50, endY: 100, tx: 63.4, ty: 82.3, mid: 157.5, color: '#ff9f43', textColor: '#000000' },
+  { index: 4, label: 'Free Ticket', startX: 50, startY: 100, endX: 14.64, endY: 85.36, tx: 36.6, ty: 82.3, mid: 202.5, color: '#9b5de5', textColor: '#ffffff' },
+  { index: 5, label: '₦2,000', startX: 14.64, startY: 85.36, endX: 0, endY: 50, tx: 17.7, ty: 63.4, mid: 247.5, color: '#ff3b30', textColor: '#ffffff' },
+  { index: 6, label: '₦150', startX: 0, startY: 50, endX: 14.64, endY: 14.64, tx: 17.7, ty: 36.6, mid: 292.5, color: '#28c76f', textColor: '#ffffff' },
+  { index: 7, label: 'Try Again', startX: 14.64, startY: 14.64, endX: 50, endY: 0, tx: 36.6, ty: 17.7, mid: 337.5, color: '#6e7d88', textColor: '#ffffff' },
 ];
 
 export default function SpinWheelPage() {
@@ -59,12 +62,16 @@ export default function SpinWheelPage() {
         throw new Error(data.error || 'Spin failed');
       }
 
-      // Calculate Rotation Angle
-      // 5 segments of 72 degrees each, midAngle = winningIndex * 72 + 36
+      // Calculate Rotation Angle precisely so the pointer at top (0 degrees) matches winning index.
       const winningIndex = data.winningIndex;
-      const midAngle = winningIndex * 72 + 36;
+      const midAngle = winningIndex * 45 + 22.5;
       const extraRotations = 360 * 5; // 5 full spins
-      const finalRotation = rotation + extraRotations + (360 - midAngle);
+      
+      const currentAngle = rotation % 360;
+      const targetAngle = (360 - midAngle) % 360;
+      let diff = targetAngle - currentAngle;
+      if (diff <= 0) diff += 360;
+      const finalRotation = rotation + extraRotations + diff;
 
       setRotation(finalRotation);
 
@@ -113,7 +120,7 @@ export default function SpinWheelPage() {
           Spin &amp; Win Cash Wheel
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '560px', margin: '0 auto' }}>
-          Upgrade to VIP or ELITE to receive <strong style={{ color: 'var(--accent-gold)' }}>3 FREE SPINS</strong>. All cash prizes won are added directly to your task balance!
+          Upgrade to VIP or ELITE to receive <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong>. All cash prizes won are added directly to your task balance!
         </p>
       </div>
 
@@ -129,7 +136,7 @@ export default function SpinWheelPage() {
           </h2>
 
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.98rem', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: '1.6' }}>
-            The Spin &amp; Win Cash Wheel is exclusively available for <strong style={{ color: 'var(--accent-gold)' }}>VIP</strong> and <strong style={{ color: 'var(--accent-gold)' }}>ELITE</strong> membership plans. Upgrade your account today to unlock <strong style={{ color: 'var(--accent-gold)' }}>3 Free Spins</strong> and unlimited cash prizes!
+            The Spin &amp; Win Cash Wheel is exclusively available for <strong style={{ color: 'var(--accent-gold)' }}>VIP</strong> and <strong style={{ color: 'var(--accent-gold)' }}>ELITE</strong> membership plans. Upgrade your account today to unlock <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong> and unlimited cash prizes!
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -147,8 +154,8 @@ export default function SpinWheelPage() {
           {/* Status Badge: Free Spins vs Paid Spin Banner */}
           <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             {isFreeSpin ? (
-              <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'linear-gradient(135deg, rgba(40,199,111,0.2), rgba(40,199,111,0.05))', border: '1px solid rgba(40,199,111,0.5)', color: 'var(--success)', fontWeight: '900', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Gift size={18} /> FREE SPINS REMAINING: {freeSpins} / 3
+              <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'linear-gradient(135deg, rgba(155,93,229,0.2), rgba(155,93,229,0.05))', border: '1px solid rgba(155,93,229,0.5)', color: '#9b5de5', fontWeight: '900', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Gift size={18} /> FREE SPINS REMAINING: {freeSpins}
               </div>
             ) : (
               <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -234,7 +241,7 @@ export default function SpinWheelPage() {
                       x={seg.tx}
                       y={seg.ty}
                       fill={seg.textColor}
-                      fontSize="4.2"
+                      fontSize="3.8"
                       fontWeight="900"
                       textAnchor="middle"
                       dominantBaseline="central"
@@ -285,19 +292,28 @@ export default function SpinWheelPage() {
 
           {/* Win Announcement Modal */}
           {winResult && (
-            <div style={{ marginTop: '2rem', padding: '1.75rem', borderRadius: '16px', background: 'rgba(40,199,111,0.12)', border: '1px solid rgba(40,199,111,0.4)', textAlign: 'center', width: '100%', maxWidth: '480px', animation: 'fadeIn 0.4s ease-in-out' }}>
+            <div style={{ marginTop: '2rem', padding: '1.75rem', borderRadius: '16px', background: winResult.isTryAgain ? 'rgba(255,59,48,0.12)' : winResult.isFreeTicket ? 'rgba(155,93,229,0.12)' : 'rgba(40,199,111,0.12)', border: winResult.isTryAgain ? '1px solid rgba(255,59,48,0.4)' : winResult.isFreeTicket ? '1px solid rgba(155,93,229,0.4)' : '1px solid rgba(40,199,111,0.4)', textAlign: 'center', width: '100%', maxWidth: '480px', animation: 'fadeIn 0.4s ease-in-out' }}>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                <Trophy size={36} style={{ color: 'var(--accent-gold)' }} />
-                <Gift size={36} style={{ color: 'var(--accent-blue)' }} />
+                {winResult.isTryAgain ? (
+                  <span style={{ fontSize: '2rem' }}>😢</span>
+                ) : winResult.isFreeTicket ? (
+                  <Gift size={36} style={{ color: '#9b5de5' }} />
+                ) : (
+                  <Trophy size={36} style={{ color: 'var(--accent-gold)' }} />
+                )}
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>
-                CONGRATULATIONS!
+                {winResult.isTryAgain ? 'TRY AGAIN!' : winResult.isFreeTicket ? 'FREE TICKET WON!' : 'CONGRATULATIONS!'}
               </h3>
-              <p style={{ color: 'var(--success)', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                You won {winResult.prizeLabel}!
+              <p style={{ color: winResult.isTryAgain ? '#ff3b30' : winResult.isFreeTicket ? '#9b5de5' : 'var(--success)', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                {winResult.isTryAgain ? 'You won nothing this time.' : winResult.isFreeTicket ? 'You won 1 Free Spin Ticket!' : `You won ${winResult.prizeLabel}!`}
               </p>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                ₦{winResult.prizeAmount.toLocaleString()} has been added directly to your EARNIX task balance!
+                {winResult.isTryAgain 
+                  ? "Don't give up! Spin again to try your luck next time." 
+                  : winResult.isFreeTicket 
+                  ? 'Your free spin balance has been updated with +1 free spin.' 
+                  : `₦${winResult.prizeAmount.toLocaleString()} has been added directly to your EARNIX task balance!`}
               </p>
             </div>
           )}

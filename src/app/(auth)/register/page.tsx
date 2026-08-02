@@ -39,6 +39,7 @@ export default function Register() {
     }
 
     fetch('/api/plans', {
+      cache: 'no-store',
       headers: {
         'Bypass-Tunnel-Reminder': 'true',
         'ngrok-skip-browser-warning': 'true'

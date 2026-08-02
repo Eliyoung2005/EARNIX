@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star, Mail, MessageSquare } from 'lucide-react';
+import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star, Mail, MessageSquare, Send } from 'lucide-react';
 import WithdrawalSuccessModal from './WithdrawalSuccessModal';
 
 export default function WithdrawalsPage() {
@@ -38,12 +38,16 @@ export default function WithdrawalsPage() {
           const data = await res.json();
           if (isMounted) {
             setProfile(data);
-            if (data.plan === 'FREE') {
-              setWithdrawalType('TASK');
-            } else if (!profile) {
-              setWithdrawalType('AFFILIATE');
-            }
-            setLoading(false);
+            setLoading(prev => {
+              if (prev) {
+                if (data.plan === 'FREE') {
+                  setWithdrawalType('TASK');
+                } else {
+                  setWithdrawalType('AFFILIATE');
+                }
+              }
+              return false;
+            });
           }
         }
       } catch (err) {
@@ -401,6 +405,37 @@ export default function WithdrawalsPage() {
                 <MessageSquare size={16} style={{ color: '#25D366' }} />
                 <span>Contact WhatsApp Support</span>
               </a>
+
+              {/* Telegram Support Link */}
+              {profile?.settings?.telegramSupport && (() => {
+                const raw = profile.settings.telegramSupport.trim();
+                const telegramHref = raw.startsWith('http://') || raw.startsWith('https://')
+                  ? raw
+                  : `https://t.me/${raw.replace(/^@/, '')}`;
+                return (
+                  <a 
+                    href={telegramHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.6rem', 
+                      padding: '0.75rem 1rem', 
+                      borderRadius: '10px', 
+                      background: 'rgba(0, 136, 204, 0.12)', 
+                      border: '1px solid rgba(0, 136, 204, 0.4)', 
+                      color: '#0088cc', 
+                      textDecoration: 'none', 
+                      fontWeight: 'bold', 
+                      fontSize: '0.85rem' 
+                    }}
+                  >
+                    <Send size={16} style={{ color: '#0088cc' }} />
+                    <span>Contact Telegram Support</span>
+                  </a>
+                );
+              })()}
             </div>
           </div>
         </div>

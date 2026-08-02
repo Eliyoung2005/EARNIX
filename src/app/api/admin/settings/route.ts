@@ -50,11 +50,11 @@ export async function PATCH(req: Request) {
       'scheduledTaskOpenDate', 'scheduledTaskCloseDate',
       'maintenanceMode', 'maintenanceMessage', 'registrationMessage',
       'enableFreeReg', 'enableProReg', 'enableTasks',
-      'enableWithdrawals', 'enableReferrals', 'requireUpgradeForWithdrawal',
+      'enableWithdrawals', 'enableReferrals', 'requireUpgradeForWithdrawal', 'blockFreeWithdrawal',
       'welcomePopupEnabled', 'welcomePopupTitleFree', 'welcomePopupMessageFree',
       'welcomePopupTitlePro', 'welcomePopupMessagePro', 'welcomePopupLink',
       'adsenseEnabled', 'adsenseClientId',
-      'supportEmail', 'whatsappSupport'
+      'supportEmail', 'whatsappSupport', 'telegramSupport'
     ];
 
     const dateFields = [

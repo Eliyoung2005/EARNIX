@@ -103,13 +103,14 @@ export default function WelcomePopup({
         {/* Icon */}
         <div style={{ 
           width: '80px', height: '80px', 
-          backgroundColor: 'var(--accent-blue)', 
           borderRadius: '50%', 
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           margin: '0 auto 2rem auto',
-          boxShadow: '0 0 30px rgba(10, 91, 255, 0.4)'
+          boxShadow: '0 0 30px rgba(10, 91, 255, 0.4)',
+          overflow: 'hidden'
         }}>
-          <Sparkles size={40} style={{ color: '#fff' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/earnix-logo.jpg" alt="Earnix Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         {/* Title */}

@@ -109,17 +109,17 @@ export default function WithdrawalSuccessModal({
               width: '84px',
               height: '84px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
               margin: '0 auto',
-              boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3)',
-              position: 'relative'
+              boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
-            <ThumbsUp size={44} strokeWidth={2.2} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/earnix-logo.jpg" alt="Earnix Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </div>
 

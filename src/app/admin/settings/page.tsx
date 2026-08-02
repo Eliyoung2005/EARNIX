@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Mail, MessageSquare } from 'lucide-react';
+import { Mail, MessageSquare, Send } from 'lucide-react';
 
 import WithdrawalPortalControl from '../withdrawals/WithdrawalPortalControl';
 
@@ -74,6 +74,14 @@ export default function AdminSettings() {
         
         <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+            <input type="checkbox" checked={settings?.blockFreeWithdrawal ?? true} onChange={(e) => handleToggle('blockFreeWithdrawal', e.target.checked)} style={{ accentColor: 'var(--accent-gold)', width: '20px', height: '20px' }} />
+            <div>
+              <span style={{ fontWeight: 'bold', display: 'block', color: 'var(--accent-gold)' }}>Block Free Members From Withdrawing</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>If enabled, FREE plan users will be blocked from initiating any withdrawals and will be prompted to upgrade to PRO.</span>
+            </div>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
             <input type="checkbox" checked={settings?.requireUpgradeForWithdrawal ?? true} onChange={(e) => handleToggle('requireUpgradeForWithdrawal', e.target.checked)} style={{ accentColor: 'var(--accent-gold)', width: '20px', height: '20px' }} />
             <div>
               <span style={{ fontWeight: 'bold', display: 'block', color: 'var(--accent-gold)' }}>Require Upgrade For Second Withdrawal</span>
@@ -89,7 +97,7 @@ export default function AdminSettings() {
           <Mail size={20} /> Support Contacts &amp; Help Channels
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-          Configure official EARNIX customer support email and WhatsApp support contact link displayed across user dashboards, withdrawal pages, and public screens.
+          Configure official EARNIX customer support email, WhatsApp, and Telegram contact links displayed across user dashboards, withdrawal pages, and public screens.
         </p>
 
         <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }} onSubmit={e => e.preventDefault()}>
@@ -122,6 +130,22 @@ export default function AdminSettings() {
             </span>
           </div>
 
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Send size={16} style={{ color: '#0088cc' }} /> Telegram Support Link / Username
+            </label>
+            <input 
+              type="text"
+              value={settings?.telegramSupport ?? ''}
+              onChange={(e) => setSettings({ ...settings, telegramSupport: e.target.value })}
+              placeholder="e.g. @EarnixSupport or https://t.me/EarnixSupport"
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.95rem' }}
+            />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+              Enter a Telegram @username or full t.me link. Leave blank to hide this button.
+            </span>
+          </div>
+
           <button 
             onClick={async () => {
               setSaving(true);
@@ -131,7 +155,8 @@ export default function AdminSettings() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ 
                     supportEmail: settings?.supportEmail || 'Supportearnix@gmail.com',
-                    whatsappSupport: settings?.whatsappSupport || ''
+                    whatsappSupport: settings?.whatsappSupport || '',
+                    telegramSupport: settings?.telegramSupport || ''
                   })
                 });
                 alert('Support contacts saved successfully!');
@@ -166,7 +191,34 @@ export default function AdminSettings() {
             ></textarea>
           </div>
 
-          <button onClick={() => handleSaveText('welcomePopupMessageFree', settings.welcomePopupMessageFree)} disabled={saving} className="btn-primary" style={{ padding: '0.8rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start' }}>{saving ? 'Saving...' : 'Save Message'}</button>
+          <button onClick={() => handleSaveText('welcomePopupMessageFree', settings.welcomePopupMessageFree)} disabled={saving} className="btn-primary" style={{ padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start', marginBottom: '1.5rem' }}>{saving ? 'Saving...' : 'Save Message (Free)'}</button>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>One-Time Plan Upgrade Welcome Message (Pro)</label>
+            <textarea 
+              value={settings?.welcomePopupMessagePro || ''}
+              onChange={(e) => setSettings({ ...settings, welcomePopupMessagePro: e.target.value })}
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '80px' }}
+            ></textarea>
+          </div>
+
+          <button onClick={() => handleSaveText('welcomePopupMessagePro', settings.welcomePopupMessagePro)} disabled={saving} className="btn-primary" style={{ padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start', marginBottom: '1.5rem' }}>{saving ? 'Saving...' : 'Save Message (Pro)'}</button>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Welcome Popup Action / Redirect Link (Optional)</label>
+            <input 
+              type="text" 
+              value={settings?.welcomePopupLink || ''}
+              onChange={(e) => setSettings({ ...settings, welcomePopupLink: e.target.value })}
+              placeholder="e.g. https://t.me/your_official_channel"
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} 
+            />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+              Add a URL to display a &quot;Join / Claim Now&quot; button inside the Welcome Popup redirecting users there.
+            </span>
+          </div>
+
+          <button onClick={() => handleSaveText('welcomePopupLink', settings.welcomePopupLink)} disabled={saving} className="btn-primary" style={{ padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', alignSelf: 'flex-start' }}>{saving ? 'Saving...' : 'Save Link'}</button>
         </form>
       </div>
 

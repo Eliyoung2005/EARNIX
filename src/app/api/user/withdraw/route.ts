@@ -99,6 +99,20 @@ export async function POST(req: Request) {
     }
 
     // UPGRADE LOCK LOGIC
+    if (settings.blockFreeWithdrawal && membership.name.toUpperCase() === 'FREE') {
+      const proPlan = await prisma.membershipPlan.findFirst({
+        where: {
+          isActive: true,
+          name: { equals: 'PRO', mode: 'insensitive' }
+        }
+      });
+      return NextResponse.json({
+        error: `UpgradeRequired`,
+        message: `Free plan users cannot withdraw funds. You must upgrade to the PRO plan to proceed.`,
+        nextPlan: proPlan?.name || 'PRO'
+      }, { status: 403 });
+    }
+
     if (settings.requireUpgradeForWithdrawal) {
       const withdrawalsMade = type === 'AFFILIATE' ? user.currentPlanAffiliateWithdrawals : user.currentPlanTaskWithdrawals;
       
