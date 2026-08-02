@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { createNewTask, deleteTask } from './actions';
 
 type Task = {
@@ -15,13 +15,23 @@ type Task = {
 };
 
 export default function ManageTasksClient({ 
-  initialTasks, 
-  activePlans = [] 
+  initialTasks
 }: { 
-  initialTasks: Task[], 
-  activePlans?: { id: string, name: string }[] 
+  initialTasks: Task[]
 }) {
+  const [activePlans, setActivePlans] = useState<{ id: string, name: string }[]>([]);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    fetch('/api/plans', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setActivePlans(data);
+        }
+      })
+      .catch(err => console.error('Failed to load plans:', err));
+  }, []);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
