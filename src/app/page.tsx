@@ -57,7 +57,7 @@ export default function Home() {
   const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
 
   useEffect(() => {
-    fetch('/api/plans', {
+    fetch(`/api/plans?t=${Date.now()}`, {
       cache: 'no-store',
       headers: {
         'Bypass-Tunnel-Reminder': 'true',

@@ -38,7 +38,7 @@ export default function Register() {
       setFormData(prev => ({ ...prev, referralCode: refParam }));
     }
 
-    fetch('/api/plans', {
+    fetch(`/api/plans?t=${Date.now()}`, {
       cache: 'no-store',
       headers: {
         'Bypass-Tunnel-Reminder': 'true',
