@@ -46,7 +46,7 @@ export async function broadcastGlobalPopup(data: {
   title: string;
   message: string;
   link: string;
-  targetAudience: 'ALL' | 'FREE' | 'PRO' | 'SPECIFIC';
+  targetAudience: string;
   targetEmail?: string;
 }) {
   const session = await getServerSession(authOptions);

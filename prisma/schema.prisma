@@ -173,7 +173,7 @@ model Notification {
   title          String
   message        String
   link           String?
-  targetAudience TargetAudience @default(ALL)
+  targetAudience String         @default("ALL")
   targetUserId   String?
   createdAt      DateTime       @default(now())
 

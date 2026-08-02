@@ -1,19 +1,31 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { broadcastGlobalPopup } from './actions';
 
 export default function BroadcastForm() {
   const router = useRouter();
+  const [activePlans, setActivePlans] = useState<{ id: string, name: string }[]>([]);
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     title: '',
     message: '',
     link: '',
-    targetAudience: 'ALL' as 'ALL' | 'FREE' | 'PRO' | 'SPECIFIC',
+    targetAudience: 'ALL' as string,
     targetEmail: '',
   });
+
+  useEffect(() => {
+    fetch(`/api/plans?t=${Date.now()}`, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setActivePlans(data);
+        }
+      })
+      .catch(err => console.error('Failed to load plans:', err));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -75,8 +87,11 @@ export default function BroadcastForm() {
             style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
           >
             <option value="ALL">All Users</option>
-            <option value="FREE">FREE Plan Users Only</option>
-            <option value="PRO">PRO Plan Users Only</option>
+            {activePlans.map(plan => (
+              <option key={plan.id} value={plan.name.toUpperCase()}>
+                Only {plan.name} Plan Users
+              </option>
+            ))}
             <option value="SPECIFIC">Specific User (Enter Email)</option>
           </select>
         </div>

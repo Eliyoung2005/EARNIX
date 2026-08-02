@@ -69,13 +69,11 @@ export default async function DashboardLayout({
   const popupLink = settings?.welcomePopupLink || null;
 
   // Query latest global manual broadcast popup notification for this user
-  const audienceFilter: any[] = [{ targetAudience: 'ALL' }];
-  if (userPlanName === 'FREE') {
-    audienceFilter.push({ targetAudience: 'FREE' });
-  } else {
-    audienceFilter.push({ targetAudience: 'PRO' });
-  }
-  audienceFilter.push({ targetUserId: userId });
+  const audienceFilter: any[] = [
+    { targetAudience: 'ALL' },
+    { targetAudience: userPlanName.toUpperCase() },
+    { targetUserId: userId }
+  ];
 
   const latestGlobalNotification = await prisma.notification.findFirst({
     where: {
