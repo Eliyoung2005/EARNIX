@@ -7,7 +7,13 @@ export default function MembershipsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/admin/memberships')
+    fetch(`/api/admin/memberships?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Bypass-Tunnel-Reminder': 'true',
+        'ngrok-skip-browser-warning': 'true'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         setPlans(data);

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 const ALLOWED_ROLES = ['ADMIN', 'SUB_ADMIN', 'SUPER_ADMIN'];
 
 export async function GET() {
