@@ -32,7 +32,7 @@ export default function ValidateCodePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'white', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', backgroundImage: "linear-gradient(rgba(5, 5, 5, 0.88), rgba(5, 5, 5, 0.92)), url('/earnix-logo.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', color: 'white', display: 'flex', flexDirection: 'column' }}>
       
       {/* Navbar Header */}
       <header style={{ padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'var(--surface-color)' }}>
