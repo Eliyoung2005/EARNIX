@@ -41,3 +41,72 @@ export async function updateWelcomePopupSettings(data: {
     return { success: false, error: 'Failed to update settings' };
   }
 }
+
+export async function broadcastGlobalPopup(data: {
+  title: string;
+  message: string;
+  link: string;
+  targetAudience: 'ALL' | 'FREE' | 'PRO' | 'SPECIFIC';
+  targetEmail?: string;
+}) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+  
+  const role = (session.user as any).role;
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+    throw new Error('Unauthorized');
+  }
+
+  try {
+    let targetUserId: string | null = null;
+    if (data.targetAudience === 'SPECIFIC' && data.targetEmail) {
+      const user = await prisma.user.findUnique({
+        where: { email: data.targetEmail.trim() }
+      });
+      if (!user) {
+        return { success: false, error: 'User with this email not found' };
+      }
+      targetUserId = user.id;
+    }
+
+    await prisma.notification.create({
+      data: {
+        title: data.title.trim(),
+        message: data.message.trim(),
+        link: data.link.trim() || null,
+        targetAudience: data.targetAudience as any,
+        targetUserId
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating broadcast:', error);
+    return { success: false, error: 'Failed to create broadcast' };
+  }
+}
+
+export async function deleteBroadcast(id: string) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+  
+  const role = (session.user as any).role;
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+    throw new Error('Unauthorized');
+  }
+
+  try {
+    await prisma.notification.delete({
+      where: { id }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting broadcast:', error);
+    return { success: false, error: 'Failed to delete' };
+  }
+}

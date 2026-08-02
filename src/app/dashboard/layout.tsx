@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import DashboardNavigation from './DashboardNavigation';
 import WelcomePopup from './WelcomePopup';
 import UpgradeThankYouPopup from './UpgradeThankYouPopup';
+import GlobalBroadcastPopup from './GlobalBroadcastPopup';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardLayout({
@@ -67,10 +68,37 @@ export default async function DashboardLayout({
   const popupMessage = settings?.welcomePopupMessageFree || 'We are excited to have you on board! Start completing tasks today to earn real cash.';
   const popupLink = settings?.welcomePopupLink || null;
 
+  // Query latest global manual broadcast popup notification for this user
+  const audienceFilter: any[] = [{ targetAudience: 'ALL' }];
+  if (userPlanName === 'FREE') {
+    audienceFilter.push({ targetAudience: 'FREE' });
+  } else {
+    audienceFilter.push({ targetAudience: 'PRO' });
+  }
+  audienceFilter.push({ targetUserId: userId });
+
+  const latestGlobalNotification = await prisma.notification.findFirst({
+    where: {
+      OR: audienceFilter
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
   return (
     <>
       {showPopup && <WelcomePopup title={popupTitle} message={popupMessage} link={popupLink} />}
       {dbUser.pendingUpgradeThankYou && <UpgradeThankYouPopup planName={dbUser.pendingUpgradeThankYou} />}
+      {latestGlobalNotification && (
+        <GlobalBroadcastPopup 
+          notification={{
+            id: latestGlobalNotification.id,
+            title: latestGlobalNotification.title,
+            message: latestGlobalNotification.message,
+            link: latestGlobalNotification.link,
+            createdAt: latestGlobalNotification.createdAt
+          }} 
+        />
+      )}
       <DashboardNavigation user={user}>
         {children}
       </DashboardNavigation>
