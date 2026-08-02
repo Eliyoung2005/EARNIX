@@ -14,7 +14,13 @@ type Task = {
   targetPlan: string;
 };
 
-export default function ManageTasksClient({ initialTasks }: { initialTasks: Task[] }) {
+export default function ManageTasksClient({ 
+  initialTasks, 
+  activePlans = [] 
+}: { 
+  initialTasks: Task[], 
+  activePlans?: { id: string, name: string }[] 
+}) {
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     title: '',
@@ -110,8 +116,11 @@ export default function ManageTasksClient({ initialTasks }: { initialTasks: Task
             <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Target Audience</label>
             <select name="targetPlan" value={formData.targetPlan} onChange={handleChange} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
               <option value="ALL">General (All Users)</option>
-              <option value="FREE">Only FREE Plan Users</option>
-              <option value="PRO">Only PRO Plan Users</option>
+              {activePlans.map(plan => (
+                <option key={plan.id} value={plan.name.toUpperCase()}>
+                  Only {plan.name} Plan Users
+                </option>
+              ))}
             </select>
           </div>
 
