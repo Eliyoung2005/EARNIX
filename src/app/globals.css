@@ -135,6 +135,53 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 4px 12px var(--accent-gold-glow);
 }
 
+/* Premium Glassmorphism Navbar */
+.nav-glass {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  background: rgba(5, 5, 5, 0.75);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+body.light-theme .nav-glass {
+  background: rgba(248, 250, 252, 0.8);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.light-theme .nav-link:hover {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.nav-link-active {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--accent-blue), rgba(10, 91, 255, 0.7)) !important;
+  box-shadow: 0 4px 15px rgba(10, 91, 255, 0.3);
+  font-weight: 700;
+}
+
+body.light-theme .nav-link-active {
+  color: #fff !important;
+}
+
 /* Responsive Utilities */
 .desktop-only {
   display: flex !important;

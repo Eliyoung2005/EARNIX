@@ -85,31 +85,36 @@ export default function Home() {
   return (
     <main>
       {/* Navigation */}
-      <nav className="container" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        
-        {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--accent-blue)', textShadow: '0 0 10px rgba(10, 91, 255, 0.5)', letterSpacing: '-1px' }}>
-            EARNIX
-          </div>
-        </div>
-        
-        {/* Desktop Centered Links */}
-        <div className="desktop-only" style={{ gap: '2rem', fontSize: '0.95rem', fontWeight: '500' }}>
-          <Link href="/" style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>Home</Link>
-          <Link href="#about" style={{ color: 'var(--text-secondary)' }}>About Us</Link>
-          <Link href="#plans" style={{ color: 'var(--text-secondary)' }}>Plans</Link>
-          <Link href="/vendors" style={{ color: 'var(--text-secondary)' }}>Code Vendors</Link>
-          <Link href="/validate-code" style={{ color: 'var(--text-secondary)' }}>Verify Code</Link>
-          <Link href="/top-earners" style={{ color: 'var(--text-secondary)' }}>Top EARNIX</Link>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Desktop Login Button */}
-          <Link href="/login" className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'var(--accent-blue)', color: 'white', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(10, 91, 255, 0.4)', transition: 'transform 0.2s' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-            Login
+      <header className="nav-glass">
+        <nav className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem' }}>
+          
+          {/* Brand Logo & Icon */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', boxShadow: '0 0 12px rgba(10, 91, 255, 0.4)', border: '1.5px solid var(--accent-blue)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/earnix-logo.jpg" alt="Earnix Icon" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-0.8px' }}>
+              EARNIX
+            </div>
           </Link>
+          
+          {/* Desktop Centered Links */}
+          <div className="desktop-only" style={{ gap: '0.5rem', fontSize: '0.9rem', alignItems: 'center' }}>
+            <Link href="/" className="nav-link nav-link-active">Home</Link>
+            <Link href="#about" className="nav-link">About Us</Link>
+            <Link href="#plans" className="nav-link">Plans</Link>
+            <Link href="/vendors" className="nav-link">Code Vendors</Link>
+            <Link href="/validate-code" className="nav-link">Verify Code</Link>
+            <Link href="/top-earners" className="nav-link">Top EARNIX</Link>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Desktop Login Button */}
+            <Link href="/login" className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'var(--accent-blue)', color: 'white', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(10, 91, 255, 0.4)', transition: 'all 0.25s ease' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+              Login
+            </Link>
 
           {/* Hamburger Button — Mobile Only. Hidden when drawer is open (drawer has its own close X) */}
           <button
@@ -158,6 +163,7 @@ export default function Home() {
           </button>
         </div>
       </nav>
+      </header>
 
       {/* Backdrop — always in DOM, toggled via class for smooth fade */}
       <div
