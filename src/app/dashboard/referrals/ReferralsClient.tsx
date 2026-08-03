@@ -33,7 +33,7 @@ export default function ReferralsClient({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } else {
-      alert(`Your Stable Referral Link:\n${stableLink}`);
+      alert(`Your Referral Link:\n${stableLink}`);
     }
   };
 
@@ -65,23 +65,9 @@ export default function ReferralsClient({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.35rem' }}>
-              Your Stable Invite Link
+              Your Invite Link
             </h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-              Works on any mobile device or computer worldwide. Anyone who registers via this link becomes your referral.
-            </p>
           </div>
-          <span style={{
-            padding: '0.4rem 0.85rem',
-            borderRadius: '50px',
-            background: 'rgba(34, 197, 94, 0.15)',
-            color: '#22c55e',
-            border: '1px solid rgba(34, 197, 94, 0.4)',
-            fontSize: '0.8rem',
-            fontWeight: 'bold'
-          }}>
-            ● Active Worldwide
-          </span>
         </div>
 
         {/* Link input + Copy button */}

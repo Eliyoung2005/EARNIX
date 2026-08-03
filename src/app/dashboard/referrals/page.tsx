@@ -41,7 +41,7 @@ export default async function ReferralsPage() {
           Referrals & Affiliate Hub
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-          Share your stable referral link with anyone around the world on mobile or computer and earn commission.
+          Share your referral link with friends and earn commission.
         </p>
       </div>
 
