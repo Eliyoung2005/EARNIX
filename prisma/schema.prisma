@@ -100,6 +100,7 @@ model User {
   withdrawals      WithdrawalRequest[]
   activityLogs     ActivityLog[]
   notifications    Notification[]      @relation("TargetedUser")
+  vtuTransactions  VtuTransaction[]
 }
 
 model Task {
@@ -266,3 +267,41 @@ model MembershipPlan {
   users              User[]
   coupons            CouponCode[]
 }
+
+enum VtuStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUCCESS
+  FAILED
+}
+
+enum VtuType {
+  AIRTIME
+  DATA
+}
+
+enum VtuNetwork {
+  MTN
+  AIRTEL
+  GLO
+  NINE_MOBILE
+}
+
+model VtuTransaction {
+  id           String         @id @default(uuid())
+  userId       String
+  network      VtuNetwork
+  type         VtuType        @default(AIRTIME)
+  planOrBundle String?
+  phoneNumber  String
+  amount       Float
+  walletSource WithdrawalType // AFFILIATE or TASK
+  status       VtuStatus      @default(PENDING)
+  reference    String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
