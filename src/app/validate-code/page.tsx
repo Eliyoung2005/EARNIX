@@ -125,6 +125,12 @@ export default function ValidateCodePage() {
                 {result.message}
               </p>
 
+              {result.planName && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  Membership Plan: <strong style={{ color: 'var(--accent-blue)', textTransform: 'uppercase' }}>{result.planName}</strong>
+                </div>
+              )}
+
               {result.vendor && (
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                   Vendor / Issuer: <strong style={{ color: 'var(--accent-gold)' }}>{result.vendor}</strong>
