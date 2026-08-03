@@ -74,6 +74,35 @@ export default function VtuAirtimePage() {
   const [activeReceipt, setActiveReceipt] = useState<VtuTransaction | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const downloadReceipt = (receipt: VtuTransaction) => {
+    const content = `
+========================================
+           EARNIX VTU RECEIPT           
+========================================
+Reference:   ${receipt.reference}
+Type:        ${receipt.type || 'AIRTIME'}
+Network:     ${receipt.network}
+Details:     ${receipt.planOrBundle || 'Airtime Top-Up'}
+Phone No:    ${receipt.phoneNumber}
+Paid With:   ${receipt.walletSource === 'TASK' ? 'Task Wallet' : 'Affiliate Wallet'}
+Date & Time: ${new Date(receipt.createdAt).toLocaleString()}
+Status:      ${receipt.status}
+Amount:      NGN ${receipt.amount.toLocaleString()}
+========================================
+     Thank you for using EARNIX!     
+========================================
+`.trim();
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Earnix-VTU-${receipt.reference}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const fetchStatus = async () => {
     try {
       const res = await fetch('/api/vtu');
@@ -207,6 +236,20 @@ export default function VtuAirtimePage() {
               Buy Activation Coupon
             </Link>
           </div>
+        </div>
+      ) : status?.enableVtuData === false ? (
+        <div className="bg-surface" style={{ padding: '3.5rem 2rem', borderRadius: '24px', textAlign: 'center', border: '1px solid #ff3b30', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255, 59, 48, 0.15)', border: '1px solid #ff3b30', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#ff3b30', marginBottom: '1.5rem' }}>
+            <AlertCircle size={36} />
+          </div>
+
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'white', marginBottom: '0.75rem' }}>
+            VTU Top-Up Portal Closed
+          </h2>
+
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '520px', margin: '0 auto', lineHeight: '1.6' }}>
+            The VTU Airtime &amp; Data Top-Up portal is currently closed by the administrator. Please try again later.
+          </p>
         </div>
       ) : (
         /* Eligible VIP / ELITE Interface */
@@ -520,21 +563,21 @@ export default function VtuAirtimePage() {
               {/* Submit Action Button */}
               <button
                 type="submit"
-                disabled={submitting || remainingBalance < 0}
+                disabled={submitting || remainingBalance < 0 || status?.vtuDataButtonClaimable === false}
                 style={{
                   padding: '1.25rem',
                   borderRadius: '50px',
-                  background: remainingBalance < 0 
+                  background: (remainingBalance < 0 || status?.vtuDataButtonClaimable === false)
                     ? 'rgba(255,255,255,0.1)' 
                     : purchaseType === 'DATA'
                     ? 'linear-gradient(135deg, var(--accent-blue), #0044cc)'
                     : 'linear-gradient(135deg, var(--accent-gold), #b8860b)',
-                  color: remainingBalance < 0 ? 'var(--text-secondary)' : purchaseType === 'DATA' ? '#fff' : '#000',
+                  color: (remainingBalance < 0 || status?.vtuDataButtonClaimable === false) ? 'var(--text-secondary)' : purchaseType === 'DATA' ? '#fff' : '#000',
                   fontWeight: '900',
                   fontSize: '1.1rem',
                   border: 'none',
-                  cursor: submitting || remainingBalance < 0 ? 'not-allowed' : 'pointer',
-                  boxShadow: remainingBalance < 0 ? 'none' : '0 10px 30px rgba(0,0,0,0.4)',
+                  cursor: (submitting || remainingBalance < 0 || status?.vtuDataButtonClaimable === false) ? 'not-allowed' : 'pointer',
+                  boxShadow: (remainingBalance < 0 || status?.vtuDataButtonClaimable === false) ? 'none' : '0 10px 30px rgba(0,0,0,0.4)',
                   transition: 'all 0.3s ease',
                   display: 'flex',
                   alignItems: 'center',
@@ -544,6 +587,8 @@ export default function VtuAirtimePage() {
               >
                 {submitting ? (
                   'SUBMITTING REQUEST...'
+                ) : status?.vtuDataButtonClaimable === false ? (
+                  'PURCHASES TEMPORARILY DISABLED'
                 ) : remainingBalance < 0 ? (
                   `INSUFFICIENT ${walletSource} BALANCE`
                 ) : (
@@ -775,7 +820,26 @@ export default function VtuAirtimePage() {
 
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => downloadReceipt(activeReceipt)}
+                  style={{
+                    padding: '0.85rem 1.5rem',
+                    borderRadius: '50px',
+                    background: 'linear-gradient(135deg, var(--accent-blue), #0044cc)',
+                    color: '#fff',
+                    fontWeight: '900',
+                    fontSize: '0.9rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Download size={16} /> Download Receipt
+                </button>
+
                 <button
                   onClick={() => window.print()}
                   style={{
@@ -792,7 +856,7 @@ export default function VtuAirtimePage() {
                     gap: '0.5rem'
                   }}
                 >
-                  <Printer size={16} /> Print / Save Receipt
+                  <Printer size={16} /> Print / Save
                 </button>
 
                 <button

@@ -219,6 +219,8 @@ model PlatformSettings {
   enableReferrals        Boolean   @default(true)
   requireUpgradeForWithdrawal Boolean @default(true)
   blockFreeWithdrawal         Boolean @default(true)
+  enableVtuData          Boolean   @default(true)
+  vtuDataButtonClaimable Boolean   @default(true)
 
   // Welcome Popup
   welcomePopupEnabled      Boolean   @default(true)

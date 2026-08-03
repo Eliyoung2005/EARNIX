@@ -91,6 +91,29 @@ export default function AdminSettings() {
         </form>
       </div>
 
+      {/* VTU Data & Airtime Controls */}
+      <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>VTU &amp; Data Buying Controls</h2>
+        
+        <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+            <input type="checkbox" checked={settings?.enableVtuData ?? true} onChange={(e) => handleToggle('enableVtuData', e.target.checked)} style={{ accentColor: 'var(--accent-gold)', width: '20px', height: '20px' }} />
+            <div>
+              <span style={{ fontWeight: 'bold', display: 'block', color: 'var(--accent-gold)' }}>Enable VTU Data &amp; Airtime Purchases</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>If disabled, users will not be able to purchase any VTU (Airtime or Data) and will see a notice that the VTU portal is currently closed.</span>
+            </div>
+          </label>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+            <input type="checkbox" checked={settings?.vtuDataButtonClaimable ?? true} onChange={(e) => handleToggle('vtuDataButtonClaimable', e.target.checked)} style={{ accentColor: 'var(--accent-gold)', width: '20px', height: '20px' }} />
+            <div>
+              <span style={{ fontWeight: 'bold', display: 'block', color: 'var(--accent-gold)' }}>Make VTU Purchase Button Claimable (Active)</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>If disabled, the purchase submit button in the VTU portal will be disabled and non-clickable (not claimable).</span>
+            </div>
+          </label>
+        </form>
+      </div>
+
       {/* Official Support Channels */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

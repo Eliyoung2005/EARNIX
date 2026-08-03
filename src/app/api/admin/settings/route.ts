@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -37,7 +37,6 @@ export async function PATCH(req: Request) {
     const current = await prisma.platformSettings.findFirst();
     if (!current) return NextResponse.json({ error: 'Settings not initialized' }, { status: 400 });
 
-    // Whitelist of all allowed PlatformSettings fields
     const allowedFields = [
       'name', 'tagline', 'logo',
       'minAffiliateWithdraw', 'minTaskWithdraw',
@@ -52,6 +51,7 @@ export async function PATCH(req: Request) {
       'maintenanceMode', 'maintenanceMessage', 'registrationMessage',
       'enableFreeReg', 'enableProReg', 'enableTasks',
       'enableWithdrawals', 'enableReferrals', 'requireUpgradeForWithdrawal', 'blockFreeWithdrawal',
+      'enableVtuData', 'vtuDataButtonClaimable',
       'welcomePopupEnabled', 'welcomePopupTitleFree', 'welcomePopupMessageFree',
       'welcomePopupTitlePro', 'welcomePopupMessagePro', 'welcomePopupLink',
       'adsenseEnabled', 'adsenseClientId',

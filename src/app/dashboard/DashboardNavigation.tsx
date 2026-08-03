@@ -119,8 +119,7 @@ export default function DashboardNavigation({
     navLinks.push({
       name: 'Airtime & VTU',
       href: '/dashboard/vtu',
-      icon: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
-      badge: 'VIP'
+      icon: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'
     });
   }
 
@@ -133,8 +132,7 @@ export default function DashboardNavigation({
     navLinks.push({
       name: 'Vendor Panel',
       href: '/dashboard/vendor',
-      icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
-      badge: 'VENDOR'
+      icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'
     });
   }
 

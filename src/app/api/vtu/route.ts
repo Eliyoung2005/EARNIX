@@ -28,6 +28,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    const settings = await prisma.platformSettings.findFirst();
+    const enableVtuData = settings?.enableVtuData ?? true;
+    const vtuDataButtonClaimable = settings?.vtuDataButtonClaimable ?? true;
+
     const planName = user.membership?.name?.toUpperCase() || 'FREE';
     const isEligible = planName.includes('VIP') || planName.includes('ELITE');
 
@@ -36,7 +40,9 @@ export async function GET(req: Request) {
       planName,
       taskBalance: user.taskBalance || 0,
       affiliateBalance: user.affiliateBalance || 0,
-      vtuTransactions: user.vtuTransactions || []
+      vtuTransactions: user.vtuTransactions || [],
+      enableVtuData,
+      vtuDataButtonClaimable
     });
   } catch (error: any) {
     console.error('VTU Status Fetch Error:', error);
@@ -97,6 +103,22 @@ export async function POST(req: Request) {
     if (!isEligible) {
       return NextResponse.json({
         error: 'VTU Airtime & Data Top-Up is exclusive to VIP & ELITE membership plans! Please upgrade your plan.'
+      }, { status: 403 });
+    }
+
+    const settings = await prisma.platformSettings.findFirst();
+    const enableVtuData = settings?.enableVtuData ?? true;
+    const vtuDataButtonClaimable = settings?.vtuDataButtonClaimable ?? true;
+
+    if (!enableVtuData) {
+      return NextResponse.json({
+        error: 'VTU Top-Up portal is currently closed by the administrator.'
+      }, { status: 403 });
+    }
+
+    if (!vtuDataButtonClaimable) {
+      return NextResponse.json({
+        error: 'The VTU purchase action is currently deactivated by the administrator.'
       }, { status: 403 });
     }
 
