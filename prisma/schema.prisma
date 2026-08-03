@@ -132,12 +132,14 @@ model TaskSubmission {
 model CouponCode {
   id               String       @id @default(uuid())
   code             String       @unique
+  planId           String?
   assignedVendorId String?
   redeemedById     String?
   status           CouponStatus @default(UNUSED)
   createdAt        DateTime     @default(now())
   redeemedDate     DateTime?
 
+  plan           MembershipPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
   assignedVendor User? @relation("AssignedTo", fields: [assignedVendorId], references: [id], onDelete: SetNull)
   redeemedBy     User? @relation("RedeemedBy", fields: [redeemedById], references: [id], onDelete: SetNull)
 }
@@ -261,4 +263,5 @@ model MembershipPlan {
   updatedAt          DateTime @updatedAt
 
   users              User[]
+  coupons            CouponCode[]
 }

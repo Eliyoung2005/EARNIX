@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getAdminSession } from '@/lib/adminSession';
 import { prisma } from '@/lib/prisma';
@@ -52,11 +52,23 @@ export async function POST(req: Request) {
       }
     }
 
-    const { amount, assignToId } = await req.json();
+    const { amount, assignToId, planId } = await req.json();
     const count = parseInt(amount, 10);
 
     if (isNaN(count) || count < 1 || count > 100) {
       return NextResponse.json({ error: 'Invalid amount. Must be between 1 and 100.' }, { status: 400 });
+    }
+
+    if (!planId) {
+      return NextResponse.json({ error: 'A valid paid plan must be selected for code generation.' }, { status: 400 });
+    }
+
+    const selectedPlan = await prisma.membershipPlan.findUnique({
+      where: { id: planId }
+    });
+
+    if (!selectedPlan || !selectedPlan.isActive || selectedPlan.price <= 0) {
+      return NextResponse.json({ error: 'A valid paid plan must be selected for code generation.' }, { status: 400 });
     }
 
     let targetVendorId = null;
@@ -85,6 +97,7 @@ export async function POST(req: Request) {
         code,
         assignedVendorId: targetVendorId,
         status: 'UNUSED' as const,
+        planId: selectedPlan.id,
       });
     }
 
@@ -96,7 +109,7 @@ export async function POST(req: Request) {
     await prisma.activityLog.create({
       data: {
         action: 'GENERATED_COUPONS',
-        description: `Generated ${count} new PRO activation coupons.`,
+        description: `Generated ${count} new ${selectedPlan.name} activation coupons.`,
         userId: userId
       }
     });

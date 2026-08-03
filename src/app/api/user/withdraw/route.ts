@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -94,9 +94,11 @@ export async function POST(req: Request) {
     }
 
     // Check minimum withdrawal limits based on the user's specific plan
-    const minRequired = type === 'AFFILIATE' ? (membership.minAffiliateWithdrawal ?? 5000) : (membership.minTaskWithdrawal ?? 2000);
+    const minRequired = type === 'AFFILIATE' 
+      ? (membership?.minAffiliateWithdrawal ?? settings?.minAffiliateWithdraw ?? 1000) 
+      : (membership?.minTaskWithdrawal ?? settings?.minTaskWithdraw ?? 3500);
     if (withdrawalAmount < minRequired) {
-      return NextResponse.json({ error: `Minimum withdrawal is ₦${minRequired}` }, { status: 400 });
+      return NextResponse.json({ error: `Minimum withdrawal is ₦${minRequired.toLocaleString()}` }, { status: 400 });
     }
 
     // UPGRADE LOCK LOGIC
@@ -143,7 +145,7 @@ export async function POST(req: Request) {
     const balanceField = type === 'AFFILIATE' ? 'affiliateBalance' : 'taskBalance';
     const withdrawalsField = type === 'AFFILIATE' ? 'currentPlanAffiliateWithdrawals' : 'currentPlanTaskWithdrawals';
 
-    await prisma.$transaction([
+    const [_, withdrawalRecord] = await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
         data: {
@@ -163,12 +165,21 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           action: 'WITHDRAWAL_REQUESTED',
-          description: `Requested ₦${withdrawalAmount} withdrawal from ${type} wallet.`
+          description: `Requested ₦${withdrawalAmount.toLocaleString()} withdrawal from ${type} wallet.`
         }
       })
     ]);
 
-    return NextResponse.json({ message: 'Withdrawal request submitted successfully' });
+    const shortId = withdrawalRecord.id.split('-')[0].toUpperCase();
+    const referenceCode = `ERX-WD-${shortId}`;
+    const sessionId = `SES-${Date.now().toString(36).toUpperCase()}-${withdrawalRecord.id.slice(-6).toUpperCase()}`;
+
+    return NextResponse.json({
+      message: 'Withdrawal request submitted successfully',
+      withdrawalId: withdrawalRecord.id,
+      referenceCode,
+      sessionId
+    });
   } catch (error: any) {
     console.error('Withdrawal error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

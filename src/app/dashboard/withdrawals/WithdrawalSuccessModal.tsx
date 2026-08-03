@@ -1,6 +1,6 @@
 'use client';
 
-import { ThumbsUp, Calendar, Clock, CheckCircle2, ShieldCheck, ArrowRight, Wallet, Download, Share2 } from 'lucide-react';
+import { ThumbsUp, Calendar, Clock, CheckCircle2, ShieldCheck, ArrowRight, Wallet, Download, Share2, KeyRound, Hash } from 'lucide-react';
 
 interface WithdrawalSuccessModalProps {
   isOpen: boolean;
@@ -11,6 +11,8 @@ interface WithdrawalSuccessModalProps {
   bankName?: string;
   accountNumber?: string;
   accountName?: string;
+  referenceCode?: string;
+  sessionId?: string;
 }
 
 export default function WithdrawalSuccessModal({
@@ -22,12 +24,13 @@ export default function WithdrawalSuccessModal({
   bankName,
   accountNumber,
   accountName,
+  referenceCode,
+  sessionId,
 }: WithdrawalSuccessModalProps) {
   if (!isOpen) return null;
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  // Format Date & Time cleanly
   const formattedFullDate = dateObj.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -42,95 +45,154 @@ export default function WithdrawalSuccessModal({
   });
 
   const walletLabel = type === 'AFFILIATE' ? 'Affiliate Wallet' : 'Task + Bonus Wallet';
-  const refCode = `WD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  const finalRefCode = referenceCode || `ERX-WD-${Math.floor(100000 + Math.random() * 900000)}`;
+  const finalSessionId = sessionId || `SES-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const downloadReceipt = () => {
+    const img = new Image();
+    img.src = '/earnix-logo.jpg';
+    img.crossOrigin = 'anonymous';
+    img.onload = () => renderCanvasAndDownload(img);
+    img.onerror = () => renderCanvasAndDownload();
+  };
+
+  const renderCanvasAndDownload = (logoImg?: HTMLImageElement) => {
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 700;
+    canvas.width = 650;
+    canvas.height = 860;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Draw Background
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, 600, 700);
+    // 1. Solid Clean White Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 650, 860);
 
-    // Draw Top Decorative Bar
-    const gradient = ctx.createLinearGradient(0, 0, 600, 0);
+    // 2. Small Font Watermark Pattern Layer Across Canvas
+    ctx.save();
+    ctx.rotate((-20 * Math.PI) / 180);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.035)';
+    ctx.font = '600 10px monospace';
+    const watermarkText = 'EARNIX VERIFIED RECEIPT • OFFICIAL TRANSACTION • SECURITY LOGGED • ';
+    for (let y = -200; y < 1100; y += 36) {
+      for (let x = -300; x < 900; x += 340) {
+        ctx.fillText(watermarkText, x, y);
+      }
+    }
+    ctx.restore();
+
+    // 3. Top Decorative Gradient Line
+    const gradient = ctx.createLinearGradient(0, 0, 650, 0);
     gradient.addColorStop(0, '#10b981');
     gradient.addColorStop(0.5, '#3b82f6');
     gradient.addColorStop(1, '#10b981');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 600, 10);
+    ctx.fillRect(0, 0, 650, 8);
 
-    // Draw Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 28px sans-serif';
+    // 4. Logo Header
+    if (logoImg) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(325, 65, 30, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(logoImg, 295, 35, 60, 60);
+      ctx.restore();
+
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(325, 65, 30, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Title & Status
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('EARNIX DIGITAL RECEIPT', 300, 60);
+    ctx.fillText('EARNIX DIGITAL RECEIPT', 325, 122);
 
-    ctx.fillStyle = '#34d399';
-    ctx.font = '800 16px sans-serif';
-    ctx.fillText('✓ WITHDRAWAL SUCCESSFUL', 300, 100);
+    ctx.fillStyle = '#059669';
+    ctx.font = '800 13px sans-serif';
+    ctx.fillText('✓ WITHDRAWAL SUCCESSFUL & VERIFIED', 325, 146);
 
-    // Draw Divider
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.beginPath();
-    ctx.moveTo(50, 130);
-    ctx.lineTo(550, 130);
-    ctx.stroke();
+    // Amount Card Background
+    ctx.fillStyle = '#f0fdf4';
+    ctx.fillRect(50, 168, 550, 92);
+    ctx.strokeStyle = '#bbf7d0';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(50, 168, 550, 92);
 
-    // Draw Amount Withdrawn
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('AMOUNT WITHDRAWN', 300, 170);
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('AMOUNT WITHDRAWN', 325, 194);
 
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 44px sans-serif';
-    ctx.fillText(`₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`, 300, 230);
+    ctx.fillStyle = '#059669';
+    ctx.font = '900 36px sans-serif';
+    ctx.fillText(`₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 325, 238);
 
-    // Draw Detail Box Background
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.fillRect(50, 270, 500, 320);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.strokeRect(50, 270, 500, 320);
+    // Details Card Box
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(50, 280, 550, 485);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.strokeRect(50, 280, 550, 485);
 
-    // Detail Fields Helper
-    const drawRow = (label: string, value: string, y: number) => {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.font = '16px sans-serif';
+    const drawRow = (label: string, value: string, y: number, isHighlighted = false) => {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '14px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(label, 80, y);
+      ctx.fillText(label, 75, y);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 16px sans-serif';
+      ctx.fillStyle = isHighlighted ? '#059669' : '#0f172a';
+      ctx.font = isHighlighted ? 'bold 13px monospace' : 'bold 14px sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(value, 520, y);
+      ctx.fillText(value, 575, y);
+
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.beginPath();
+      ctx.moveTo(75, y + 16);
+      ctx.lineTo(575, y + 16);
+      ctx.stroke();
     };
 
-    drawRow('Date', formattedFullDate, 320);
-    drawRow('Time', formattedTime, 370);
-    drawRow('Source Wallet', walletLabel, 420);
-    drawRow('Destination', bankName ? `${bankName} (${accountNumber})` : 'N/A', 470);
-    drawRow('Ref Code', refCode, 520);
-    drawRow('Status', 'PAID / PROCESSED', 570);
+    let startY = 320;
+    drawRow('Date', formattedFullDate, startY);
+    startY += 55;
+    drawRow('Time', formattedTime, startY);
+    startY += 55;
+    drawRow('Source Wallet', walletLabel, startY);
+    if (accountName) {
+      startY += 55;
+      drawRow('Account Name', accountName, startY);
+    }
+    startY += 55;
+    drawRow('Bank Name', bankName || 'N/A', startY);
+    startY += 55;
+    drawRow('Account Number', accountNumber || 'N/A', startY);
+    startY += 55;
+    drawRow('Traceable Ref Code', finalRefCode, startY, true);
+    startY += 55;
+    drawRow('Session ID', finalSessionId, startY, true);
 
-    // Draw Footer Message
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.font = 'italic 14px sans-serif';
+    // Footer Watermark Note
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Thank you for choosing EARNIX - SoftLife & Stress-Free Earnings', 300, 640);
+    ctx.fillText('This receipt is electronically generated and verified by EARNIX Platform.', 325, 798);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'italic 11px sans-serif';
+    ctx.fillText('SoftLife & Stress-Free Earnings', 325, 818);
 
-    // Create Download Link
+    // Download PNG
     const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
-    link.download = `EARNIX-Receipt-${refCode}.png`;
+    link.download = `EARNIX-Receipt-${finalRefCode}.png`;
     link.href = dataUrl;
     link.click();
   };
 
   const shareReceipt = async () => {
-    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ₦${amount.toLocaleString('en-NG')}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${refCode}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
+    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ₦${amount.toLocaleString('en-NG')}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${finalRefCode}\n• *Session ID:* ${finalSessionId}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
     
     if (navigator.share) {
       try {
@@ -142,7 +204,6 @@ export default function WithdrawalSuccessModal({
         console.error('Sharing failed:', err);
       }
     } else {
-      // Fallback: Copy to clipboard
       try {
         await navigator.clipboard.writeText(text);
         alert('Receipt details copied to clipboard! You can paste and share it anywhere.');
@@ -186,7 +247,6 @@ export default function WithdrawalSuccessModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Subtle decorative top bar */}
         <div 
           style={{
             position: 'absolute',
@@ -198,9 +258,8 @@ export default function WithdrawalSuccessModal({
           }}
         />
 
-        {/* Hero Thumbs Up Icon Container */}
+        {/* Hero Earnix Logo Container */}
         <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1.25rem' }}>
-          {/* Animated Background Ring Glow */}
           <div 
             style={{
               position: 'absolute',
@@ -222,7 +281,8 @@ export default function WithdrawalSuccessModal({
               margin: '0 auto',
               boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              border: '2px solid #10b981'
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -249,7 +309,7 @@ export default function WithdrawalSuccessModal({
               marginBottom: '0.65rem'
             }}
           >
-            <CheckCircle2 size={13} /> Request Submitted
+            <CheckCircle2 size={13} /> Request Submitted &amp; Logged
           </div>
           <h2 style={{ fontSize: '1.65rem', fontWeight: '900', color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>
             Withdrawal Successful!
@@ -292,7 +352,6 @@ export default function WithdrawalSuccessModal({
             fontSize: '0.84rem'
           }}
         >
-          {/* Date & Time */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Calendar size={14} style={{ color: '#3b82f6' }} /> Date &amp; Time
@@ -311,7 +370,6 @@ export default function WithdrawalSuccessModal({
             </span>
           </div>
 
-          {/* Source Wallet */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Wallet size={14} style={{ color: '#10b981' }} /> Source Wallet
@@ -321,7 +379,6 @@ export default function WithdrawalSuccessModal({
             </span>
           </div>
 
-          {/* Target Bank Info if available */}
           {(bankName || accountNumber) && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -333,11 +390,23 @@ export default function WithdrawalSuccessModal({
             </div>
           )}
 
-          {/* Reference ID */}
+          {/* Traceable Reference Code */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '0.65rem', marginTop: '0.1rem' }}>
-            <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>Ref Code</span>
-            <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontFamily: 'monospace', fontWeight: 'bold' }}>
-              {refCode}
+            <span style={{ color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Hash size={13} style={{ color: '#10b981' }} /> Ref Code
+            </span>
+            <span style={{ color: '#34d399', fontFamily: 'monospace', fontWeight: 'bold' }}>
+              {finalRefCode}
+            </span>
+          </div>
+
+          {/* Session ID */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <KeyRound size={13} style={{ color: '#3b82f6' }} /> Session ID
+            </span>
+            <span style={{ color: '#60a5fa', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '0.78rem' }}>
+              {finalSessionId}
             </span>
           </div>
         </div>
@@ -413,7 +482,6 @@ export default function WithdrawalSuccessModal({
           Great, Got It <ArrowRight size={18} />
         </button>
 
-        {/* Inline styles for keyframe animations */}
         <style dangerouslySetInnerHTML={{__html: `
           @keyframes fadeIn {
             from { opacity: 0; }
@@ -432,3 +500,4 @@ export default function WithdrawalSuccessModal({
     </div>
   );
 }
+

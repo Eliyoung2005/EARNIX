@@ -375,6 +375,10 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       <span>Sponsored Task: <strong style={{color: 'white'}}>₦{plan.taskReward.toLocaleString()}</strong></span>
                     </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Min Task Payout: <strong style={{color: 'white'}}>₦{(plan.minTaskWithdrawal ?? 3500).toLocaleString()}</strong></span>
+                    </li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: plan.referralCommission > 0 ? 1 : 0.6 }}>
                       {plan.referralCommission > 0 ? (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>

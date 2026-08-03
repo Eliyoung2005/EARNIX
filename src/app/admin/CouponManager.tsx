@@ -11,6 +11,8 @@ interface Coupon {
   createdAt: Date;
   assignedVendorId: string | null;
   assignedVendor?: { id: string; username: string } | null;
+  planId: string | null;
+  plan?: { id: string; name: string } | null;
 }
 
 interface UsedCoupon {
@@ -20,6 +22,7 @@ interface UsedCoupon {
   redeemedDate?: Date | null;
   assignedVendor?: { id?: string; name?: string | null; username: string } | null;
   redeemedBy?: { name?: string | null; username: string; email: string } | null;
+  plan?: { id?: string; name?: string } | null;
 }
 
 interface Vendor {
@@ -27,15 +30,35 @@ interface Vendor {
   username: string;
 }
 
+interface Plan {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface VendorStat {
+  id: string;
+  username: string;
+  name?: string | null;
+  plans: Record<string, { planName: string; available: number; sold: number; total: number }>;
+  totalAvailable: number;
+  totalSold: number;
+  totalAssigned: number;
+}
+
 export default function CouponManager({ 
   initialCoupons, 
   usedCoupons = [], 
   vendors = [], 
+  plans = [],
+  vendorStats = [],
   userRole 
 }: { 
   initialCoupons: Coupon[], 
   usedCoupons?: UsedCoupon[], 
   vendors?: Vendor[], 
+  plans?: Plan[],
+  vendorStats?: VendorStat[],
   userRole?: string 
 }) {
   const [loading, setLoading] = useState(false);
@@ -50,8 +73,19 @@ export default function CouponManager({
 
   // Filter states
   const [vendorFilter, setVendorFilter] = useState('ALL');
+  const [planFilter, setPlanFilter] = useState('ALL');
   const [searchUsedQuery, setSearchUsedQuery] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState('');
   const router = useRouter();
+
+  const getPlanColor = (planName?: string) => {
+    if (!planName) return 'var(--text-secondary)';
+    const upper = planName.toUpperCase();
+    if (upper.includes('ELITE')) return '#a855f7';
+    if (upper.includes('VIP')) return 'var(--accent-gold)';
+    if (upper.includes('PRO')) return 'var(--accent-blue)';
+    return 'var(--text-secondary)';
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -59,7 +93,7 @@ export default function CouponManager({
       const res = await fetch('/api/admin/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, assignToId })
+        body: JSON.stringify({ amount, assignToId, planId: selectedPlanId })
       });
       
       const data = await res.json();
@@ -162,9 +196,11 @@ export default function CouponManager({
   const poolCoupons = initialCoupons.filter(c => c.assignedVendorId === null);
 
   const filteredUnusedCoupons = initialCoupons.filter(c => {
-    if (vendorFilter === 'ALL') return true;
-    if (vendorFilter === 'UNASSIGNED') return c.assignedVendorId === null;
-    return c.assignedVendorId === vendorFilter;
+    const vendorMatch = vendorFilter === 'ALL' ? true 
+      : vendorFilter === 'UNASSIGNED' ? c.assignedVendorId === null 
+      : c.assignedVendorId === vendorFilter;
+    const planMatch = planFilter === 'ALL' ? true : c.planId === planFilter;
+    return vendorMatch && planMatch;
   });
 
   const filteredUsedCoupons = usedCoupons.filter(c => {
@@ -197,6 +233,20 @@ export default function CouponManager({
               onChange={(e) => setAmount(Number(e.target.value))} 
               style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: 'white', width: '110px' }}
             />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '200px' }}>
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Target Plan <span style={{ color: '#ef4444' }}>*</span></label>
+            <select 
+              value={selectedPlanId} 
+              onChange={(e) => setSelectedPlanId(e.target.value)} 
+              style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: 'white', appearance: 'none', cursor: 'pointer' }}
+            >
+              <option value="" disabled>Select Plan</option>
+              {plans.filter(p => p.price > 0).map(p => (
+                <option key={p.id} value={p.id}>{p.name} Plan</option>
+              ))}
+            </select>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '220px' }}>
@@ -273,6 +323,81 @@ export default function CouponManager({
         </div>
       )}
 
+      {/* ── VENDOR SALES & INVENTORY PERFORMANCE (PER PLAN) ── */}
+      {vendorStats && vendorStats.length > 0 && (
+        <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.5rem', borderRadius: '16px', marginBottom: '3rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent-gold)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Zap size={18} /> Vendor Sales &amp; Inventory Breakdown (Per Plan)
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
+                Monitor how many activation codes each vendor has sold per plan, how many remain available, and total allocations.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+            {vendorStats.map((v) => {
+              const planEntries = Object.entries(v.plans);
+              return (
+                <div key={v.id} style={{ background: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1.05rem', color: 'white' }}>
+                        @{v.username}
+                      </div>
+                      {v.name && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{v.name}</div>}
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Allocated</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'white' }}>{v.totalAssigned} codes</div>
+                    </div>
+                  </div>
+
+                  {planEntries.length === 0 ? (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', padding: '0.5rem 0' }}>
+                      No codes allocated to this vendor yet.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {planEntries.map(([planName, ps]) => {
+                        const color = getPlanColor(planName);
+                        return (
+                          <div key={planName} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${color}30`, borderRadius: '8px', padding: '0.6rem 0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color, background: `${color}18`, padding: '0.15rem 0.5rem', borderRadius: '4px', border: `1px solid ${color}40` }}>
+                                {planName}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem' }}>
+                              <div>
+                                <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>{ps.sold}</span> <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>Sold</span>
+                              </div>
+                              <div>
+                                <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>{ps.available}</span> <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>Left</span>
+                              </div>
+                              <div>
+                                <span style={{ color: 'white', fontWeight: 'bold' }}>{ps.total}</span> <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>Total</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed rgba(255,255,255,0.08)', fontSize: '0.8rem' }}>
+                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>Total Sold: {v.totalSold}</span>
+                    <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>Total Left: {v.totalAvailable}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── UNASSIGNED POOL CODES LIST ── */}
       {poolCoupons.length > 0 && vendors.length > 0 && (
         <div style={{ marginBottom: '3rem' }}>
@@ -288,6 +413,12 @@ export default function CouponManager({
                   {coupon.code}
                 </div>
                 
+                {coupon.plan?.name && (
+                  <div style={{ fontSize: '0.7rem', color: getPlanColor(coupon.plan.name), fontWeight: 'bold', marginBottom: '0.35rem' }}>
+                    {coupon.plan.name} PLAN
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
                   <select 
                     value={selectedVendors[coupon.code] || ''} 
@@ -334,22 +465,38 @@ export default function CouponManager({
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Filter Vendor:</label>
-            <select 
-              value={vendorFilter} 
-              onChange={(e) => setVendorFilter(e.target.value)}
-              style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: '0.85rem' }}
-            >
-              <option value="ALL">All Active Coupons ({initialCoupons.length})</option>
-              <option value="UNASSIGNED">Unassigned Pool Only ({poolCoupons.length})</option>
-              {vendors.map(v => {
-                const vendorCount = initialCoupons.filter(c => c.assignedVendorId === v.id).length;
-                return (
-                  <option key={v.id} value={v.id}>@{v.username} ({vendorCount} codes)</option>
-                );
-              })}
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Filter Plan:</label>
+              <select 
+                value={planFilter} 
+                onChange={(e) => setPlanFilter(e.target.value)}
+                style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: '0.85rem' }}
+              >
+                <option value="ALL">All Plans</option>
+                {plans.filter(p => p.price > 0).map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Filter Vendor:</label>
+              <select 
+                value={vendorFilter} 
+                onChange={(e) => setVendorFilter(e.target.value)}
+                style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: '0.85rem' }}
+              >
+                <option value="ALL">All Active Coupons ({initialCoupons.length})</option>
+                <option value="UNASSIGNED">Unassigned Pool Only ({poolCoupons.length})</option>
+                {vendors.map(v => {
+                  const vendorCount = initialCoupons.filter(c => c.assignedVendorId === v.id).length;
+                  return (
+                    <option key={v.id} value={v.id}>@{v.username} ({vendorCount} codes)</option>
+                  );
+                })}
+              </select>
+            </div>
           </div>
         </div>
         
@@ -374,6 +521,12 @@ export default function CouponManager({
                   <div style={{ fontSize: '0.72rem', color: coupon.assignedVendorId ? 'var(--accent-gold)' : 'var(--accent-blue)', fontWeight: 'bold', marginBottom: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.2rem 0.5rem', borderRadius: '4px', display: 'inline-block' }}>
                     {vendorName}
                   </div>
+
+                  {coupon.plan?.name && (
+                    <div style={{ fontSize: '0.7rem', color: getPlanColor(coupon.plan.name), fontWeight: 'bold', background: `${getPlanColor(coupon.plan.name)}15`, padding: '0.15rem 0.5rem', borderRadius: '4px', display: 'inline-block', marginBottom: '0.5rem', border: `1px solid ${getPlanColor(coupon.plan.name)}30` }}>
+                      {coupon.plan.name} PLAN
+                    </div>
+                  )}
                   
                   <button
                     onClick={() => copyToClipboard(coupon.code)}
@@ -450,6 +603,7 @@ export default function CouponManager({
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)' }}>
                   <th style={{ padding: '0.75rem 1rem' }}>Code</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Plan</th>
                   <th style={{ padding: '0.75rem 1rem' }}>Redeemed By</th>
                   <th style={{ padding: '0.75rem 1rem' }}>Vendor Issuer</th>
                   <th style={{ padding: '0.75rem 1rem' }}>Redeemed Date</th>
@@ -461,6 +615,15 @@ export default function CouponManager({
                   <tr key={coupon.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
                       {coupon.code}
+                    </td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      {coupon.plan?.name ? (
+                        <span style={{ fontSize: '0.72rem', background: `${getPlanColor(coupon.plan.name)}15`, color: getPlanColor(coupon.plan.name), padding: '0.15rem 0.5rem', borderRadius: '50px', fontWeight: 'bold', border: `1px solid ${getPlanColor(coupon.plan.name)}30` }}>
+                          {coupon.plan.name}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Legacy</span>
+                      )}
                     </td>
                     <td style={{ padding: '0.75rem 1rem', color: 'white' }}>
                       {coupon.redeemedBy ? (

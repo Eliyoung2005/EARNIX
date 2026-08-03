@@ -6,6 +6,7 @@ import { Send, MessageSquare } from 'lucide-react';
 export default function VendorDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalAssigned: 0, soldCount: 0, availableCount: 0 });
+  const [planStats, setPlanStats] = useState<Record<string, { available: number; sold: number }>>({});
   const [coupons, setCoupons] = useState<any[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'AVAILABLE' | 'SOLD'>('ALL');
   const [customGreeting, setCustomGreeting] = useState('');
@@ -15,12 +16,22 @@ export default function VendorDashboard() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const getPlanColor = (planName?: string) => {
+    if (!planName) return 'var(--text-secondary)';
+    const upper = planName.toUpperCase();
+    if (upper.includes('ELITE')) return '#a855f7';
+    if (upper.includes('VIP')) return 'var(--accent-gold)';
+    if (upper.includes('PRO')) return 'var(--accent-blue)';
+    return 'var(--text-secondary)';
+  };
+
   useEffect(() => {
     fetch('/api/vendor/dashboard')
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
           setStats(data.stats || { totalAssigned: 0, soldCount: 0, availableCount: 0 });
+          setPlanStats(data.planStats || {});
           setCoupons(data.coupons || []);
           setCustomGreeting(data.vendor?.customGreeting || 'Hello! I would like to purchase an EARNIX PRO Activation Code.');
           setTelegramLink(data.vendor?.telegramLink || '');
@@ -85,7 +96,7 @@ export default function VendorDashboard() {
   return (
     <div>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent-gold)' }}>Vendor Dashboard</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Manage your assigned Activation Codes, profile picture, and live sales performance.</p>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Manage your assigned Activation Codes by plan, profile picture, and live sales performance.</p>
 
       {/* Vendor Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
@@ -104,6 +115,29 @@ export default function VendorDashboard() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Available Codes to Sell</p>
           <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-blue)' }}>{stats.availableCount}</div>
         </div>
+
+        {Object.keys(planStats).length > 0 && (
+          <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '0.5rem' }}>
+            {Object.entries(planStats).map(([planName, ps]) => {
+              const color = getPlanColor(planName);
+              return (
+                <div key={planName} className="bg-surface" style={{ padding: '1rem 1.25rem', borderRadius: '12px', borderLeft: `3px solid ${color}`, background: 'rgba(0,0,0,0.15)' }}>
+                  <p style={{ color, fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.35rem', textTransform: 'uppercase' }}>{planName} Plan</p>
+                  <div style={{ display: 'flex', gap: '1.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color }}>{ps.available}</div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Available</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--success)' }}>{ps.sold}</div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Sold</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
 
@@ -271,6 +305,7 @@ export default function VendorDashboard() {
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', textAlign: 'left' }}>
                   <th style={{ padding: '1rem 0.5rem' }}>Coupon Code</th>
+                  <th style={{ padding: '1rem 0.5rem' }}>Plan</th>
                   <th style={{ padding: '1rem 0.5rem' }}>Value</th>
                   <th style={{ padding: '1rem 0.5rem' }}>Status</th>
                   <th style={{ padding: '1rem 0.5rem' }}>Action / Details</th>
@@ -282,8 +317,17 @@ export default function VendorDashboard() {
                     <td style={{ padding: '1rem 0.5rem', fontFamily: 'monospace', fontSize: '1.1rem', color: 'var(--accent-gold)', textDecoration: coupon.status === 'USED' ? 'line-through' : 'none' }}>
                       {coupon.code}
                     </td>
+                    <td style={{ padding: '1rem 0.5rem' }}>
+                      {coupon.plan?.name ? (
+                        <span style={{ fontSize: '0.72rem', background: `${getPlanColor(coupon.plan.name)}15`, color: getPlanColor(coupon.plan.name), padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold', border: `1px solid ${getPlanColor(coupon.plan.name)}30` }}>
+                          {coupon.plan.name}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Legacy</span>
+                      )}
+                    </td>
                     <td style={{ padding: '1rem 0.5rem', fontWeight: 'bold' }}>
-                      ₦{coupon.value || 4000}
+                      ₦{coupon.plan?.price !== undefined ? coupon.plan.price.toLocaleString() : (coupon.value ? coupon.value.toLocaleString() : '0')}
                     </td>
                     <td style={{ padding: '1rem 0.5rem' }}>
                       {coupon.status === 'UNUSED' ? (

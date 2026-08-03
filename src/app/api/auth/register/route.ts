@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -135,6 +135,18 @@ export async function POST(req: Request) {
 
       if (!validCoupon || validCoupon.status === 'USED') {
         return NextResponse.json({ error: 'Invalid or already used coupon code' }, { status: 400 });
+      }
+
+      // Validate plan-specific coupon
+      if (validCoupon.planId && validCoupon.planId !== selectedPlan.id) {
+        // Look up the coupon's intended plan name for a clear error
+        const couponPlan = await prisma.membershipPlan.findUnique({
+          where: { id: validCoupon.planId },
+          select: { name: true }
+        });
+        return NextResponse.json({ 
+          error: `This activation code is for the ${couponPlan?.name || 'another'} plan. Please select the correct plan or use a different code.` 
+        }, { status: 400 });
       }
 
       // Create User and Mark Coupon as Used in a Transaction

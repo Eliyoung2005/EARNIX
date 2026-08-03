@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getAdminSession } from '@/lib/adminSession';
 import { prisma } from '@/lib/prisma';
@@ -38,7 +38,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { couponCode, targetVendorId, amount } = await req.json();
+    const { couponCode, targetVendorId, amount, planId } = await req.json();
 
     if (!targetVendorId) {
       return NextResponse.json({ error: 'Target vendor is required' }, { status: 400 });
@@ -61,7 +61,11 @@ export async function PATCH(req: Request) {
       }
 
       const poolCoupons = await prisma.couponCode.findMany({
-        where: { status: 'UNUSED', assignedVendorId: null },
+        where: { 
+          status: 'UNUSED', 
+          assignedVendorId: null,
+          ...(planId ? { planId } : {})
+        },
         take: count
       });
 
@@ -91,6 +95,21 @@ export async function PATCH(req: Request) {
         }
       });
 
+      let planName = 'Activation';
+      if (planId) {
+        const p = await prisma.membershipPlan.findUnique({ where: { id: planId } });
+        if (p) planName = p.name;
+      }
+
+      await prisma.notification.create({
+        data: {
+          title: `New ${planName} Activation Codes Assigned`,
+          message: `You have been assigned ${transferredCodes.length} ${planName} activation code(s). Check your Vendor Dashboard to view and manage them.`,
+          targetAudience: 'INDIVIDUAL',
+          targetUserId: targetVendor.id
+        }
+      });
+
       return NextResponse.json({
         message: `Successfully transferred ${transferredCodes.length} coupons to @${targetVendor.username} with fresh unique codes!`,
         count: transferredCodes.length,
@@ -105,7 +124,8 @@ export async function PATCH(req: Request) {
 
     // Find the coupon
     const coupon = await prisma.couponCode.findUnique({
-      where: { code: couponCode }
+      where: { code: couponCode },
+      include: { plan: true }
     });
 
     if (!coupon) {
@@ -135,6 +155,16 @@ export async function PATCH(req: Request) {
         action: 'COUPON_TRANSFERRED',
         description: `Assigned coupon to ${targetVendor.username}. Code updated to fresh code ${freshCode} (was ${coupon.code}).`,
         userId: (session.user as any).id
+      }
+    });
+
+    const pName = coupon.plan?.name || 'Activation';
+    await prisma.notification.create({
+      data: {
+        title: `New ${pName} Activation Codes Assigned`,
+        message: `You have been assigned 1 ${pName} activation code(s). Check your Vendor Dashboard to view and manage them.`,
+        targetAudience: 'INDIVIDUAL',
+        targetUserId: targetVendor.id
       }
     });
 

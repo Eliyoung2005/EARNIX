@@ -25,6 +25,9 @@ export default function WithdrawalsPage() {
     date: Date;
     bankName?: string;
     accountNumber?: string;
+    accountName?: string;
+    referenceCode?: string;
+    sessionId?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -186,6 +189,9 @@ export default function WithdrawalsPage() {
         date: submittedDate,
         bankName: profile?.bankName,
         accountNumber: profile?.accountNumber,
+        accountName: profile?.accountName,
+        referenceCode: data.referenceCode,
+        sessionId: data.sessionId,
       });
 
       // Refresh profile to update balances
@@ -475,6 +481,9 @@ export default function WithdrawalsPage() {
           date={successModal.date}
           bankName={successModal.bankName}
           accountNumber={successModal.accountNumber}
+          accountName={successModal.accountName}
+          referenceCode={successModal.referenceCode}
+          sessionId={successModal.sessionId}
         />
       )}
 

@@ -392,10 +392,10 @@ export default function Register() {
             <div className="transition-all" style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '1rem', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.35)', animation: 'fadeIn 0.3s ease-in-out' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label htmlFor="coupon" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
-                  Activation Coupon Code <span style={{ color: '#ef4444' }}>*</span>
+                  {selectedPlanObj?.name || 'PRO'} Activation Code <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <span style={{ fontSize: '0.72rem', background: 'var(--accent-gold)', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold' }}>
-                  REQUIRED FOR PRO
+                  REQUIRED FOR {selectedPlanObj?.name || 'PAID PLAN'}
                 </span>
               </div>
               <input
@@ -404,7 +404,7 @@ export default function Register() {
                 value={formData.coupon}
                 onChange={handleChange}
                 required={isPaidPlan}
-                placeholder="Enter Activation Coupon Code (e.g. TEST-PRO-001)"
+                placeholder={`Enter ${selectedPlanObj?.name || 'Activation'} Coupon Code`}
                 style={{
                   width: '100%',
                   padding: '0.85rem 1rem',

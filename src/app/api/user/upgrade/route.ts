@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -40,6 +40,17 @@ export async function POST(req: Request) {
 
     if (!validCoupon || validCoupon.status !== 'UNUSED') {
       return NextResponse.json({ error: 'Invalid or already redeemed coupon code. Need a code? Check our verified vendors page.' }, { status: 400 });
+    }
+
+    // Validate plan-specific coupon
+    if (validCoupon.planId && validCoupon.planId !== targetPlan.id) {
+      const couponPlan = await prisma.membershipPlan.findUnique({
+        where: { id: validCoupon.planId },
+        select: { name: true }
+      });
+      return NextResponse.json({ 
+        error: `This activation code is for the ${couponPlan?.name || 'another'} plan, not the ${targetPlan.name} plan. Please use a ${targetPlan.name} activation code.` 
+      }, { status: 400 });
     }
 
     // Check if user is already on this plan or a higher plan

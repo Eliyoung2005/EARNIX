@@ -107,7 +107,7 @@ export default function UpgradeBannerButton({ nextPlanName, price }: { nextPlanN
               Upgrade to {nextPlanName}
             </h2>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '1.5rem' }}>
-              Enter your verified {nextPlanName} Activation Coupon Code below to upgrade instantly.
+              Enter your verified <strong style={{ color: 'var(--accent-gold)' }}>{nextPlanName}</strong> Activation Coupon Code below to upgrade instantly.
             </p>
 
             {error && (
@@ -123,7 +123,7 @@ export default function UpgradeBannerButton({ nextPlanName, price }: { nextPlanN
                 </label>
                 <input
                   type="text"
-                  placeholder={`e.g. ${nextPlanName.toUpperCase()}-XXXX-XXXX`}
+                  placeholder={`Enter your ${nextPlanName} activation code`}
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   style={{

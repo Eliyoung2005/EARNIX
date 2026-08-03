@@ -44,6 +44,7 @@ export async function GET() {
         redeemedBy: {
           select: { username: true, email: true },
         },
+        plan: { select: { id: true, name: true, price: true } }
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -52,6 +53,15 @@ export async function GET() {
     const soldCount = coupons.filter(c => c.status === 'USED').length;
     const availableCount = coupons.filter(c => c.status === 'UNUSED').length;
 
+    // Group stats by plan
+    const planStats: Record<string, { available: number; sold: number }> = {};
+    for (const c of coupons) {
+      const planName = c.plan?.name || 'Legacy';
+      if (!planStats[planName]) planStats[planName] = { available: 0, sold: 0 };
+      if (c.status === 'UNUSED') planStats[planName].available++;
+      else planStats[planName].sold++;
+    }
+
     return NextResponse.json({
       vendor,
       stats: {
@@ -59,6 +69,7 @@ export async function GET() {
         soldCount,
         availableCount,
       },
+      planStats,
       coupons,
     });
   } catch (error: any) {

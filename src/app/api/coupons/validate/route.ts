@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       include: {
         assignedVendor: {
           select: { name: true, username: true }
-        }
+        },
+        plan: { select: { name: true } }
       }
     });
 
@@ -38,16 +39,18 @@ export async function POST(req: Request) {
         message: `This coupon code "${upperCode}" has already been redeemed and cannot be reused.`,
         code: upperCode,
         vendor: coupon.assignedVendor?.name || coupon.assignedVendor?.username || 'Authorized Vendor',
-        redeemedDate: coupon.redeemedDate
+        redeemedDate: coupon.redeemedDate,
+        planName: coupon.plan?.name || null
       });
     }
 
     return NextResponse.json({
       status: 'VALID',
-      message: `✓ Coupon Code "${upperCode}" is VALID & UNUSED! It is ready for registration or plan upgrade.`,
+      message: coupon.plan?.name ? `✓ Coupon Code "${upperCode}" is VALID & UNUSED! This is a ${coupon.plan.name} plan activation code.` : `✓ Coupon Code "${upperCode}" is VALID & UNUSED! It is ready for registration or plan upgrade.`,
       code: upperCode,
       vendor: coupon.assignedVendor?.name || coupon.assignedVendor?.username || 'Authorized Vendor',
-      createdAt: coupon.createdAt
+      createdAt: coupon.createdAt,
+      planName: coupon.plan?.name || null
     });
   } catch (error) {
     console.error('Coupon Validation Error:', error);
