@@ -24,6 +24,7 @@ export async function GET() {
         role: true,
         customGreeting: true,
         telegramLink: true,
+        customTelegramMessage: true,
         profilePic: true,
         accountNumber: true,
       },
@@ -86,13 +87,14 @@ export async function PATCH(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const { customGreeting, telegramLink, accountNumber, profilePic } = await req.json();
+    const { customGreeting, telegramLink, customTelegramMessage, accountNumber, profilePic } = await req.json();
 
     await prisma.user.update({
       where: { id: userId },
       data: {
         customGreeting: customGreeting ?? '',
         telegramLink: telegramLink ?? '',
+        customTelegramMessage: customTelegramMessage ?? '',
         profilePic: profilePic !== undefined ? profilePic : undefined,
         accountNumber: accountNumber ?? undefined,
       },

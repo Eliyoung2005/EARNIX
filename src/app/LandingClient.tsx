@@ -428,11 +428,12 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                 let telegramHref = '';
                 if (vendor.telegramLink && vendor.telegramLink.trim()) {
                   const raw = vendor.telegramLink.trim();
+                  const tgText = encodeURIComponent(vendor.customTelegramMessage || vendor.customGreeting || 'Hello! I would like to purchase an EARNIX Activation Code.');
                   if (raw.startsWith('http://') || raw.startsWith('https://')) {
-                    telegramHref = raw;
+                    telegramHref = raw.includes('?') ? `${raw}&text=${tgText}` : `${raw}?text=${tgText}`;
                   } else {
                     const handle = raw.replace(/^@/, '');
-                    telegramHref = `https://t.me/${handle}`;
+                    telegramHref = `https://t.me/${handle}?text=${tgText}`;
                   }
                 }
 

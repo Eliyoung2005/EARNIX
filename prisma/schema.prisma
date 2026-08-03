@@ -71,6 +71,7 @@ model User {
   profilePic          String?
   customGreeting      String?
   telegramLink        String?
+  customTelegramMessage String?
   bankName            String?
   accountName         String?
   accountNumber       String?

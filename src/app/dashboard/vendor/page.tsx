@@ -11,6 +11,7 @@ export default function VendorDashboard() {
   const [filter, setFilter] = useState<'ALL' | 'AVAILABLE' | 'SOLD'>('ALL');
   const [customGreeting, setCustomGreeting] = useState('');
   const [telegramLink, setTelegramLink] = useState('');
+  const [customTelegramMessage, setCustomTelegramMessage] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [profilePic, setProfilePic] = useState('');
   const [saving, setSaving] = useState(false);
@@ -35,6 +36,7 @@ export default function VendorDashboard() {
           setCoupons(data.coupons || []);
           setCustomGreeting(data.vendor?.customGreeting || 'Hello! I would like to purchase an EARNIX PRO Activation Code.');
           setTelegramLink(data.vendor?.telegramLink || '');
+          setCustomTelegramMessage(data.vendor?.customTelegramMessage || 'Hello! I would like to purchase an EARNIX Activation Code via Telegram.');
           setAccountNumber(data.vendor?.accountNumber || '');
           setProfilePic(data.vendor?.profilePic || '');
         }
@@ -68,7 +70,7 @@ export default function VendorDashboard() {
       const res = await fetch('/api/vendor/dashboard', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customGreeting, telegramLink, accountNumber, profilePic }),
+        body: JSON.stringify({ customGreeting, telegramLink, customTelegramMessage, accountNumber, profilePic }),
       });
       if (res.ok) {
         setMessage('Vendor profile picture, contact details & settings saved successfully!');
@@ -224,16 +226,32 @@ export default function VendorDashboard() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white' }}>
-              Custom WhatsApp DM Message
-            </label>
-            <textarea 
-              value={customGreeting}
-              onChange={(e) => setCustomGreeting(e.target.value)}
-              placeholder="Hello! I would like to purchase an EARNIX PRO Activation Code."
-              style={{ width: '100%', padding: '1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '75px', fontSize: '0.95rem' }}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <MessageSquare size={15} style={{ color: '#25D366' }} /> Custom WhatsApp DM Message
+              </label>
+              <textarea 
+                value={customGreeting}
+                onChange={(e) => setCustomGreeting(e.target.value)}
+                placeholder="Hello! I would like to purchase an EARNIX PRO Activation Code."
+                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '75px', fontSize: '0.95rem' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pre-filled message when buyers click your WhatsApp link.</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Send size={15} style={{ color: '#0088cc' }} /> Custom Telegram DM Message
+              </label>
+              <textarea 
+                value={customTelegramMessage}
+                onChange={(e) => setCustomTelegramMessage(e.target.value)}
+                placeholder="Hello! I would like to purchase an EARNIX Activation Code via Telegram."
+                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', minHeight: '75px', fontSize: '0.95rem' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pre-filled message when buyers click your Telegram link.</span>
+            </div>
           </div>
 
           {message && (
