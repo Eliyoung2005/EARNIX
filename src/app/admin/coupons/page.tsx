@@ -20,7 +20,6 @@ export default async function AdminCouponsPage() {
   }
 
   const plans = await prisma.membershipPlan.findMany({
-    where: { isActive: true },
     select: { id: true, name: true, price: true },
     orderBy: { level: 'asc' }
   });

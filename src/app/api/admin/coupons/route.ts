@@ -67,8 +67,8 @@ export async function POST(req: Request) {
       where: { id: planId }
     });
 
-    if (!selectedPlan || !selectedPlan.isActive || selectedPlan.price <= 0) {
-      return NextResponse.json({ error: 'A valid paid plan must be selected for code generation.' }, { status: 400 });
+    if (!selectedPlan || selectedPlan.name.toUpperCase() === 'FREE') {
+      return NextResponse.json({ error: 'A valid paid membership plan must be selected for code generation.' }, { status: 400 });
     }
 
     let targetVendorId = null;

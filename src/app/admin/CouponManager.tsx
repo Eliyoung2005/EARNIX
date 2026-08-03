@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap } from 'lucide-react';
 
@@ -75,8 +75,36 @@ export default function CouponManager({
   const [vendorFilter, setVendorFilter] = useState('ALL');
   const [planFilter, setPlanFilter] = useState('ALL');
   const [searchUsedQuery, setSearchUsedQuery] = useState('');
+  const [allPlans, setAllPlans] = useState<Plan[]>(plans || []);
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const router = useRouter();
+
+  // Ensure plans list is populated and auto-select first paid plan
+  useEffect(() => {
+    fetch(`/api/plans?t=${Date.now()}`, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAllPlans(data);
+          const firstPaid = data.find((p: any) => p.name.toUpperCase() !== 'FREE' || p.price > 0) || data[0];
+          if (firstPaid && !selectedPlanId) {
+            setSelectedPlanId(firstPaid.id);
+          }
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Also auto-select from props if plans prop changes
+  useEffect(() => {
+    if (plans && plans.length > 0 && !selectedPlanId) {
+      setAllPlans(plans);
+      const firstPaid = plans.find((p: any) => p.name.toUpperCase() !== 'FREE' || p.price > 0) || plans[0];
+      if (firstPaid) {
+        setSelectedPlanId(firstPaid.id);
+      }
+    }
+  }, [plans]);
 
   const getPlanColor = (planName?: string) => {
     if (!planName) return 'var(--text-secondary)';
@@ -88,6 +116,11 @@ export default function CouponManager({
   };
 
   const handleGenerate = async () => {
+    if (!selectedPlanId) {
+      alert('Please select a Target Membership Plan before generating coupons.');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch('/api/admin/coupons', {
@@ -235,16 +268,23 @@ export default function CouponManager({
             />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '200px' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Target Plan <span style={{ color: '#ef4444' }}>*</span></label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '220px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
+              Target Plan <span style={{ color: '#ef4444' }}>*</span>
+            </label>
             <select 
               value={selectedPlanId} 
               onChange={(e) => setSelectedPlanId(e.target.value)} 
-              style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: 'white', appearance: 'none', cursor: 'pointer' }}
+              style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--accent-gold)', background: 'rgba(0,0,0,0.5)', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              <option value="" disabled>Select Plan</option>
-              {plans.filter(p => p.price > 0).map(p => (
-                <option key={p.id} value={p.id}>{p.name} Plan</option>
+              <option value="" disabled>-- Select Target Plan --</option>
+              {(allPlans.filter(p => p.name.toUpperCase() !== 'FREE').length > 0
+                ? allPlans.filter(p => p.name.toUpperCase() !== 'FREE')
+                : allPlans
+              ).map(p => (
+                <option key={p.id} value={p.id} style={{ background: '#1e293b', color: 'white' }}>
+                  {p.name} Plan {p.price > 0 ? `(₦${p.price.toLocaleString()})` : ''}
+                </option>
               ))}
             </select>
           </div>
