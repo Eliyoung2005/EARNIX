@@ -140,25 +140,50 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Coupon code is required.' }, { status: 400 });
     }
 
-    const existing = await prisma.couponCode.findUnique({ where: { code: couponCode } });
+    const existing = await prisma.couponCode.findUnique({
+      where: { code: couponCode },
+      include: {
+        assignedVendor: true,
+        plan: true
+      }
+    });
+
     if (!existing) {
       return NextResponse.json({ error: 'Coupon not found.' }, { status: 404 });
     }
 
+    const vendorId = existing.assignedVendorId;
+    const vendorName = existing.assignedVendor?.username || 'Unassigned';
+    const planName = existing.plan?.name || 'Activation';
+
+    // 1. Delete associated notifications for the vendor referencing this specific code
+    if (vendorId) {
+      await prisma.notification.deleteMany({
+        where: {
+          targetUserId: vendorId,
+          OR: [
+            { message: { contains: couponCode } },
+            { title: { contains: couponCode } }
+          ]
+        }
+      });
+    }
+
+    // 2. Permanently delete coupon code from database
     await prisma.couponCode.delete({
-      where: { code: couponCode }
+      where: { id: existing.id }
     });
 
-    // Log the activity
+    // 3. Log the activity
     await prisma.activityLog.create({
       data: {
         action: 'DELETED_COUPON',
-        description: `Deleted coupon code: ${couponCode}`,
+        description: `Permanently deleted coupon code: ${couponCode} (${planName} Plan, Vendor: @${vendorName}). All associated details and notifications removed.`,
         userId: (session.user as any).id
       }
     });
 
-    return NextResponse.json({ message: 'Coupon deleted successfully!' });
+    return NextResponse.json({ message: 'Coupon and all associated vendor details deleted successfully!' });
 
   } catch (error: any) {
     console.error('Coupon Deletion Error:', error);
