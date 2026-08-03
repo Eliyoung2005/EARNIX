@@ -44,7 +44,7 @@ export default function QuickActions({ username, plan }: { username: string, pla
         {/* Stable Referral Link Section - Available for ALL users on any device */}
         <div style={{
           marginTop: '0.5rem',
-          padding: '1.25rem',
+          padding: '1rem',
           borderRadius: '12px',
           background: 'rgba(192, 132, 252, 0.06)',
           border: '1px solid rgba(192, 132, 252, 0.25)',
@@ -52,14 +52,6 @@ export default function QuickActions({ username, plan }: { username: string, pla
           flexDirection: 'column',
           gap: '0.75rem'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
-              Your Stable Referral Link
-            </span>
-            <span style={{ fontSize: '0.75rem', color: '#c084fc', fontWeight: '600' }}>
-              Works anywhere worldwide
-            </span>
-          </div>
           <div style={{
             display: 'flex',
             gap: '0.5rem',
