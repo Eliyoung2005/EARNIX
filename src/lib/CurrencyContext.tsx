@@ -43,8 +43,20 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetch(`/api/settings/currency?t=${Date.now()}`, { cache: 'no-store' })
       .then(res => res.json())
-      .then(data => {
+      .then(async (data) => {
         if (data && data.affiliateCurrency) {
+          // If currency is USD, also fetch live exchange rate
+          if (data.affiliateCurrency === 'USD') {
+            try {
+              const rateRes = await fetch('/api/settings/exchange-rate');
+              const rateData = await rateRes.json();
+              if (rateData.rate) {
+                data.usdExchangeRate = rateData.rate;
+              }
+            } catch {
+              // Keep the saved rate if live fetch fails
+            }
+          }
           setSettings(data);
         }
       })

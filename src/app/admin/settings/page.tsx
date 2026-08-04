@@ -10,6 +10,28 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchingRate, setFetchingRate] = useState(false);
+  const [rateSource, setRateSource] = useState<string | null>(null);
+  const [rateTimestamp, setRateTimestamp] = useState<string | null>(null);
+
+  const fetchLiveRate = async () => {
+    setFetchingRate(true);
+    try {
+      const res = await fetch('/api/settings/exchange-rate');
+      const data = await res.json();
+      if (data.rate) {
+        setSettings((prev: any) => ({ ...prev, usdExchangeRate: Math.round(data.rate * 100) / 100 }));
+        setRateSource(data.source);
+        setRateTimestamp(new Date(data.timestamp).toLocaleString());
+      } else {
+        alert('Could not fetch live rate. Please enter manually.');
+      }
+    } catch {
+      alert('Network error fetching live rate.');
+    } finally {
+      setFetchingRate(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -311,7 +333,10 @@ export default function AdminSettings() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSettings({ ...settings, affiliateCurrency: 'USD' })}
+                  onClick={() => {
+                    setSettings({ ...settings, affiliateCurrency: 'USD' });
+                    fetchLiveRate();
+                  }}
                   style={{
                     flex: 1, padding: '0.75rem',
                     background: settings?.affiliateCurrency === 'USD' ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0,0,0,0.25)',
@@ -341,8 +366,25 @@ export default function AdminSettings() {
                   color: 'white', fontSize: '0.95rem'
                 }}
               />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+                <button
+                  type="button"
+                  onClick={fetchLiveRate}
+                  disabled={fetchingRate}
+                  style={{
+                    padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 'bold',
+                    background: 'rgba(168, 85, 247, 0.2)', border: '1px solid rgba(168, 85, 247, 0.4)',
+                    color: '#a855f7', cursor: fetchingRate ? 'wait' : 'pointer', transition: 'all 0.2s',
+                    opacity: fetchingRate ? 0.6 : 1
+                  }}
+                >
+                  {fetchingRate ? '⏳ Fetching...' : '🔄 Fetch Live Rate'}
+                </button>
+              </div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
                 Current: ₦1 = ${(1 / (settings?.usdExchangeRate || 1600)).toFixed(6)} USD
+                {rateSource && <> · Source: <strong style={{ color: '#a855f7' }}>{rateSource}</strong></>}
+                {rateTimestamp && <> · Updated: {rateTimestamp}</>}
               </span>
             </div>
           </div>
