@@ -71,3 +71,19 @@ export function convertAmount(amount: number, settings?: CurrencySettings | null
   }
   return amount;
 }
+
+/**
+ * Get currency name (e.g., "Dollar" or "Naira").
+ */
+export function getCurrencyName(settings?: CurrencySettings | null): string {
+  const s = settings || DEFAULT_SETTINGS;
+  return s.affiliateCurrency === 'USD' ? 'Dollar' : 'Naira';
+}
+
+/**
+ * Get currency code (e.g., "USD" or "NGN").
+ */
+export function getCurrencyCode(settings?: CurrencySettings | null): string {
+  const s = settings || DEFAULT_SETTINGS;
+  return s.affiliateCurrency === 'USD' ? 'USD' : 'NGN';
+}

@@ -19,7 +19,7 @@ const SEGMENTS = [
 ];
 
 export default function SpinWheelPage() {
-  const { fmt, fmtTask, symbol } = useCurrency();
+  const { fmt, fmtTask, symbol, settings } = useCurrency();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<any>(null);
@@ -119,10 +119,10 @@ export default function SpinWheelPage() {
           <Disc size={18} /> VIP &amp; ELITE EXCLUSIVE SPIN &amp; WIN
         </div>
         <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: '900', color: 'white', marginBottom: '0.5rem' }}>
-          Spin &amp; Win Cash Wheel
+          Spin &amp; Win {settings.taskEarningsMode === 'POINTS' ? 'Points' : 'Cash'} Wheel
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '560px', margin: '0 auto' }}>
-          Upgrade to VIP or ELITE to receive <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong>. All cash prizes won are added directly to your task balance!
+          Upgrade to VIP or ELITE to receive <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong>. All {settings.taskEarningsMode === 'POINTS' ? 'points' : 'cash prizes'} won are added directly to your task balance!
         </p>
       </div>
 
@@ -138,7 +138,7 @@ export default function SpinWheelPage() {
           </h2>
 
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.98rem', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: '1.6' }}>
-            The Spin &amp; Win Cash Wheel is exclusively available for <strong style={{ color: 'var(--accent-gold)' }}>VIP</strong> and <strong style={{ color: 'var(--accent-gold)' }}>ELITE</strong> membership plans. Upgrade your account today to unlock <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong> and unlimited cash prizes!
+            The Spin &amp; Win {settings.taskEarningsMode === 'POINTS' ? 'Points' : 'Cash'} Wheel is exclusively available for <strong style={{ color: 'var(--accent-gold)' }}>VIP</strong> and <strong style={{ color: 'var(--accent-gold)' }}>ELITE</strong> membership plans. Upgrade your account today to unlock <strong style={{ color: 'var(--accent-gold)' }}>Free Spins</strong> and unlimited {settings.taskEarningsMode === 'POINTS' ? 'points' : 'cash prizes'}!
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>

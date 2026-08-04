@@ -22,7 +22,7 @@ export default function ReferralsClient({
   const [origin, setOrigin] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'paid' | 'free'>('paid');
-  const { fmt } = useCurrency();
+  const { fmt, currencyName } = useCurrency();
 
   const paidReferrals = referrals.filter(r => r.plan !== 'FREE');
   const freeReferrals = referrals.filter(r => r.plan === 'FREE');
@@ -323,7 +323,7 @@ export default function ReferralsClient({
             <strong style={{ color: '#fff' }}>Share anywhere:</strong> Post it on WhatsApp, Telegram, Facebook, or send it directly to friends.
           </li>
           <li>
-            <strong style={{ color: '#fff' }}>Earn automatically:</strong> Whenever someone registers and activates a paid plan, upgraded members automatically earn instant referral commissions in their Affiliate Balance. (Note: FREE plan accounts track referral counts but do not earn cash referral commissions until upgraded to a paid plan).
+            <strong style={{ color: '#fff' }}>Earn automatically:</strong> Whenever someone registers and activates a paid plan, upgraded members automatically earn instant referral commissions in their Affiliate Balance. (Note: FREE plan accounts track referral counts but do not earn {currencyName.toLowerCase()} referral commissions until upgraded to a paid plan).
           </li>
         </ol>
       </div>

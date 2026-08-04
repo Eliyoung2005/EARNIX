@@ -817,7 +817,7 @@ Amount:      ${fmt(receipt.amount)}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ color: 'white', fontWeight: 'bold' }}>Total Amount:</span>
-                  <span style={{ color: 'var(--success)', fontWeight: '900' }}>₦{activeReceipt.amount.toLocaleString()}</span>
+                  <span style={{ color: 'var(--success)', fontWeight: '900' }}>{fmt(activeReceipt.amount)}</span>
                 </div>
 
               </div>

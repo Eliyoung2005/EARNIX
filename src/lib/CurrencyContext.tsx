@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { CurrencySettings } from '@/lib/currencyUtils';
-import { formatCurrency, formatTaskEarnings, getCurrencySymbol, getTaskLabel, convertAmount } from '@/lib/currencyUtils';
+import { formatCurrency, formatTaskEarnings, getCurrencySymbol, getTaskLabel, convertAmount, getCurrencyName, getCurrencyCode } from '@/lib/currencyUtils';
 
 interface CurrencyContextValue {
   settings: CurrencySettings;
@@ -17,6 +17,10 @@ interface CurrencyContextValue {
   taskLabel: string;
   /** Convert raw NGN amount to display value */
   convert: (amount: number) => number;
+  /** Get currency name e.g. Dollar or Naira */
+  currencyName: string;
+  /** Get currency code e.g. USD or NGN */
+  currencyCode: string;
 }
 
 const defaultSettings: CurrencySettings = {
@@ -34,6 +38,8 @@ const CurrencyContext = createContext<CurrencyContextValue>({
   symbol: '₦',
   taskLabel: '₦',
   convert: (n) => n,
+  currencyName: 'Naira',
+  currencyCode: 'NGN',
 });
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
@@ -72,6 +78,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     symbol: getCurrencySymbol(settings),
     taskLabel: getTaskLabel(settings),
     convert: (amount: number) => convertAmount(amount, settings),
+    currencyName: getCurrencyName(settings),
+    currencyCode: getCurrencyCode(settings),
   };
 
   return (
