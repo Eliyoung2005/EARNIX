@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { approveSubmission, rejectSubmission } from './actions';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 type Submission = {
   id: string;
@@ -12,6 +13,7 @@ type Submission = {
 };
 
 export default function SubmissionListClient({ submissions }: { submissions: Submission[] }) {
+  const { fmt } = useCurrency();
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const handleApprove = async (id: string) => {
@@ -58,7 +60,7 @@ export default function SubmissionListClient({ submissions }: { submissions: Sub
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>{sub.task.title}</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{sub.task.platform} • ₦{sub.task.reward}</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{sub.task.platform} • {fmt(sub.task.reward)}</p>
               </div>
             </div>
 

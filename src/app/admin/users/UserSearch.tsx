@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 interface UserResult {
   id: string;
@@ -17,6 +18,7 @@ interface UserResult {
 }
 
 export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
+  const { fmt, symbol } = useCurrency();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserResult[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
@@ -302,8 +304,8 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.82rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
-                  <div>Task Bal: <strong style={{ color: 'var(--accent-blue)' }}>₦{(user.taskBalance || 0).toLocaleString()}</strong></div>
-                  <div>Affiliate Bal: <strong style={{ color: 'var(--success)' }}>₦{(user.affiliateBalance || 0).toLocaleString()}</strong></div>
+                  <div>Task Bal: <strong style={{ color: 'var(--accent-blue)' }}>{fmt(user.taskBalance || 0)}</strong></div>
+                  <div>Affiliate Bal: <strong style={{ color: 'var(--success)' }}>{fmt(user.affiliateBalance || 0)}</strong></div>
                 </div>
 
                 <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)' }}>
@@ -413,7 +415,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--accent-blue)', display: 'block', marginBottom: '0.3rem' }}>Task Balance (₦)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--accent-blue)', display: 'block', marginBottom: '0.3rem' }}>Task Balance ({symbol})</label>
                   <input
                     type="number"
                     step="0.01"
@@ -423,7 +425,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--success)', display: 'block', marginBottom: '0.3rem' }}>Affiliate Balance (₦)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--success)', display: 'block', marginBottom: '0.3rem' }}>Affiliate Balance ({symbol})</label>
                   <input
                     type="number"
                     step="0.01"

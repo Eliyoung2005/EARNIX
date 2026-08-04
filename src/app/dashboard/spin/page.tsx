@@ -5,19 +5,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UpgradeBannerButton from '../UpgradeBannerButton';
 import { Disc, Lock, Gift, Zap, Trophy } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 const SEGMENTS = [
-  { index: 0, label: '₦200', startX: 50, startY: 0, endX: 85.36, endY: 14.64, tx: 63.4, ty: 17.7, mid: 22.5, color: '#1042a3', textColor: '#ffffff' },
-  { index: 1, label: '₦500', startX: 85.36, startY: 14.64, endX: 100, endY: 50, tx: 82.3, ty: 36.6, mid: 67.5, color: '#d4af37', textColor: '#000000' },
+  { index: 0, label: 200, startX: 50, startY: 0, endX: 85.36, endY: 14.64, tx: 63.4, ty: 17.7, mid: 22.5, color: '#1042a3', textColor: '#ffffff' },
+  { index: 1, label: 500, startX: 85.36, startY: 14.64, endX: 100, endY: 50, tx: 82.3, ty: 36.6, mid: 67.5, color: '#d4af37', textColor: '#000000' },
   { index: 2, label: 'Try Again', startX: 100, startY: 50, endX: 85.36, endY: 85.36, tx: 82.3, ty: 63.4, mid: 112.5, color: '#6e7d88', textColor: '#ffffff' },
-  { index: 3, label: '₦1,000', startX: 85.36, startY: 85.36, endX: 50, endY: 100, tx: 63.4, ty: 82.3, mid: 157.5, color: '#ff9f43', textColor: '#000000' },
+  { index: 3, label: 1000, startX: 85.36, startY: 85.36, endX: 50, endY: 100, tx: 63.4, ty: 82.3, mid: 157.5, color: '#ff9f43', textColor: '#000000' },
   { index: 4, label: 'Free Ticket', startX: 50, startY: 100, endX: 14.64, endY: 85.36, tx: 36.6, ty: 82.3, mid: 202.5, color: '#9b5de5', textColor: '#ffffff' },
-  { index: 5, label: '₦2,000', startX: 14.64, startY: 85.36, endX: 0, endY: 50, tx: 17.7, ty: 63.4, mid: 247.5, color: '#ff3b30', textColor: '#ffffff' },
-  { index: 6, label: '₦150', startX: 0, startY: 50, endX: 14.64, endY: 14.64, tx: 17.7, ty: 36.6, mid: 292.5, color: '#28c76f', textColor: '#ffffff' },
+  { index: 5, label: 2000, startX: 14.64, startY: 85.36, endX: 0, endY: 50, tx: 17.7, ty: 63.4, mid: 247.5, color: '#ff3b30', textColor: '#ffffff' },
+  { index: 6, label: 150, startX: 0, startY: 50, endX: 14.64, endY: 14.64, tx: 17.7, ty: 36.6, mid: 292.5, color: '#28c76f', textColor: '#ffffff' },
   { index: 7, label: 'Try Again', startX: 14.64, startY: 14.64, endX: 50, endY: 0, tx: 36.6, ty: 17.7, mid: 337.5, color: '#6e7d88', textColor: '#ffffff' },
 ];
 
 export default function SpinWheelPage() {
+  const { fmt, fmtTask, symbol } = useCurrency();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<any>(null);
@@ -159,7 +161,7 @@ export default function SpinWheelPage() {
               </div>
             ) : (
               <div style={{ padding: '0.6rem 1.5rem', borderRadius: '50px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Zap size={16} /> Spin Fee: ₦{spinFee} per spin (Deducted from selected wallet)
+                <Zap size={16} /> Spin Fee: {fmt(spinFee)} per spin (Deducted from selected wallet)
               </div>
             )}
           </div>
@@ -168,7 +170,7 @@ export default function SpinWheelPage() {
           {!isFreeSpin && (
             <div style={{ marginBottom: '2rem', padding: '1rem 1.5rem', borderRadius: '16px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', width: '100%', maxWidth: '450px' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold', display: 'block', marginBottom: '0.75rem' }}>
-                Select Wallet for ₦{spinFee} Spin Fee Deduction:
+                Select Wallet for {fmt(spinFee)} Spin Fee Deduction:
               </label>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
@@ -186,7 +188,7 @@ export default function SpinWheelPage() {
                   }}
                 >
                   <div>Task Wallet</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '2px' }}>₦{taskBalance.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', marginTop: '2px' }}>{fmtTask(taskBalance)}</div>
                 </button>
 
                 <button
@@ -203,7 +205,7 @@ export default function SpinWheelPage() {
                   }}
                 >
                   <div>Affiliate Wallet</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--success)', marginTop: '2px' }}>₦{affiliateBalance.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--success)', marginTop: '2px' }}>{fmt(affiliateBalance)}</div>
                 </button>
               </div>
             </div>
@@ -247,7 +249,7 @@ export default function SpinWheelPage() {
                       dominantBaseline="central"
                       transform={`rotate(${seg.mid}, ${seg.tx}, ${seg.ty})`}
                     >
-                      {seg.label}
+                      {typeof seg.label === 'number' ? fmtTask(seg.label) : seg.label}
                     </text>
                   </g>
                 ))}
@@ -281,7 +283,7 @@ export default function SpinWheelPage() {
               textTransform: 'uppercase'
             }}
           >
-            {spinning ? 'SPINNING...' : isFreeSpin ? `SPIN FOR FREE (${freeSpins} LEFT)` : `SPIN NOW (FEE: ₦${spinFee})`}
+            {spinning ? 'SPINNING...' : isFreeSpin ? `SPIN FOR FREE (${freeSpins} LEFT)` : `SPIN NOW (FEE: ${fmt(spinFee)})`}
           </button>
 
           {errorMsg && (
@@ -313,7 +315,7 @@ export default function SpinWheelPage() {
                   ? "Don't give up! Spin again to try your luck next time." 
                   : winResult.isFreeTicket 
                   ? 'Your free spin balance has been updated with +1 free spin.' 
-                  : `₦${winResult.prizeAmount.toLocaleString()} has been added directly to your EARNIX task balance!`}
+                  : `${fmtTask(winResult.prizeAmount)} has been added directly to your EARNIX task balance!`}
               </p>
             </div>
           )}

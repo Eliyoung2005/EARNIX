@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function WithdrawalPortalControl() {
+  const { symbol } = useCurrency();
   const [settings, setSettings] = useState<any>(null);
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -288,7 +290,7 @@ export default function WithdrawalPortalControl() {
                     {/* Min limits */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
                       <div>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Min Affiliate (₦)</label>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Min Affiliate ({symbol})</label>
                         <input 
                           type="number"
                           value={plan.minAffiliateWithdrawal ?? 1000}
@@ -298,7 +300,7 @@ export default function WithdrawalPortalControl() {
                         />
                       </div>
                       <div>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Min Task (₦)</label>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Min Task ({symbol})</label>
                         <input 
                           type="number"
                           value={plan.minTaskWithdrawal ?? 3500}
@@ -429,14 +431,14 @@ export default function WithdrawalPortalControl() {
                   <span style={{ fontWeight: 'bold', color: 'var(--accent-gold)', display: 'block', marginBottom: '0.5rem' }}>{plan.name} Plan</span>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                     <div>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Min Affiliate (₦)</label>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Min Affiliate ({symbol})</label>
                       <input type="number" value={plan.minAffiliateWithdrawal ?? 1000}
                         onChange={(e) => { const val = parseFloat(e.target.value); setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, minAffiliateWithdrawal: isNaN(val) ? 0 : val } : p)); }}
                         onBlur={(e) => handleUpdatePlan(plan.id, { minAffiliateWithdrawal: parseFloat(e.target.value) || 0 })}
                         style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: '0.85rem' }} />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Min Task (₦)</label>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Min Task ({symbol})</label>
                       <input type="number" value={plan.minTaskWithdrawal ?? 3500}
                         onChange={(e) => { const val = parseFloat(e.target.value); setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, minTaskWithdrawal: isNaN(val) ? 0 : val } : p)); }}
                         onBlur={(e) => handleUpdatePlan(plan.id, { minTaskWithdrawal: parseFloat(e.target.value) || 0 })}

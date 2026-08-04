@@ -6,10 +6,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Lock, CheckCircle2, AlertTriangle, Gift, PhoneCall, Star, Mail, MessageSquare, Send } from 'lucide-react';
 import WithdrawalSuccessModal from './WithdrawalSuccessModal';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function WithdrawalsPage() {
   const { status } = useSession();
   const router = useRouter();
+  const { fmt, fmtTask, symbol } = useCurrency();
   
   const [profile, setProfile] = useState<any>(null);
   const [withdrawalType, setWithdrawalType] = useState<'AFFILIATE' | 'TASK'>('TASK');
@@ -147,7 +149,7 @@ export default function WithdrawalsPage() {
     }
 
     if (withdrawalAmount < minWithdrawal) {
-      alert(`Amount is below the minimum withdrawal limit of ₦${minWithdrawal}.`);
+      alert(`Amount is below the minimum withdrawal limit of ${withdrawalType === 'AFFILIATE' ? fmt(minWithdrawal) : fmtTask(minWithdrawal)}.`);
       return;
     }
 
@@ -270,7 +272,7 @@ export default function WithdrawalsPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Available Balance</span>
               <span style={{ fontWeight: 'bold', color: withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)' }}>
-                ₦{availableBalance?.toLocaleString()}
+                {withdrawalType === 'AFFILIATE' ? fmt(availableBalance || 0) : fmtTask(availableBalance || 0)}
               </span>
             </div>
 
@@ -287,12 +289,12 @@ export default function WithdrawalsPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Minimum Withdrawal</span>
               <span style={{ fontWeight: 'bold' }}>
-                ₦{minWithdrawal?.toLocaleString()}
+                {withdrawalType === 'AFFILIATE' ? fmt(minWithdrawal || 0) : fmtTask(minWithdrawal || 0)}
               </span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label htmlFor="amount" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Amount (₦)</label>
+              <label htmlFor="amount" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Amount ({symbol})</label>
               <input 
                 type="number" 
                 id="amount" 

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function VendorDashboard() {
+  const { fmt } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalAssigned: 0, soldCount: 0, availableCount: 0 });
   const [planStats, setPlanStats] = useState<Record<string, { available: number; sold: number }>>({});
@@ -345,7 +347,7 @@ export default function VendorDashboard() {
                       )}
                     </td>
                     <td style={{ padding: '1rem 0.5rem', fontWeight: 'bold' }}>
-                      ₦{coupon.plan?.price !== undefined ? coupon.plan.price.toLocaleString() : (coupon.value ? coupon.value.toLocaleString() : '0')}
+                      {fmt(coupon.plan?.price !== undefined ? coupon.plan.price : (coupon.value || 0))}
                     </td>
                     <td style={{ padding: '1rem 0.5rem' }}>
                       {coupon.status === 'UNUSED' ? (

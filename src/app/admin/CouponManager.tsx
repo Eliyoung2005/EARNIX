@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 interface Coupon {
   id: string;
@@ -61,6 +62,7 @@ export default function CouponManager({
   vendorStats?: VendorStat[],
   userRole?: string 
 }) {
+  const { fmt } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
   const [amount, setAmount] = useState(5);
@@ -283,7 +285,7 @@ export default function CouponManager({
                 : allPlans
               ).map(p => (
                 <option key={p.id} value={p.id} style={{ background: '#1e293b', color: 'white' }}>
-                  {p.name} Plan {p.price > 0 ? `(₦${p.price.toLocaleString()})` : ''}
+                  {p.name} Plan {p.price > 0 ? `(${fmt(p.price)})` : ''}
                 </option>
               ))}
             </select>

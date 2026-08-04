@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function WithdrawalManager({ withdrawals }: { withdrawals: any[] }) {
+  const { fmt } = useCurrency();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
@@ -94,7 +96,7 @@ export default function WithdrawalManager({ withdrawals }: { withdrawals: any[] 
                     {req.type}
                   </td>
                   <td style={{ padding: '1rem', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                    ₦{req.amount.toLocaleString()}
+                    {fmt(req.amount)}
                   </td>
                   <td style={{ padding: '1rem' }}>
                     <div style={{ fontSize: '0.9rem' }}>{req.user.bankName || 'N/A'}</div>

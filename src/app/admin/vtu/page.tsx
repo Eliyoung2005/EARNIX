@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Smartphone, Search, RefreshCw, Filter, CheckCircle2, XCircle, Clock, Printer, X, ShieldAlert, Wifi } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 interface AdminVtuTx {
   id: string;
@@ -27,6 +28,7 @@ interface AdminVtuTx {
 }
 
 export default function AdminVtuPage() {
+  const { fmt } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
@@ -172,7 +174,7 @@ export default function AdminVtuPage() {
         <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>APPROVED VOLUME</span>
           <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--success)', marginTop: '0.3rem' }}>
-            ₦{(data?.totalAmount || 0).toLocaleString()}
+            {fmt(data?.totalAmount || 0)}
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Completed airtime &amp; data</span>
         </div>
@@ -180,7 +182,7 @@ export default function AdminVtuPage() {
         <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>TASK WALLET SPEND</span>
           <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)', marginTop: '0.3rem' }}>
-            ₦{(data?.walletStats?.TASK || 0).toLocaleString()}
+            {fmt(data?.walletStats?.TASK || 0)}
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Task points spent</span>
         </div>
@@ -188,7 +190,7 @@ export default function AdminVtuPage() {
         <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>AFFILIATE WALLET SPEND</span>
           <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--success)', marginTop: '0.3rem' }}>
-            ₦{(data?.walletStats?.AFFILIATE || 0).toLocaleString()}
+            {fmt(data?.walletStats?.AFFILIATE || 0)}
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Affiliate earnings spent</span>
         </div>
@@ -341,7 +343,7 @@ export default function AdminVtuPage() {
                     </td>
 
                     <td style={{ padding: '1rem', fontWeight: '900', color: 'var(--success)' }}>
-                      ₦{tx.amount.toLocaleString()}
+                      {fmt(tx.amount)}
                     </td>
 
                     <td style={{ padding: '1rem' }}>
@@ -537,7 +539,7 @@ export default function AdminVtuPage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ color: 'white', fontWeight: 'bold' }}>Amount:</span>
-                  <span style={{ color: 'var(--success)', fontWeight: '900' }}>₦{activeReceipt.amount.toLocaleString()}</span>
+                  <span style={{ color: 'var(--success)', fontWeight: '900' }}>{fmt(activeReceipt.amount)}</span>
                 </div>
               </div>
 

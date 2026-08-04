@@ -3,51 +3,54 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
 
-const testimonials = [
-  {
-    name: 'Chinedu O.',
-    role: 'PRO Plan Earner',
-    text: '"Working with EARNIX has been the most enjoyable experience of my life. I get to earn for just completing simple tasks, and the affiliate bonuses drop instantly!"',
-    initial: 'C',
-    color: '#0A5BFF',
-    earned: '₦45,000 Earned'
-  },
-  {
-    name: 'Amina Y.',
-    role: 'Top Affiliate',
-    text: '"I was skeptical at first, but upgrading to PRO was the best decision. The ₦250 referral commission adds up so fast. EARNIX is truly SoftLife!"',
-    initial: 'A',
-    color: '#D4AF37',
-    earned: '₦120,000 Earned'
-  },
-  {
-    name: 'Oluwaseun A.',
-    role: 'Student & Earner',
-    text: '"This platform pays seamlessly! The dark mode is sleek, tasks are quick to finish, and withdrawals drop directly into my bank account within minutes!"',
-    initial: 'O',
-    color: '#10b981',
-    earned: '₦32,500 Earned'
-  },
-  {
-    name: 'Ngozi E.',
-    role: 'Stay-at-home Mom',
-    text: '"EARNIX turned my free time into real income. I just share links on WhatsApp and watch videos. It\'s stress-free earnings personified!"',
-    initial: 'N',
-    color: '#8b5cf6',
-    earned: '₦78,000 Earned'
-  },
-  {
-    name: 'Emmanuel K.',
-    role: 'PRO Earner',
-    text: '"The customer support is top-notch, vendor codes are verified instantly, and daily login bonuses make earning effortless every day."',
-    initial: 'E',
-    color: '#ec4899',
-    earned: '₦54,000 Earned'
-  }
-];
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function Testimonials() {
+  const { fmt, fmtTask, symbol } = useCurrency();
   const [isPaused, setIsPaused] = useState(false);
+
+  const testimonials = [
+    {
+      name: 'Chinedu O.',
+      role: 'PRO Plan Earner',
+      text: '"Working with EARNIX has been the most enjoyable experience of my life. I get to earn for just completing simple tasks, and the affiliate bonuses drop instantly!"',
+      initial: 'C',
+      color: '#0A5BFF',
+      earned: `${fmt(45000)} Earned`
+    },
+    {
+      name: 'Amina Y.',
+      role: 'Top Affiliate',
+      text: `"I was skeptical at first, but upgrading to PRO was the best decision. The ${fmt(250)} referral commission adds up so fast. EARNIX is truly SoftLife!"`,
+      initial: 'A',
+      color: '#D4AF37',
+      earned: `${fmt(120000)} Earned`
+    },
+    {
+      name: 'Oluwaseun A.',
+      role: 'Student & Earner',
+      text: '"This platform pays seamlessly! The dark mode is sleek, tasks are quick to finish, and withdrawals drop directly into my bank account within minutes!"',
+      initial: 'O',
+      color: '#10b981',
+      earned: `${fmt(32500)} Earned`
+    },
+    {
+      name: 'Ngozi E.',
+      role: 'Stay-at-home Mom',
+      text: '"EARNIX turned my free time into real income. I just share links on WhatsApp and watch videos. It\'s stress-free earnings personified!"',
+      initial: 'N',
+      color: '#8b5cf6',
+      earned: `${fmt(78000)} Earned`
+    },
+    {
+      name: 'Emmanuel K.',
+      role: 'PRO Earner',
+      text: '"The customer support is top-notch, vendor codes are verified instantly, and daily login bonuses make earning effortless every day."',
+      initial: 'E',
+      color: '#ec4899',
+      earned: `${fmt(54000)} Earned`
+    }
+  ];
 
   // Duplicate list to create 100% smooth infinite marquee loop
   const marqueeList = [...testimonials, ...testimonials];

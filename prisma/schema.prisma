@@ -255,6 +255,12 @@ model PlatformSettings {
   whatsappSupport        String?
   telegramSupport        String?
 
+  // Currency & Earnings Mode
+  affiliateCurrency      String    @default("NGN")    // "NGN" | "USD"
+  usdExchangeRate        Float     @default(1600.0)
+  taskEarningsMode       String    @default("CASH")   // "CASH" | "POINTS"
+  pointsConversionRate   Float     @default(1.0)      // 1 NGN = X points
+
   updatedAt              DateTime  @updatedAt
 }
 

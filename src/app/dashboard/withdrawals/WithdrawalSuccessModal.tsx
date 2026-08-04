@@ -1,6 +1,7 @@
 'use client';
 
 import { ThumbsUp, Calendar, Clock, CheckCircle2, ShieldCheck, ArrowRight, Wallet, Download, Share2, KeyRound, Hash } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 interface WithdrawalSuccessModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export default function WithdrawalSuccessModal({
   referenceCode,
   sessionId,
 }: WithdrawalSuccessModalProps) {
+  const { fmt, fmtTask } = useCurrency();
   if (!isOpen) return null;
 
   const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -129,7 +131,8 @@ export default function WithdrawalSuccessModal({
 
     ctx.fillStyle = '#059669';
     ctx.font = '900 36px sans-serif';
-    ctx.fillText(`₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 325, 238);
+    const amountStr = type === 'AFFILIATE' ? fmt(amount) : fmtTask(amount);
+    ctx.fillText(amountStr, 325, 238);
 
     // Details Card Box
     ctx.fillStyle = '#f8fafc';
@@ -192,7 +195,8 @@ export default function WithdrawalSuccessModal({
   };
 
   const shareReceipt = async () => {
-    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ₦${amount.toLocaleString('en-NG')}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${finalRefCode}\n• *Session ID:* ${finalSessionId}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
+    const amountStr = type === 'AFFILIATE' ? fmt(amount) : fmtTask(amount);
+    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ${amountStr}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${finalRefCode}\n• *Session ID:* ${finalSessionId}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
     
     if (navigator.share) {
       try {
@@ -333,7 +337,7 @@ export default function WithdrawalSuccessModal({
             Amount Withdrawn
           </span>
           <div style={{ fontSize: '2.25rem', fontWeight: '900', color: '#10b981', letterSpacing: '-0.5px' }}>
-            ₦{amount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {type === 'AFFILIATE' ? fmt(amount) : fmtTask(amount)}
           </div>
         </div>
 

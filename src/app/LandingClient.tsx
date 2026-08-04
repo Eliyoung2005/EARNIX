@@ -4,32 +4,38 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import Testimonials from './Testimonials';
 
-const defaultPlans = [
-  {
-    id: 'FREE',
-    name: 'FREE',
-    level: 1,
-    price: 0,
-    welcomeBonus: 50,
-    dailyLoginBonus: 50,
-    taskReward: 10,
-    referralCommission: 0,
-    features: ['₦50 Daily Login Bonus', 'Daily Task Access', 'Affiliate Earnings']
-  },
-  {
-    id: 'PRO',
-    name: 'PRO',
-    level: 2,
-    price: 500,
-    welcomeBonus: 100,
-    dailyLoginBonus: 50,
-    taskReward: 50,
-    referralCommission: 250,
-    features: ['Premium Task Access', 'High Commission Rate', 'Fast Withdrawal']
-  }
-];
+
+
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function LandingClient({ initialPlans, initialVendors }: { initialPlans: any[], initialVendors: any[] }) {
+  const { fmt, fmtTask, symbol } = useCurrency();
+
+  const defaultPlans = [
+    {
+      id: 'FREE',
+      name: 'FREE',
+      level: 1,
+      price: 0,
+      welcomeBonus: 50,
+      dailyLoginBonus: 50,
+      taskReward: 10,
+      referralCommission: 0,
+      features: [`${symbol}50 Daily Login Bonus`, 'Daily Task Access', 'Affiliate Earnings']
+    },
+    {
+      id: 'PRO',
+      name: 'PRO',
+      level: 2,
+      price: 500,
+      welcomeBonus: 100,
+      dailyLoginBonus: 50,
+      taskReward: 50,
+      referralCommission: 250,
+      features: ['Premium Task Access', 'High Commission Rate', 'Fast Withdrawal']
+    }
+  ];
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [plans, setPlans] = useState<any[]>(initialPlans || defaultPlans);
   const [vendors, setVendors] = useState<any[]>(initialVendors || []);
@@ -285,7 +291,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
           </div>
           <div>
             <div style={{ fontWeight: '800', fontSize: '1rem' }}>Withdrawal Alert</div>
-            <div style={{ color: '#666', fontSize: '0.85rem', marginTop: '2px' }}>You just received ₦5,000</div>
+            <div style={{ color: '#666', fontSize: '0.85rem', marginTop: '2px' }}>You just received {fmt(5000)}</div>
           </div>
         </div>
 
@@ -364,20 +370,20 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                     {plan.name.toUpperCase()} TIER
                   </div>
                   <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', fontWeight: '800', color: 'white' }}>{plan.name.toUpperCase().includes('PLAN') ? plan.name : `${plan.name} Plan`}</h3>
-                  <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: `0 4px 20px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}` }}>₦{plan.price.toLocaleString()}</div>
+                  <div style={{ fontSize: '4rem', fontWeight: '900', marginBottom: '2.5rem', textShadow: `0 4px 20px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}` }}>{fmt(plan.price)}</div>
                   
                   <ul style={{ listStyle: 'none', marginBottom: '3.5rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '1.25rem', fontSize: '1.1rem', textAlign: 'left', maxWidth: '300px', margin: '0 auto 3.5rem auto' }}>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      <span>Welcome Bonus: <strong style={{color: 'white'}}>₦{plan.welcomeBonus.toLocaleString()}</strong></span>
+                      <span>Welcome Bonus: <strong style={{color: 'white'}}>{fmt(plan.welcomeBonus)}</strong></span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      <span>Sponsored Task: <strong style={{color: 'white'}}>₦{plan.taskReward.toLocaleString()}</strong></span>
+                      <span>Sponsored Task: <strong style={{color: 'white'}}>{fmtTask(plan.taskReward)}</strong></span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      <span>Min Task Payout: <strong style={{color: 'white'}}>₦{(plan.minTaskWithdrawal ?? 3500).toLocaleString()}</strong></span>
+                      <span>Min Task Payout: <strong style={{color: 'white'}}>{fmtTask(plan.minTaskWithdrawal ?? 3500)}</strong></span>
                     </li>
                     <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', opacity: plan.referralCommission > 0 ? 1 : 0.6 }}>
                       {plan.referralCommission > 0 ? (
@@ -385,12 +391,12 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                       ) : (
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                       )}
-                      <span>{plan.referralCommission > 0 ? `₦${plan.referralCommission.toLocaleString()} Referral` : 'No Referral Commission'}</span>
+                      <span>{plan.referralCommission > 0 ? `${fmt(plan.referralCommission)} Referral` : 'No Referral Commission'}</span>
                     </li>
                     {plan.features?.map((feature: string, idx: number) => (
                       <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>{feature}</span>
+                        <span>{feature.replace('₦', symbol)}</span>
                       </li>
                     ))}
                   </ul>

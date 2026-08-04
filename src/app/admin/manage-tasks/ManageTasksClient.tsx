@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react';
 import { createNewTask, deleteTask } from './actions';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 type Task = {
   id: string;
@@ -19,6 +20,7 @@ export default function ManageTasksClient({
 }: { 
   initialTasks: Task[]
 }) {
+  const { fmt, symbol } = useCurrency();
   const [activePlans, setActivePlans] = useState<{ id: string, name: string }[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -108,7 +110,7 @@ export default function ManageTasksClient({
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Reward Amount (₦)</label>
+            <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Reward Amount ({symbol})</label>
             <input type="number" name="reward" value={formData.reward} onChange={handleChange} required min={0} placeholder="120" style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
           </div>
 
@@ -173,7 +175,7 @@ export default function ManageTasksClient({
                     {task.requiresProof ? 'Proof Required' : 'Auto-Approve'}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{task.platform} • ₦{task.reward}</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{task.platform} • {fmt(task.reward)}</p>
               </div>
               <button 
                 onClick={() => handleDeleteTask(task.id)}

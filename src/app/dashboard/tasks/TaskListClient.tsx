@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { submitTaskProof } from './actions';
 import { compressAndConvertToBase64 } from '@/lib/imageUtils';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 const IMGBB_API_KEY = '5db77a58a623a9d7bb3627702f231e34';
 
@@ -36,6 +37,7 @@ export default function TaskListClient({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [hasClickedLink, setHasClickedLink] = useState(false);
+  const { fmtTask } = useCurrency();
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
 
@@ -167,7 +169,7 @@ export default function TaskListClient({
                   </span>
                 </div>
               </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-blue)' }}>+₦{task.reward}</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-blue)' }}>+{fmtTask(task.reward)}</div>
             </div>
           )
         })}

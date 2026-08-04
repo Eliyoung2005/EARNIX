@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UpgradeBannerButton from '../UpgradeBannerButton';
 import { Smartphone, Lock, CheckCircle2, Zap, AlertCircle, ArrowRight, History, Printer, X, Download, ShieldCheck, Wifi } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 interface VtuTransaction {
   id: string;
@@ -57,6 +58,7 @@ const DATA_BUNDLES: Record<string, { label: string; amount: number }[]> = {
 };
 
 export default function VtuAirtimePage() {
+  const { fmt, symbol } = useCurrency();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -87,7 +89,7 @@ Phone No:    ${receipt.phoneNumber}
 Paid With:   ${receipt.walletSource === 'TASK' ? 'Task Wallet' : 'Affiliate Wallet'}
 Date & Time: ${new Date(receipt.createdAt).toLocaleString()}
 Status:      ${receipt.status}
-Amount:      NGN ${receipt.amount.toLocaleString()}
+Amount:      ${fmt(receipt.amount)}
 ========================================
      Thank you for using EARNIX!     
 ========================================
@@ -141,7 +143,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
     }
 
     if (isNaN(finalAmount) || finalAmount < 100 || finalAmount > 50000) {
-      setErrorMsg('Top-up amount must be between ₦100 and ₦50,000.');
+      setErrorMsg(`Top-up amount must be between ${fmt(100)} and ${fmt(50000)}.`);
       return;
     }
 
@@ -412,7 +414,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                   >
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Task Points Wallet</div>
                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--accent-blue)', marginTop: '0.2rem' }}>
-                      ₦{taskBalance.toLocaleString()}
+                      {fmt(taskBalance)}
                     </div>
                   </button>
 
@@ -432,7 +434,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                   >
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Affiliate Points Wallet</div>
                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--success)', marginTop: '0.2rem' }}>
-                      ₦{affiliateBalance.toLocaleString()}
+                      {fmt(affiliateBalance)}
                     </div>
                   </button>
                 </div>
@@ -442,7 +444,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
               {purchaseType === 'AIRTIME' ? (
                 <div>
                   <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'white', display: 'block', marginBottom: '0.75rem' }}>
-                    Step 4: Choose Airtime Amount (₦)
+                    Step 4: Choose Airtime Amount ({symbol})
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
                     {PRESET_AIRTIME_AMOUNTS.map((preset) => (
@@ -461,7 +463,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                           cursor: 'pointer'
                         }}
                       >
-                        ₦{preset.toLocaleString()}
+                        {fmt(preset)}
                       </button>
                     ))}
                   </div>
@@ -518,7 +520,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                           }}
                         >
                           <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{bundle.label}</div>
-                          <div style={{ fontWeight: '900', color: 'var(--accent-gold)', fontSize: '1.1rem' }}>₦{bundle.amount.toLocaleString()}</div>
+                          <div style={{ fontWeight: '900', color: 'var(--accent-gold)', fontSize: '1.1rem' }}>{fmt(bundle.amount)}</div>
                         </button>
                       );
                     })}
@@ -549,7 +551,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ color: 'white', fontWeight: 'bold' }}>Total Cost:</span>
                   <span style={{ color: 'var(--accent-gold)', fontWeight: '900', fontSize: '1.15rem' }}>
-                    ₦{numAmount.toLocaleString()}
+                    {fmt(numAmount)}
                   </span>
                 </div>
               </div>
@@ -592,7 +594,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                 ) : remainingBalance < 0 ? (
                   `INSUFFICIENT ${walletSource} BALANCE`
                 ) : (
-                  <>PURCHASE {purchaseType} (₦{numAmount.toLocaleString()}) <ArrowRight size={20} /></>
+                  <>PURCHASE {purchaseType} ({fmt(numAmount)}) <ArrowRight size={20} /></>
                 )}
               </button>
 
@@ -655,7 +657,7 @@ Amount:      NGN ${receipt.amount.toLocaleString()}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginLeft: 'auto' }}>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: '900', color: 'var(--success)' }}>
-                          ₦{tx.amount.toLocaleString()}
+                          {fmt(tx.amount)}
                         </div>
                         <div style={{ fontSize: '0.75rem', marginTop: '0.15rem' }}>
                           <span style={{

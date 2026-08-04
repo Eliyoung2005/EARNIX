@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: number }) {
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
   const [baseBonus, setBaseBonus] = useState(initialBonus);
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const { fmtTask } = useCurrency();
 
   useEffect(() => {
     fetch('/api/user/claim-daily-bonus')
@@ -86,7 +88,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.35rem 0 0 0' }}>
             {claimedToday 
               ? `You claimed your Day ${dayIndexInCycle} bonus today! Return tomorrow to keep your streak going.`
-              : `Claim your Day ${dayIndexInCycle} bonus of ₦${baseBonus} today! Log in every day to maintain your streak.`}
+              : `Claim your Day ${dayIndexInCycle} bonus of ${fmtTask(baseBonus)} today! Log in every day to maintain your streak.`}
           </p>
         </div>
 
@@ -125,7 +127,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
               }}
             >
-              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (₦${baseBonus})`}
+              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (${fmtTask(baseBonus)})`}
             </button>
           )}
         </div>
@@ -179,7 +181,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 </span>
 
                 <span style={{ fontSize: '0.85rem', fontWeight: '800', color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent-gold)' : 'white' }}>
-                  ₦{baseBonus}
+                  {fmtTask(baseBonus)}
                 </span>
 
                 <span style={{ fontSize: '0.7rem', color: textColor, fontWeight: 'bold' }}>

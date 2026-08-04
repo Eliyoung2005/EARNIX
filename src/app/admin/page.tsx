@@ -2,6 +2,7 @@ import { getAdminSession } from "@/lib/adminSession";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { CurrencyValue } from "@/components/CurrencyValue";
 
 export const dynamic = 'force-dynamic';
 
@@ -119,7 +120,7 @@ export default async function AdminOverview() {
     include: { user: { select: { username: true } } }
   });
 
-  const fmtNaira = (n: number) => `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // Currency formatting is now handled by the CurrencyValue client component
 
   return (
     <div>
@@ -194,7 +195,7 @@ export default async function AdminOverview() {
                     {plan.name} PLAN
                   </span>
                   <span style={{ fontSize: '0.75rem', background: isPaid ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.08)', color: isPaid ? 'var(--accent-gold)' : 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: '50px', fontWeight: 'bold' }}>
-                    {plan.price === 0 ? 'FREE' : `₦${plan.price.toLocaleString()}`}
+                    {plan.price === 0 ? 'FREE' : <CurrencyValue amount={plan.price} />}
                   </span>
                 </div>
 
@@ -209,7 +210,7 @@ export default async function AdminOverview() {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                   <span>{plan.percentage}% of total users</span>
-                  <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>{fmtNaira(plan.totalInflow)}</span>
+                  <span style={{ color: 'var(--success)', fontWeight: 'bold' }}><CurrencyValue amount={plan.totalInflow} /></span>
                 </div>
               </div>
             );
@@ -300,7 +301,7 @@ export default async function AdminOverview() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>Total Inflow</p>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--success)' }}>{fmtNaira(totalInflow)}</div>
+          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--success)' }}><CurrencyValue amount={totalInflow} /></div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
             From {usersWithPaidPlansCount} paid plan registrations/upgrades
           </p>
@@ -312,7 +313,7 @@ export default async function AdminOverview() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>Total Paid Out</p>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '900', color: '#ff3b30' }}>{fmtNaira(totalPaidOut)}</div>
+          <div style={{ fontSize: '2rem', fontWeight: '900', color: '#ff3b30' }}><CurrencyValue amount={totalPaidOut} /></div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
             Approved withdrawals disbursed to users
           </p>
@@ -324,7 +325,7 @@ export default async function AdminOverview() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 16 14"/></svg>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>Pending Payouts</p>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--warning)' }}>{fmtNaira(totalPendingWithdrawals)}</div>
+          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--warning)' }}><CurrencyValue amount={totalPendingWithdrawals} /></div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
             {pendingWithdrawalsCount} withdrawal request{pendingWithdrawalsCount !== 1 ? 's' : ''} awaiting approval
           </p>
@@ -336,7 +337,7 @@ export default async function AdminOverview() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>User Wallet Balances</p>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--accent-blue)' }}>{fmtNaira(totalWalletBalance)}</div>
+          <div style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--accent-blue)' }}><CurrencyValue amount={totalWalletBalance} /></div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
             Total sitting in user wallets (not yet withdrawn)
           </p>
@@ -353,10 +354,10 @@ export default async function AdminOverview() {
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 'bold', margin: 0 }}>Net Profit</p>
           </div>
           <div style={{ fontSize: '2.2rem', fontWeight: '900', color: netProfit >= 0 ? 'var(--accent-gold)' : '#ff3b30' }}>
-            {netProfit < 0 ? '-' : ''}{fmtNaira(Math.abs(netProfit))}
+            {netProfit < 0 ? '-' : ''}<CurrencyValue amount={Math.abs(netProfit)} />
           </div>
           <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
-            Inflow ({fmtNaira(totalInflow)}) − Paid Out ({fmtNaira(totalPaidOut)})
+            Inflow (<CurrencyValue amount={totalInflow} />) − Paid Out (<CurrencyValue amount={totalPaidOut} />)
           </p>
         </div>
 

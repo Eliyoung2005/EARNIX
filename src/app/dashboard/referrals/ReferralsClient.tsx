@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function ReferralsClient({
   username,
@@ -21,6 +22,7 @@ export default function ReferralsClient({
   const [origin, setOrigin] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'paid' | 'free'>('paid');
+  const { fmt } = useCurrency();
 
   const paidReferrals = referrals.filter(r => r.plan !== 'FREE');
   const freeReferrals = referrals.filter(r => r.plan === 'FREE');
@@ -204,7 +206,7 @@ export default function ReferralsClient({
             Affiliate Balance
           </div>
           <div style={{ fontSize: '2rem', fontWeight: '800', color: '#c084fc' }}>
-            ₦{affiliateBalance.toLocaleString()}
+            {fmt(affiliateBalance)}
           </div>
         </div>
       </div>

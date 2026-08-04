@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 const defaultFallbackPlans = [
   { id: 'FREE', name: 'FREE', price: 0 },
@@ -11,6 +12,7 @@ const defaultFallbackPlans = [
 ];
 
 export default function Register() {
+  const { fmt } = useCurrency();
   const router = useRouter();
   const [plans, setPlans] = useState<any[]>(defaultFallbackPlans);
   const [plan, setPlan] = useState<string>('FREE'); // Holds selected plan ID
@@ -316,7 +318,7 @@ export default function Register() {
                 const isPaid = p.price > 0 && p.name.toUpperCase() !== 'FREE';
                 return (
                   <option key={p.id} value={p.id} style={{ background: '#161B22', color: 'white' }}>
-                    {p.name} {isPaid ? `(Paid) - ₦${p.price.toLocaleString()}` : '(Free)'}
+                    {p.name} {isPaid ? `(Paid) - ${fmt(p.price)}` : '(Free)'}
                   </option>
                 );
               })}

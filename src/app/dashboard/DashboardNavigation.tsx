@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 import { getBadgeProps } from "@/lib/badgeUtils";
 export { getBadgeProps };
@@ -25,6 +26,7 @@ export default function DashboardNavigation({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState(user.role || 'USER');
+  const { fmt } = useCurrency();
 
   // Lock body scroll on mobile when sidebar is open
   useEffect(() => {
@@ -327,7 +329,7 @@ export default function DashboardNavigation({
           
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button style={{ background: 'var(--surface-color)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.5rem 1rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-              Balance: <span style={{ color: 'var(--success)' }}>₦{currentBalance.toLocaleString()}</span>
+              Balance: <span style={{ color: 'var(--success)' }}>{fmt(currentBalance)}</span>
             </button>
             <button onClick={() => signOut({ callbackUrl: '/login' })} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>Logout</button>
           </div>

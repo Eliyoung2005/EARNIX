@@ -1,6 +1,7 @@
 import { getAdminSession } from "@/lib/adminSession";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { CurrencyValue } from "@/components/CurrencyValue";
 
 export const dynamic = 'force-dynamic';
 
@@ -138,7 +139,7 @@ export default async function AdminReferralsPage() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: index === 0 ? '#4da6ff' : index === 1 ? '#e0e0e0' : index === 2 ? '#cd7f32' : 'var(--text-secondary)' }}>
-                      ₦{user.totalEarned.toLocaleString()}
+                      <CurrencyValue amount={user.totalEarned} />
                     </div>
                     <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{user.referralCount} Paid Refs</span>
                   </div>

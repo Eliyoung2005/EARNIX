@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function UpgradeBannerButton({ nextPlanName, price }: { nextPlanName: string; price: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { fmt } = useCurrency();
 
   const handleUpgrade = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +58,7 @@ export default function UpgradeBannerButton({ nextPlanName, price }: { nextPlanN
           cursor: 'pointer'
         }}
       >
-        Activate {nextPlanName} for ₦{price.toLocaleString()}
+        Activate {nextPlanName} for {fmt(price)}
       </button>
 
       {isOpen && (

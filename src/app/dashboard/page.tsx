@@ -6,6 +6,7 @@ import QuickActions from "./QuickActions";
 import UpgradeBannerButton from "./UpgradeBannerButton";
 import CouponManager from "../admin/CouponManager";
 import DailyBonusCard from "./DailyBonusCard";
+import CurrencyDisplay from "./CurrencyDisplay";
 import { getBadgeProps } from "@/lib/badgeUtils";
 
 export const dynamic = 'force-dynamic';
@@ -133,7 +134,7 @@ export default async function DashboardOverview(props: {
         {userPlanLevel > 1 && (
           <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '16px', borderLeft: '4px solid var(--accent-blue)' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Affiliate Balance</p>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>₦{user.affiliateBalance.toLocaleString()}</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}><CurrencyDisplay amount={user.affiliateBalance} /></div>
             <p style={{ color: 'var(--success)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{user.referralCount} total referrals</p>
           </div>
         )}
@@ -148,7 +149,7 @@ export default async function DashboardOverview(props: {
               Withdrawable
             </span>
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>₦{user.taskBalance.toLocaleString()}</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}><CurrencyDisplay amount={user.taskBalance} isTask={true} /></div>
         </div>
 
       </div>

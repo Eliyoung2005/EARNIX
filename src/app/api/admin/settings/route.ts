@@ -55,7 +55,8 @@ export async function PATCH(req: Request) {
       'welcomePopupEnabled', 'welcomePopupTitleFree', 'welcomePopupMessageFree',
       'welcomePopupTitlePro', 'welcomePopupMessagePro', 'welcomePopupLink',
       'adsenseEnabled', 'adsenseClientId',
-      'supportEmail', 'whatsappSupport', 'telegramSupport'
+      'supportEmail', 'whatsappSupport', 'telegramSupport',
+      'affiliateCurrency', 'usdExchangeRate', 'taskEarningsMode', 'pointsConversionRate'
     ];
 
     const dateFields = [

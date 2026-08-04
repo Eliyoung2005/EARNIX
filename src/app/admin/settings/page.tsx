@@ -279,6 +279,163 @@ export default function AdminSettings() {
         </form>
       </div>
 
+      {/* Currency & Earnings Mode */}
+      <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#a855f7', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          💱 Currency & Earnings Mode
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+          Switch the platform display currency and task earnings format. When switching to USD, all Naira values will be automatically converted using the exchange rate below.
+        </p>
+
+        <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={e => e.preventDefault()}>
+          {/* Affiliate Currency */}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                Affiliate Currency
+              </label>
+              <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, affiliateCurrency: 'NGN' })}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: settings?.affiliateCurrency === 'NGN' ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0,0,0,0.25)',
+                    color: settings?.affiliateCurrency === 'NGN' ? '#a855f7' : 'rgba(255,255,255,0.5)',
+                    border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ₦ Naira (NGN)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, affiliateCurrency: 'USD' })}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: settings?.affiliateCurrency === 'USD' ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0,0,0,0.25)',
+                    color: settings?.affiliateCurrency === 'USD' ? '#a855f7' : 'rgba(255,255,255,0.5)',
+                    border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  $ Dollar (USD)
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                USD Exchange Rate (1 USD = ? NGN)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="1"
+                value={settings?.usdExchangeRate ?? 1600}
+                onChange={(e) => setSettings({ ...settings, usdExchangeRate: parseFloat(e.target.value) || 1600 })}
+                style={{
+                  width: '100%', padding: '0.75rem', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                  color: 'white', fontSize: '0.95rem'
+                }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+                Current: ₦1 = ${(1 / (settings?.usdExchangeRate || 1600)).toFixed(6)} USD
+              </span>
+            </div>
+          </div>
+
+          {/* Task Earnings Mode */}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                Task Earnings Mode
+              </label>
+              <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, taskEarningsMode: 'CASH' })}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: settings?.taskEarningsMode === 'CASH' ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0,0,0,0.25)',
+                    color: settings?.taskEarningsMode === 'CASH' ? '#a855f7' : 'rgba(255,255,255,0.5)',
+                    border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  💰 Cash
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...settings, taskEarningsMode: 'POINTS' })}
+                  style={{
+                    flex: 1, padding: '0.75rem',
+                    background: settings?.taskEarningsMode === 'POINTS' ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0,0,0,0.25)',
+                    color: settings?.taskEarningsMode === 'POINTS' ? '#a855f7' : 'rgba(255,255,255,0.5)',
+                    border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.95rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ⭐ Points
+                </button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                Points Conversion Rate (1 NGN = ? Points)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={settings?.pointsConversionRate ?? 1}
+                onChange={(e) => setSettings({ ...settings, pointsConversionRate: parseFloat(e.target.value) || 1 })}
+                style={{
+                  width: '100%', padding: '0.75rem', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                  color: 'white', fontSize: '0.95rem'
+                }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+                Example: If rate is 2, then ₦500 task reward = 1,000 Points
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await fetch('/api/admin/settings', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    affiliateCurrency: settings?.affiliateCurrency || 'NGN',
+                    usdExchangeRate: settings?.usdExchangeRate || 1600,
+                    taskEarningsMode: settings?.taskEarningsMode || 'CASH',
+                    pointsConversionRate: settings?.pointsConversionRate || 1,
+                  })
+                });
+                alert('Currency & earnings mode saved! Changes will take effect across the platform.');
+              } catch (err) {
+                console.error(err);
+                alert('Failed to save currency settings');
+              } finally {
+                setSaving(false);
+              }
+            }}
+            disabled={saving}
+            className="btn-primary"
+            style={{ padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#a855f7', color: 'white', fontSize: '0.95rem' }}
+          >
+            {saving ? 'Saving...' : '💱 Save Currency & Earnings Settings'}
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 }
