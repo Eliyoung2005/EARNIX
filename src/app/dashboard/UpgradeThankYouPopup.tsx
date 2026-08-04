@@ -118,15 +118,15 @@ export default function UpgradeThankYouPopup({ planName }: { planName: string })
           border: '1px solid rgba(255, 255, 255, 0.06)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.8rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
-            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}>✓</span>
+            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}></span>
             <span>Higher Daily Task Payouts</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.8rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
-            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}>✓</span>
+            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}></span>
             <span>Priority Withdrawal Processing</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
-            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}>✓</span>
+            <span style={{ color: 'var(--success)', fontSize: '1.2rem' }}></span>
             <span>Access to Premium High-Reward Tasks</span>
           </div>
         </div>

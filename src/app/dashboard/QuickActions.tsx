@@ -89,7 +89,7 @@ export default function QuickActions({ username, plan }: { username: string, pla
                 transition: 'all 0.2s ease'
               }}
             >
-              {copied ? 'Copied! ✓' : 'Copy'}
+              {copied ? 'Copied! ' : 'Copy'}
             </button>
           </div>
         </div>

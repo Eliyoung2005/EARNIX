@@ -117,7 +117,7 @@ export default function WelcomePopupSettingsForm({ settings }: { settings: any }
           />
           {formData.welcomePopupLink && (
             <p style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', marginTop: '0.5rem' }}>
-              ✓ Button will link to: <strong>{formData.welcomePopupLink}</strong>
+               Button will link to: <strong>{formData.welcomePopupLink}</strong>
             </p>
           )}
         </div>

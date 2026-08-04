@@ -304,7 +304,7 @@ export default function AdminSettings() {
       {/* Currency & Earnings Mode */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#a855f7', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          💱 Currency & Earnings Mode
+           Currency & Earnings Mode
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
           Switch the platform display currency and task earnings format. When switching to USD, all Naira values will be automatically converted using the exchange rate below.
@@ -378,7 +378,7 @@ export default function AdminSettings() {
                     opacity: fetchingRate ? 0.6 : 1
                   }}
                 >
-                  {fetchingRate ? '⏳ Fetching...' : '🔄 Fetch Live Rate'}
+                  {fetchingRate ? '⏳ Fetching...' : ' Fetch Live Rate'}
                 </button>
               </div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
@@ -407,7 +407,7 @@ export default function AdminSettings() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  💰 Cash
+                   Cash
                 </button>
                 <button
                   type="button"
@@ -473,7 +473,7 @@ export default function AdminSettings() {
             className="btn-primary"
             style={{ padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#a855f7', color: 'white', fontSize: '0.95rem' }}
           >
-            {saving ? 'Saving...' : '💱 Save Currency & Earnings Settings'}
+            {saving ? 'Saving...' : ' Save Currency & Earnings Settings'}
           </button>
         </form>
       </div>

@@ -107,7 +107,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 cursor: 'default'
               }}
             >
-              Claimed Today ✓
+              Claimed Today 
             </button>
           ) : (
             <button 
@@ -185,7 +185,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 </span>
 
                 <span style={{ fontSize: '0.7rem', color: textColor, fontWeight: 'bold' }}>
-                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : ''}
+                  {isCompleted ? '' : isCurrent ? (claimedToday ? '' : 'Today') : ''}
                 </span>
               </div>
             );

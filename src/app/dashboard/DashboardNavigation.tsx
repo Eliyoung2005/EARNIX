@@ -195,7 +195,7 @@ export default function DashboardNavigation({
               touchAction: 'manipulation'
             }}
           >
-            ✕
+            
           </button>
         </div>
 

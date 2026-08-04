@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       status: 'VALID',
-      message: coupon.plan?.name ? `✓ Coupon Code "${upperCode}" is VALID & UNUSED! This is a ${coupon.plan.name} plan activation code.` : `✓ Coupon Code "${upperCode}" is VALID & UNUSED! It is ready for registration or plan upgrade.`,
+      message: coupon.plan?.name ? ` Coupon Code "${upperCode}" is VALID & UNUSED! This is a ${coupon.plan.name} plan activation code.` : ` Coupon Code "${upperCode}" is VALID & UNUSED! It is ready for registration or plan upgrade.`,
       code: upperCode,
       vendor: coupon.assignedVendor?.name || coupon.assignedVendor?.username || 'Authorized Vendor',
       createdAt: coupon.createdAt,

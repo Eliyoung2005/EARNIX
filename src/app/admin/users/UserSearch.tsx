@@ -96,7 +96,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
         setResults(prev => prev.map(u => u.id === userId ? { ...u, plan: currentPlan } : u));
         throw new Error(data.error);
       }
-      showToast(`✓ Updated plan to ${newPlan} PLAN successfully!`);
+      showToast(` Updated plan to ${newPlan} PLAN successfully!`);
     } catch (err: any) {
       alert(err.message || 'Failed to update plan');
     }
@@ -119,7 +119,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
         setResults(prev => prev.map(u => u.id === userId ? { ...u, role: currentRole } : u));
         throw new Error(data.error);
       }
-      showToast(`✓ Changed role to ${newRole} successfully!`);
+      showToast(` Changed role to ${newRole} successfully!`);
     } catch (err: any) {
       alert(err.message || 'Failed to update role');
     }
@@ -170,7 +170,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
         role: editFormData.role
       } : u));
 
-      showToast(`✓ User details for @${editFormData.username} updated!`);
+      showToast(` User details for @${editFormData.username} updated!`);
       setEditingUser(null);
     } catch (err: any) {
       alert(err.message || 'Failed to save changes');
@@ -195,7 +195,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
       if (!res.ok) throw new Error(data.error);
 
       setResults(prev => prev.filter(u => u.id !== userId));
-      showToast(`✓ Permanently deleted user @${username}`);
+      showToast(` Permanently deleted user @${username}`);
     } catch (err: any) {
       alert(err.message || 'Failed to delete user');
     }
@@ -374,7 +374,7 @@ export default function UserSearch({ viewerRole }: { viewerRole?: string }) {
               <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', color: 'white', margin: 0 }}>
                 Edit Account Details: <span style={{ color: 'var(--accent-gold)' }}>@{editingUser.username}</span>
               </h3>
-              <button onClick={() => setEditingUser(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setEditingUser(null)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}></button>
             </div>
 
             <form onSubmit={handleSaveEditUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

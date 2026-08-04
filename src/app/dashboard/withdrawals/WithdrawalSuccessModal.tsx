@@ -116,7 +116,7 @@ export default function WithdrawalSuccessModal({
 
     ctx.fillStyle = '#059669';
     ctx.font = '800 13px sans-serif';
-    ctx.fillText('✓ WITHDRAWAL SUCCESSFUL & VERIFIED', 325, 146);
+    ctx.fillText(' WITHDRAWAL SUCCESSFUL & VERIFIED', 325, 146);
 
     // Amount Card Background
     ctx.fillStyle = '#f0fdf4';
@@ -196,7 +196,7 @@ export default function WithdrawalSuccessModal({
 
   const shareReceipt = async () => {
     const amountStr = type === 'AFFILIATE' ? fmt(amount) : fmtTask(amount);
-    const text = `💸 *EARNIX Withdrawal Successful!* 💸\n\n• *Amount:* ${amountStr}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${finalRefCode}\n• *Session ID:* ${finalSessionId}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
+    const text = ` *EARNIX Withdrawal Successful!* \n\n• *Amount:* ${amountStr}\n• *Wallet:* ${walletLabel}\n• *Ref Code:* ${finalRefCode}\n• *Session ID:* ${finalSessionId}\n• *Date:* ${formattedFullDate} at ${formattedTime}\n\nJoin EARNIX today for softlife & stress-free earnings!`;
     
     if (navigator.share) {
       try {

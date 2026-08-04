@@ -297,7 +297,7 @@ export default function SpinWheelPage() {
             <div style={{ marginTop: '2rem', padding: '1.75rem', borderRadius: '16px', background: winResult.isTryAgain ? 'rgba(255,59,48,0.12)' : winResult.isFreeTicket ? 'rgba(155,93,229,0.12)' : 'rgba(40,199,111,0.12)', border: winResult.isTryAgain ? '1px solid rgba(255,59,48,0.4)' : winResult.isFreeTicket ? '1px solid rgba(155,93,229,0.4)' : '1px solid rgba(40,199,111,0.4)', textAlign: 'center', width: '100%', maxWidth: '480px', animation: 'fadeIn 0.4s ease-in-out' }}>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                 {winResult.isTryAgain ? (
-                  <span style={{ fontSize: '2rem' }}>😢</span>
+                  <span style={{ fontSize: '2rem' }}></span>
                 ) : winResult.isFreeTicket ? (
                   <Gift size={36} style={{ color: '#9b5de5' }} />
                 ) : (

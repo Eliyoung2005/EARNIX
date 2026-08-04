@@ -152,7 +152,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
               visibility: isMenuOpen ? 'hidden' : 'visible',
             }}
           >
-            {/* Always shows ☰ — close X is inside the drawer */}
+            {/* Always shows  — close X is inside the drawer */}
             <svg
               width="22"
               height="22"
@@ -468,7 +468,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
 
                     {/* Badge */}
                     <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', background: 'rgba(212, 175, 55, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold' }}>
-                      ✓ Verified Vendor
+                       Verified Vendor
                     </div>
 
                     {/* Direct Links */}

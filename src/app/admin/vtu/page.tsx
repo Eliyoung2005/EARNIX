@@ -154,7 +154,7 @@ export default function AdminVtuPage() {
       {actionFeedback && (
         <div style={{ padding: '1rem 1.25rem', borderRadius: '14px', background: 'rgba(40,199,111,0.15)', border: '1px solid rgba(40,199,111,0.4)', color: 'var(--success)', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>{actionFeedback}</span>
-          <button onClick={() => setActionFeedback(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+          <button onClick={() => setActionFeedback(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}></button>
         </div>
       )}
 

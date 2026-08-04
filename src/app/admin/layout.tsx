@@ -89,7 +89,7 @@ export default function AdminLayout({
               touchAction: 'manipulation'
             }}
           >
-            ✕
+            
           </button>
         </div>
 
