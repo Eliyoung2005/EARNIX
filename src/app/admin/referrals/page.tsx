@@ -37,12 +37,49 @@ export default async function AdminReferralsPage() {
     select: { id: true, username: true, email: true, referralCount: true }
   });
 
-  // Fetch Top 50 This Week
-  const topWeekly = await prisma.user.findMany({
-    orderBy: { weeklyReferralCount: 'desc' },
-    take: 50,
-    select: { id: true, username: true, email: true, weeklyReferralCount: true }
+  // Fetch Top 50 This Week based on referral commission earnings
+  const weeklyLogs = await prisma.activityLog.findMany({
+    where: {
+      action: 'REFERRAL_BONUS',
+      createdAt: { gte: sevenDaysAgo },
+      userId: { not: null }
+    },
+    include: {
+      user: {
+        select: {
+          username: true,
+          email: true
+        }
+      }
+    }
   });
+
+  const userEarningsMap: Record<string, { id: string, username: string, email: string, totalEarned: number, referralCount: number, details: string[] }> = {};
+
+  for (const log of weeklyLogs) {
+    if (!log.userId || !log.user) continue;
+    const match = log.description.match(/Received ₦([\d,]+)/);
+    if (!match) continue;
+    const amount = parseFloat(match[1].replace(/,/g, ''));
+    
+    if (!userEarningsMap[log.userId]) {
+      userEarningsMap[log.userId] = {
+        id: log.userId,
+        username: log.user.username,
+        email: log.user.email,
+        totalEarned: 0,
+        referralCount: 0,
+        details: []
+      };
+    }
+    userEarningsMap[log.userId].totalEarned += amount;
+    userEarningsMap[log.userId].referralCount += 1;
+    userEarningsMap[log.userId].details.push(log.description);
+  }
+
+  const topWeekly = Object.values(userEarningsMap)
+    .sort((a, b) => b.totalEarned - a.totalEarned)
+    .slice(0, 50);
 
   return (
     <div>
@@ -84,23 +121,38 @@ export default async function AdminReferralsPage() {
           <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#4da6ff' }}>Top 50 (This Week)</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {topWeekly.map((user, index) => (
-              <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ 
-                    width: '35px', height: '35px', borderRadius: '50%', 
-                    background: index === 0 ? '#4da6ff' : index === 1 ? '#e0e0e0' : index === 2 ? '#cd7f32' : 'rgba(255,255,255,0.1)', 
-                    color: index < 3 ? '#000' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
-                  }}>
-                    {index + 1}
+              <div key={user.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ 
+                      width: '35px', height: '35px', borderRadius: '50%', 
+                      background: index === 0 ? '#4da6ff' : index === 1 ? '#e0e0e0' : index === 2 ? '#cd7f32' : 'rgba(255,255,255,0.1)', 
+                      color: index < 3 ? '#000' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' 
+                    }}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 'bold', color: 'white', fontSize: '1.1rem' }}>{user.username}</p>
+                      <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{user.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ fontWeight: 'bold', color: 'white', fontSize: '1.1rem' }}>{user.username}</p>
-                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{user.email}</p>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: index === 0 ? '#4da6ff' : index === 1 ? '#e0e0e0' : index === 2 ? '#cd7f32' : 'var(--text-secondary)' }}>
+                      ₦{user.totalEarned.toLocaleString()}
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{user.referralCount} Paid Refs</span>
                   </div>
                 </div>
-                <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: index === 0 ? '#4da6ff' : index === 1 ? '#e0e0e0' : index === 2 ? '#cd7f32' : 'var(--text-secondary)' }}>
-                  {user.weeklyReferralCount} <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>Refs</span>
-                </div>
+                {user.details && user.details.length > 0 && (
+                  <div style={{ marginTop: '0.2rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(0,0,0,0.15)', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
+                    <strong style={{ color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '0.25rem' }}>Weekly Referral Breakdown:</strong>
+                    <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                      {user.details.map((d, i) => (
+                        <li key={i}>{d.replace(/^Received /, '')}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             ))}
             {topWeekly.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No referrers this week.</p>}

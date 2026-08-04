@@ -8,13 +8,13 @@ export async function GET() {
     const topUsers = await prisma.user.findMany({
       take: 10,
       orderBy: {
-        totalEarnings: 'desc'
+        referralCount: 'desc'
       },
       select: {
         id: true,
         name: true,
         username: true,
-        totalEarnings: true
+        referralCount: true
       }
     });
 

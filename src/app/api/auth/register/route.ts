@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { isReferrerEligible } from '@/lib/referralUtils';
 
 export async function POST(req: Request) {
   try {
@@ -38,12 +39,14 @@ export async function POST(req: Request) {
 
     const pinToUse = withdrawalPin && /^\d{4}$/.test(withdrawalPin) ? withdrawalPin : '0000';
 
+    const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
+
     // 2. Check for existing username or email
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
           { email: email.toLowerCase() },
-          { username: username.toLowerCase() }
+          { username: cleanUsername }
         ]
       }
     });
@@ -58,11 +61,12 @@ export async function POST(req: Request) {
     // 3. Handle Referrer lookup (by username)
     let referrerId: string | null = null;
     if (resolvedReferrer && resolvedReferrer.trim() !== '') {
+      const cleanReferrer = resolvedReferrer.replace(/\s+/g, '').toLowerCase();
       const refUser = await prisma.user.findFirst({
         where: {
           OR: [
-            { username: resolvedReferrer.trim() },
-            { email: resolvedReferrer.trim() }
+            { username: cleanReferrer },
+            { email: cleanReferrer }
           ]
         }
       });
@@ -154,7 +158,7 @@ export async function POST(req: Request) {
         const newUser = await tx.user.create({
           data: {
             name: `${fname.trim()} ${lname.trim()}`,
-            username: username.trim().toLowerCase(),
+            username: cleanUsername,
             email: email.trim().toLowerCase(),
             password: hashedPassword,
             withdrawalPin: hashedPin,
@@ -184,94 +188,115 @@ export async function POST(req: Request) {
           });
         }
 
-        return newUser;
-      });
+        if (referrerId) {
+          // Create Referral Relation
+          await tx.referral.create({
+            data: {
+              referrerId,
+              referredId: newUser.id,
+              paidPlanNames: []
+            }
+          });
 
-      if (referrerId && selectedPlan.referralCommission > 0) {
-        const refComm = selectedPlan.referralCommission;
-        try {
-          const refUser = await prisma.user.findUnique({
+          // Increment count for referrer
+          await tx.user.update({
+            where: { id: referrerId },
+            data: {
+              referralCount: { increment: 1 },
+              weeklyReferralCount: { increment: 1 }
+            }
+          });
+
+          // Fetch referrer details to check eligibility
+          const refUser = await tx.user.findUnique({
             where: { id: referrerId },
             include: { membership: true }
           });
 
-          const isRefUserFree = !refUser?.membership || refUser.membership.name === 'FREE' || (refUser.membership.price || 0) <= 0;
+          const referrerPlanName = refUser?.membership?.name || 'FREE';
+          const isEligible = isReferrerEligible(referrerPlanName, selectedPlan!.name);
 
-          if (!isRefUserFree) {
-            // Paid member referrer: credit referral commission + increment counts
-            await prisma.user.update({
+          if (isEligible && selectedPlan!.referralCommission > 0) {
+            const refComm = selectedPlan!.referralCommission;
+            await tx.user.update({
               where: { id: referrerId },
               data: {
-                referralCount: { increment: 1 },
-                weeklyReferralCount: { increment: 1 },
                 affiliateBalance: { increment: refComm }
               }
             });
-            await prisma.activityLog.create({
+
+            await tx.referral.update({
+              where: { referredId: newUser.id },
+              data: {
+                paidPlanNames: { push: selectedPlan!.name }
+              }
+            });
+
+            await tx.activityLog.create({
               data: {
                 action: 'REFERRAL_BONUS',
                 description: `Received ₦${refComm.toLocaleString()} referral commission for new user (${username})`,
                 userId: referrerId
               }
             });
-          } else {
-            // Free plan referrer: increment referral count only, NO referral commission credited
-            await prisma.user.update({
-              where: { id: referrerId },
-              data: {
-                referralCount: { increment: 1 },
-                weeklyReferralCount: { increment: 1 }
-              }
-            });
           }
-        } catch (err) {
-          console.error('Referral bonus error:', err);
         }
-      }
+
+        return newUser;
+      });
 
       return NextResponse.json({ success: true, user: { id: user.id, email: user.email } }, { status: 201 });
     }
 
     // 7. Free Registration (Price === 0)
-    const user = await prisma.user.create({
-      data: {
-        name: `${fname.trim()} ${lname.trim()}`,
-        username: username.trim().toLowerCase(),
-        email: email.trim().toLowerCase(),
-        password: hashedPassword,
-        withdrawalPin: hashedPin,
-        role: 'USER',
-        planId: selectedPlan.id,
-        taskBalance: welcomeBonus,
-        affiliateBalance: 0,
-        totalEarnings: welcomeBonus,
-      }
-    });
-
-    if (welcomeBonus > 0) {
-      await prisma.activityLog.create({
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
         data: {
-          action: 'SIGNUP_BONUS',
-          description: `Received ₦${welcomeBonus} ${selectedPlan.name} sign-up bonus`,
-          userId: user.id
+          name: `${fname.trim()} ${lname.trim()}`,
+          username: cleanUsername,
+          email: email.trim().toLowerCase(),
+          password: hashedPassword,
+          withdrawalPin: hashedPin,
+          role: 'USER',
+          planId: selectedPlan.id,
+          taskBalance: welcomeBonus,
+          affiliateBalance: 0,
+          totalEarnings: welcomeBonus,
         }
       });
-    }
 
-    // Free plan — increment referral count only, no commission
-    if (referrerId) {
-      try {
-        await prisma.user.update({
+      if (welcomeBonus > 0) {
+        await tx.activityLog.create({
+          data: {
+            action: 'SIGNUP_BONUS',
+            description: `Received ₦${welcomeBonus} ${selectedPlan.name} sign-up bonus`,
+            userId: newUser.id
+          }
+        });
+      }
+
+      if (referrerId) {
+        // Create Referral Relation
+        await tx.referral.create({
+          data: {
+            referrerId,
+            referredId: newUser.id,
+            paidPlanNames: []
+          }
+        });
+
+        // Increment counts only, no commission paid immediately since referred plan is FREE
+        await tx.user.update({
           where: { id: referrerId },
           data: {
             referralCount: { increment: 1 },
             weeklyReferralCount: { increment: 1 },
           }
         });
-      } catch (err) {
-        console.error('Referral update error:', err);
       }
-    }
+
+      return newUser;
+    });
 
     return NextResponse.json({ success: true, user: { id: user.id, email: user.email } }, { status: 201 });
 

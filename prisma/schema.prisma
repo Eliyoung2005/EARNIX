@@ -101,6 +101,22 @@ model User {
   activityLogs     ActivityLog[]
   notifications    Notification[]      @relation("TargetedUser")
   vtuTransactions  VtuTransaction[]
+
+  // Referrals tracking
+  referralsSent     Referral[] @relation("ReferrerRelation")
+  referralReceived  Referral?  @relation("ReferredRelation")
+}
+
+model Referral {
+  id            String   @id @default(uuid())
+  referrerId    String
+  referredId    String   @unique
+  paidPlanNames String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  referrer      User     @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred      User     @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
 }
 
 model Task {

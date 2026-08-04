@@ -1,8 +1,9 @@
-﻿export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { handleReferredUserUpgrade, handleReferrerUpgrade } from '@/lib/referralUtils';
 
 export async function PATCH(req: Request) {
   try {
@@ -33,36 +34,44 @@ export async function PATCH(req: Request) {
     const welcomeBonus = plan.welcomeBonus || 0;
     const isVipOrElite = plan.name.toUpperCase().includes('VIP') || plan.name.toUpperCase().includes('ELITE');
 
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { 
-        planId: plan.id,
-        freeSpinsRemaining: isVipOrElite ? 3 : 0,
-        taskBalance: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
-        totalEarnings: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
-        currentPlanAffiliateWithdrawals: 0,
-        currentPlanTaskWithdrawals: 0,
-        pendingUpgradeThankYou: newPlan
-      }
-    });
-    
-    await prisma.activityLog.create({
-      data: {
-        action: 'PLAN_UPGRADED',
-        description: `Admin manually updated ${updatedUser.username}'s plan to ${newPlan}${isVipOrElite ? ' + 3 Free Spins' : ''}`,
-        userId: (session.user as any).id
-      }
-    });
-
-    if (welcomeBonus > 0) {
-      await prisma.activityLog.create({
-        data: {
-          action: 'UPGRADE_WELCOME_BONUS',
-          description: `Received ₦${welcomeBonus.toLocaleString()} welcome bonus for upgrading to the ${newPlan} plan`,
-          userId: userId
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.update({
+        where: { id: userId },
+        data: { 
+          planId: plan.id,
+          freeSpinsRemaining: isVipOrElite ? 3 : 0,
+          taskBalance: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
+          totalEarnings: welcomeBonus > 0 ? { increment: welcomeBonus } : undefined,
+          currentPlanAffiliateWithdrawals: 0,
+          currentPlanTaskWithdrawals: 0,
+          pendingUpgradeThankYou: newPlan
         }
       });
-    }
+      
+      await tx.activityLog.create({
+        data: {
+          action: 'PLAN_UPGRADED',
+          description: `Admin manually updated ${u.username}'s plan to ${newPlan}${isVipOrElite ? ' + 3 Free Spins' : ''}`,
+          userId: (session.user as any).id
+        }
+      });
+
+      if (welcomeBonus > 0) {
+        await tx.activityLog.create({
+          data: {
+            action: 'UPGRADE_WELCOME_BONUS',
+            description: `Received ₦${welcomeBonus.toLocaleString()} welcome bonus for upgrading to the ${newPlan} plan`,
+            userId: userId
+          }
+        });
+      }
+
+      // Handle referral payouts
+      await handleReferredUserUpgrade(userId, plan.id, tx);
+      await handleReferrerUpgrade(userId, tx);
+
+      return u;
+    });
 
     return NextResponse.json({ 
       message: `Success! ${updatedUser.username} is now on the ${newPlan} plan${isVipOrElite ? ' with 3 Free Spins' : ''}.` 

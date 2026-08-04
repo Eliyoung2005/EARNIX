@@ -26,7 +26,7 @@ export default function TopEarnersPage() {
     topThree.push({
       rank: 2,
       name: earners[1].username || earners[1].name,
-      earnings: `₦${earners[1].totalEarnings.toLocaleString()}`,
+      earnings: `${(earners[1].referralCount || 0).toLocaleString()} Referrals`,
       avatar: (earners[1].username || earners[1].name || 'U')[0].toUpperCase(),
       color: 'var(--accent-blue)',
     });
@@ -36,7 +36,7 @@ export default function TopEarnersPage() {
     topThree.push({
       rank: 1,
       name: earners[0].username || earners[0].name,
-      earnings: `₦${earners[0].totalEarnings.toLocaleString()}`,
+      earnings: `${(earners[0].referralCount || 0).toLocaleString()} Referrals`,
       avatar: (earners[0].username || earners[0].name || 'U')[0].toUpperCase(),
       color: 'var(--accent-gold)',
     });
@@ -46,7 +46,7 @@ export default function TopEarnersPage() {
     topThree.push({
       rank: 3,
       name: earners[2].username || earners[2].name,
-      earnings: `₦${earners[2].totalEarnings.toLocaleString()}`,
+      earnings: `${(earners[2].referralCount || 0).toLocaleString()} Referrals`,
       avatar: (earners[2].username || earners[2].name || 'U')[0].toUpperCase(),
       color: 'var(--accent-blue)',
     });
@@ -56,7 +56,7 @@ export default function TopEarnersPage() {
   const others = earners.slice(3).map((user, idx) => ({
     rank: idx + 4,
     name: user.username || user.name,
-    earnings: `₦${user.totalEarnings.toLocaleString()}`,
+    earnings: `${(user.referralCount || 0).toLocaleString()} Referrals`,
     avatar: (user.username || user.name || 'U')[0].toUpperCase(),
   }));
 
@@ -88,7 +88,7 @@ export default function TopEarnersPage() {
         {/* Toggle Filters (Mock) */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '50px', padding: '0.25rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <button style={{ padding: '0.5rem 1.5rem', borderRadius: '50px', background: 'var(--accent-blue)', color: 'white', border: 'none', fontWeight: 'bold' }}>Highest</button>
+            <button style={{ padding: '0.5rem 1.5rem', borderRadius: '50px', background: 'var(--accent-blue)', color: 'white', border: 'none', fontWeight: 'bold' }}>Apex</button>
             <button style={{ padding: '0.5rem 1.5rem', borderRadius: '50px', background: 'transparent', color: 'var(--text-secondary)', border: 'none', fontWeight: 'bold' }}>Newest</button>
           </div>
         </div>

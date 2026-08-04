@@ -34,6 +34,34 @@ export default async function ReferralsPage() {
     redirect('/login');
   }
 
+  // Query referred users list
+  const referrals = await prisma.referral.findMany({
+    where: { referrerId: userId },
+    include: {
+      referred: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          createdAt: true,
+          membership: {
+            select: { name: true }
+          }
+        }
+      }
+    }
+  });
+
+  const referralsList = referrals.map(r => ({
+    id: r.referred.id,
+    name: r.referred.name,
+    username: r.referred.username,
+    email: r.referred.email,
+    plan: r.referred.membership?.name || 'FREE',
+    createdAt: r.referred.createdAt
+  }));
+
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
@@ -51,6 +79,7 @@ export default async function ReferralsPage() {
         weeklyReferralCount={user.weeklyReferralCount || 0}
         affiliateBalance={user.affiliateBalance || 0}
         planName={user.membership?.name || 'FREE'}
+        referrals={referralsList}
       />
     </div>
   );
