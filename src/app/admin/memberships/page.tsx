@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function MembershipsPage() {
-  const { symbol } = useCurrency();
+  const { symbol, settings } = useCurrency();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -18,18 +18,50 @@ export default function MembershipsPage() {
     })
       .then(res => res.json())
       .then(data => {
-        setPlans(data);
+        if (Array.isArray(data)) {
+          const isUsd = settings?.affiliateCurrency === 'USD';
+          const rate = settings?.usdExchangeRate || 1600;
+          const mapped = data.map(p => {
+            if (!isUsd) return p;
+            return {
+              ...p,
+              price: parseFloat((p.price / rate).toFixed(2)),
+              welcomeBonus: parseFloat((p.welcomeBonus / rate).toFixed(2)),
+              dailyLoginBonus: parseFloat((p.dailyLoginBonus / rate).toFixed(2)),
+              taskReward: parseFloat((p.taskReward / rate).toFixed(2)),
+              referralCommission: parseFloat((p.referralCommission / rate).toFixed(2)),
+              minTaskWithdrawal: parseFloat((p.minTaskWithdrawal / rate).toFixed(2)),
+              minAffiliateWithdrawal: parseFloat((p.minAffiliateWithdrawal / rate).toFixed(2)),
+            };
+          });
+          setPlans(mapped);
+        } else {
+          setPlans([]);
+        }
         setLoading(false);
       });
-  }, []);
+  }, [settings]);
 
   const handleUpdate = async (plan: any) => {
     setUpdatingId(plan.id);
+    const isUsd = settings?.affiliateCurrency === 'USD';
+    const rate = settings?.usdExchangeRate || 1600;
+    const planPayload = {
+      ...plan,
+      price: isUsd ? plan.price * rate : plan.price,
+      welcomeBonus: isUsd ? plan.welcomeBonus * rate : plan.welcomeBonus,
+      dailyLoginBonus: isUsd ? plan.dailyLoginBonus * rate : plan.dailyLoginBonus,
+      taskReward: isUsd ? plan.taskReward * rate : plan.taskReward,
+      referralCommission: isUsd ? plan.referralCommission * rate : plan.referralCommission,
+      minTaskWithdrawal: isUsd ? plan.minTaskWithdrawal * rate : plan.minTaskWithdrawal,
+      minAffiliateWithdrawal: isUsd ? plan.minAffiliateWithdrawal * rate : plan.minAffiliateWithdrawal,
+    };
+
     try {
       const res = await fetch('/api/admin/memberships', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(plan)
+        body: JSON.stringify(planPayload)
       });
       if (!res.ok) throw new Error('Failed to update');
       alert('Plan updated successfully!');
@@ -38,7 +70,20 @@ export default function MembershipsPage() {
       const freshRes = await fetch(`/api/admin/memberships?t=${Date.now()}`, { cache: 'no-store' });
       const freshData = await freshRes.json();
       if (Array.isArray(freshData)) {
-        setPlans(freshData);
+        const mapped = freshData.map(p => {
+          if (!isUsd) return p;
+          return {
+            ...p,
+            price: parseFloat((p.price / rate).toFixed(2)),
+            welcomeBonus: parseFloat((p.welcomeBonus / rate).toFixed(2)),
+            dailyLoginBonus: parseFloat((p.dailyLoginBonus / rate).toFixed(2)),
+            taskReward: parseFloat((p.taskReward / rate).toFixed(2)),
+            referralCommission: parseFloat((p.referralCommission / rate).toFixed(2)),
+            minTaskWithdrawal: parseFloat((p.minTaskWithdrawal / rate).toFixed(2)),
+            minAffiliateWithdrawal: parseFloat((p.minAffiliateWithdrawal / rate).toFixed(2)),
+          };
+        });
+        setPlans(mapped);
       }
     } catch (err) {
       alert('Error updating plan');
@@ -55,8 +100,21 @@ export default function MembershipsPage() {
     const updatedPlan = plans.find(p => p.id === planId);
     if (!updatedPlan) return;
 
-    const planPayload = { ...updatedPlan, isActive: newActiveState };
-    setPlans(prev => prev.map(p => p.id === planId ? planPayload : p));
+    const isUsd = settings?.affiliateCurrency === 'USD';
+    const rate = settings?.usdExchangeRate || 1600;
+    const planPayload = {
+      ...updatedPlan,
+      isActive: newActiveState,
+      price: isUsd ? updatedPlan.price * rate : updatedPlan.price,
+      welcomeBonus: isUsd ? updatedPlan.welcomeBonus * rate : updatedPlan.welcomeBonus,
+      dailyLoginBonus: isUsd ? updatedPlan.dailyLoginBonus * rate : updatedPlan.dailyLoginBonus,
+      taskReward: isUsd ? updatedPlan.taskReward * rate : updatedPlan.taskReward,
+      referralCommission: isUsd ? updatedPlan.referralCommission * rate : updatedPlan.referralCommission,
+      minTaskWithdrawal: isUsd ? updatedPlan.minTaskWithdrawal * rate : updatedPlan.minTaskWithdrawal,
+      minAffiliateWithdrawal: isUsd ? updatedPlan.minAffiliateWithdrawal * rate : updatedPlan.minAffiliateWithdrawal,
+    };
+
+    setPlans(prev => prev.map(p => p.id === planId ? { ...p, isActive: newActiveState } : p));
 
     try {
       const res = await fetch('/api/admin/memberships', {
