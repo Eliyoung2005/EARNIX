@@ -44,6 +44,8 @@ export async function PATCH(req: Request) {
         withdrawalPortalOpen: body.withdrawalPortalOpen !== undefined ? Boolean(body.withdrawalPortalOpen) : undefined,
         affiliateWithdrawalOpen: body.affiliateWithdrawalOpen !== undefined ? Boolean(body.affiliateWithdrawalOpen) : undefined,
         taskWithdrawalOpen: body.taskWithdrawalOpen !== undefined ? Boolean(body.taskWithdrawalOpen) : undefined,
+        affiliatePortalMode: body.affiliatePortalMode !== undefined ? String(body.affiliatePortalMode) : undefined,
+        taskPortalMode: body.taskPortalMode !== undefined ? String(body.taskPortalMode) : undefined,
         affiliateScheduledOpenDate: body.affiliateScheduledOpenDate !== undefined ? (body.affiliateScheduledOpenDate ? new Date(body.affiliateScheduledOpenDate) : null) : undefined,
         affiliateScheduledCloseDate: body.affiliateScheduledCloseDate !== undefined ? (body.affiliateScheduledCloseDate ? new Date(body.affiliateScheduledCloseDate) : null) : undefined,
         taskScheduledOpenDate: body.taskScheduledOpenDate !== undefined ? (body.taskScheduledOpenDate ? new Date(body.taskScheduledOpenDate) : null) : undefined,

@@ -42,7 +42,11 @@ export async function GET() {
     }
 
     const settings = await prisma.platformSettings.findFirst();
-    const mode = settings?.withdrawalPortalMode || 'MANUAL';
+    const globalMode = settings?.withdrawalPortalMode || 'MANUAL';
+
+    // Per-plan mode with fallback to global mode
+    const affiliateMode = membership?.affiliatePortalMode || globalMode;
+    const taskMode = membership?.taskPortalMode || globalMode;
 
     const affiliateOpenDate = membership?.affiliateScheduledOpenDate || settings?.scheduledAffiliateOpenDate || settings?.scheduledFreeOpenDate;
     const affiliateCloseDate = membership?.affiliateScheduledCloseDate || settings?.scheduledAffiliateCloseDate || settings?.scheduledFreeCloseDate;
@@ -50,7 +54,7 @@ export async function GET() {
     const taskCloseDate = membership?.taskScheduledCloseDate || settings?.scheduledTaskCloseDate || settings?.scheduledFreeCloseDate;
 
     const affiliateStatus = isWithdrawalOpen({
-      mode,
+      mode: affiliateMode,
       type: 'AFFILIATE',
       manualMasterOpen: settings?.affiliatePortalOpenManual ?? settings?.portalOpenManual ?? true,
       manualPlanOpen: membership?.affiliateWithdrawalOpen ?? membership?.withdrawalPortalOpen ?? true,
@@ -59,7 +63,7 @@ export async function GET() {
     });
 
     const taskStatus = isWithdrawalOpen({
-      mode,
+      mode: taskMode,
       type: 'TASK',
       manualMasterOpen: settings?.taskPortalOpenManual ?? settings?.portalOpenManual ?? true,
       manualPlanOpen: membership?.taskWithdrawalOpen ?? membership?.withdrawalPortalOpen ?? true,
@@ -91,7 +95,9 @@ export async function GET() {
       affiliateCloseDate,
       taskOpenDate,
       taskCloseDate,
-      withdrawalPortalMode: mode,
+      withdrawalPortalMode: globalMode,
+      affiliatePortalMode: affiliateMode,
+      taskPortalMode: taskMode,
       settings: settings || {},
     });
   } catch (error: any) {

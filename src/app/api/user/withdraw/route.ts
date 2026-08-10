@@ -66,8 +66,14 @@ export async function POST(req: Request) {
     if (isAffiliate && membership.name === 'FREE') {
       return NextResponse.json({ error: 'FREE plan members do not have referral benefits or affiliate wallet withdrawals. Please upgrade to PRO to unlock affiliate earnings.' }, { status: 403 });
     }
+
+    // Use per-plan mode; fall back to global mode for backward compat
+    const portalMode = isAffiliate
+      ? (membership.affiliatePortalMode || settings.withdrawalPortalMode || 'MANUAL')
+      : (membership.taskPortalMode || settings.withdrawalPortalMode || 'MANUAL');
+
     const withdrawalStatus = isWithdrawalOpen({
-      mode: settings.withdrawalPortalMode || 'MANUAL',
+      mode: portalMode,
       type: isAffiliate ? 'AFFILIATE' : 'TASK',
       manualMasterOpen: isAffiliate 
         ? (settings.affiliatePortalOpenManual ?? settings.portalOpenManual ?? true) 

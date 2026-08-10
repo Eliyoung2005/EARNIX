@@ -46,7 +46,6 @@ export async function handleReferredUserUpgrade(referredId: string, newPlanId: s
 
   const referrer = referral.referrer;
   const newPlan = await db.membershipPlan.findUnique({ where: { id: newPlanId } });
-  console.log('handleReferredUserUpgrade - newPlan:', newPlan);
   if (!newPlan || newPlan.name === 'FREE') return;
 
   const referrerPlanName = referrer.membership?.name || 'FREE';
@@ -60,7 +59,7 @@ export async function handleReferredUserUpgrade(referredId: string, newPlanId: s
     },
     orderBy: { level: 'asc' }
   });
-  console.log('handleReferredUserUpgrade - eligiblePlans:', eligiblePlans.map((p: any) => ({ name: p.name, level: p.level })));
+
 
   const updatedPaidPlans = [...(referral.paidPlanNames || [])];
   const updatedPaidPlansL2 = [...(referral.paidPlanNamesL2 || [])];

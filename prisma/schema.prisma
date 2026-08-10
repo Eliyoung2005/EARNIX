@@ -283,6 +283,8 @@ model MembershipPlan {
   withdrawalPortalOpen   Boolean  @default(true)
   affiliateWithdrawalOpen Boolean @default(true)
   taskWithdrawalOpen      Boolean @default(true)
+  affiliatePortalMode     String  @default("MANUAL")
+  taskPortalMode          String  @default("MANUAL")
   affiliateScheduledOpenDate  DateTime?
   affiliateScheduledCloseDate DateTime?
   taskScheduledOpenDate       DateTime?
