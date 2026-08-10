@@ -420,14 +420,14 @@ export default function AdminSettings() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  ⭐ Points
+                  ⭐ ERX
                 </button>
               </div>
             </div>
 
             <div style={{ flex: 1, minWidth: '220px' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
-                Points Conversion Rate (1 NGN = ? Points)
+                ERX Conversion Rate (1 NGN = ? ERX)
               </label>
               <input
                 type="number"
@@ -442,7 +442,7 @@ export default function AdminSettings() {
                 }}
               />
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
-                Example: If rate is 2, then ₦500 task reward = 1,000 Points
+                Example: If rate is 2, then ₦500 task reward = 1,000 ERX
               </span>
             </div>
           </div>

@@ -39,7 +39,7 @@ export function formatTaskEarnings(amount: number, settings?: CurrencySettings |
   const s = settings || DEFAULT_SETTINGS;
   if (s.taskEarningsMode === 'POINTS') {
     const points = amount * (s.pointsConversionRate || 1);
-    return `${points.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Points`;
+    return `${points.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ERX`;
   }
   // In cash mode, use the active currency
   return formatCurrency(amount, s);
@@ -58,7 +58,7 @@ export function getCurrencySymbol(settings?: CurrencySettings | null): string {
  */
 export function getTaskLabel(settings?: CurrencySettings | null): string {
   const s = settings || DEFAULT_SETTINGS;
-  return s.taskEarningsMode === 'POINTS' ? 'Points' : getCurrencySymbol(s);
+  return s.taskEarningsMode === 'POINTS' ? 'ERX' : getCurrencySymbol(s);
 }
 
 /**

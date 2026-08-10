@@ -184,7 +184,7 @@ export default function AdminVtuPage() {
           <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)', marginTop: '0.3rem' }}>
             {fmt(data?.walletStats?.TASK || 0)}
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Task points spent</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Task ERX spent</span>
         </div>
 
         <div className="bg-surface" style={{ padding: '1.5rem', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)' }}>

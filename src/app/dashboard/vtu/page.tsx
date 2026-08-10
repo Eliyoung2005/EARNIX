@@ -58,7 +58,7 @@ const DATA_BUNDLES: Record<string, { label: string; amount: number }[]> = {
 };
 
 export default function VtuAirtimePage() {
-  const { fmt, symbol } = useCurrency();
+  const { fmt, symbol, taskLabel, settings } = useCurrency();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -213,7 +213,7 @@ Amount:      ${fmt(receipt.amount)}
           Airtime &amp; Mobile Data Top-Up
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '600px', margin: '0 auto' }}>
-          Purchase airtime or data bundles using your <strong style={{ color: 'var(--accent-blue)' }}>Task Points</strong> or <strong style={{ color: 'var(--success)' }}>Affiliate Commission</strong>.
+          Purchase airtime or data bundles using your <strong style={{ color: 'var(--accent-blue)' }}>Task {settings?.taskEarningsMode === 'POINTS' ? 'ERX' : 'Balance'}</strong> or <strong style={{ color: 'var(--success)' }}>Affiliate Commission</strong>.
         </p>
       </div>
 
@@ -412,12 +412,12 @@ Amount:      ${fmt(receipt.amount)}
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Task Points Wallet</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Task {settings?.taskEarningsMode === 'POINTS' ? 'ERX' : 'Cash'} Wallet</div>
                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--accent-blue)', marginTop: '0.2rem' }}>
                       {fmt(taskBalance)}
                     </div>
                   </button>
-
+ 
                   <button
                     type="button"
                     onClick={() => setWalletSource('AFFILIATE')}
@@ -432,7 +432,7 @@ Amount:      ${fmt(receipt.amount)}
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Affiliate Points Wallet</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>Affiliate Wallet</div>
                     <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--success)', marginTop: '0.2rem' }}>
                       {fmt(affiliateBalance)}
                     </div>
