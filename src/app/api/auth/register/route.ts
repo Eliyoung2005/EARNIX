@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { isReferrerEligible } from '@/lib/referralUtils';
+import { isReferrerEligible, handleReferredUserUpgrade } from '@/lib/referralUtils';
 
 export async function POST(req: Request) {
   try {
@@ -207,39 +207,8 @@ export async function POST(req: Request) {
             }
           });
 
-          // Fetch referrer details to check eligibility
-          const refUser = await tx.user.findUnique({
-            where: { id: referrerId },
-            include: { membership: true }
-          });
-
-          const referrerPlanName = refUser?.membership?.name || 'FREE';
-          const isEligible = isReferrerEligible(referrerPlanName, selectedPlan!.name);
-
-          if (isEligible && selectedPlan!.referralCommission > 0) {
-            const refComm = selectedPlan!.referralCommission;
-            await tx.user.update({
-              where: { id: referrerId },
-              data: {
-                affiliateBalance: { increment: refComm }
-              }
-            });
-
-            await tx.referral.update({
-              where: { referredId: newUser.id },
-              data: {
-                paidPlanNames: { push: selectedPlan!.name }
-              }
-            });
-
-            await tx.activityLog.create({
-              data: {
-                action: 'REFERRAL_BONUS',
-                description: `Received ₦${refComm.toLocaleString()} referral commission for new user (${username})`,
-                userId: referrerId
-              }
-            });
-          }
+          // Process referral payouts across all active tiers (Level 1, Level 2, and Level 3)
+          await handleReferredUserUpgrade(newUser.id, selectedPlan!.id, tx);
         }
 
         return newUser;

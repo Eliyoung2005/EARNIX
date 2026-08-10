@@ -112,6 +112,8 @@ model Referral {
   referrerId    String
   referredId    String   @unique
   paidPlanNames String[] @default([])
+  paidPlanNamesL2 String[] @default([])
+  paidPlanNamesL3 String[] @default([])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -260,6 +262,10 @@ model PlatformSettings {
   usdExchangeRate        Float     @default(1600.0)
   taskEarningsMode       String    @default("CASH")   // "CASH" | "POINTS"
   pointsConversionRate   Float     @default(1.0)      // 1 NGN = X points
+
+  // Elite Downstream Multi-Level Referral Commissions
+  eliteTier2CommissionPercent Float @default(5.0)     // Percentage of plan price
+  eliteTier3CommissionPercent Float @default(2.0)     // Percentage of plan price
 
   updatedAt              DateTime  @updatedAt
 }

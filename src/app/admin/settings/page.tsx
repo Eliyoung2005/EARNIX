@@ -447,6 +447,53 @@ export default function AdminSettings() {
             </div>
           </div>
 
+          {/* Elite MLM Downstream Referral Commission Percentages */}
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                Elite Level 2 Referral Commission (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                value={settings?.eliteTier2CommissionPercent ?? 5.0}
+                onChange={(e) => setSettings({ ...settings, eliteTier2CommissionPercent: parseFloat(e.target.value) || 0 })}
+                style={{
+                  width: '100%', padding: '0.75rem', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                  color: 'white', fontSize: '0.95rem'
+                }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+                Percentage of package price earned when Level 1 referrals refer others (Level 2).
+              </span>
+            </div>
+
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: '#a855f7', marginBottom: '0.5rem' }}>
+                Elite Level 3 Referral Commission (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                value={settings?.eliteTier3CommissionPercent ?? 2.0}
+                onChange={(e) => setSettings({ ...settings, eliteTier3CommissionPercent: parseFloat(e.target.value) || 0 })}
+                style={{
+                  width: '100%', padding: '0.75rem', borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                  color: 'white', fontSize: '0.95rem'
+                }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+                Percentage of package price earned when Level 2 referrals refer others (Level 3).
+              </span>
+            </div>
+          </div>
+
           <button
             onClick={async () => {
               setSaving(true);
@@ -459,12 +506,14 @@ export default function AdminSettings() {
                     usdExchangeRate: settings?.usdExchangeRate || 1600,
                     taskEarningsMode: settings?.taskEarningsMode || 'CASH',
                     pointsConversionRate: settings?.pointsConversionRate || 1,
+                    eliteTier2CommissionPercent: settings?.eliteTier2CommissionPercent !== undefined ? Number(settings.eliteTier2CommissionPercent) : 5.0,
+                    eliteTier3CommissionPercent: settings?.eliteTier3CommissionPercent !== undefined ? Number(settings.eliteTier3CommissionPercent) : 2.0,
                   })
                 });
-                alert('Currency & earnings mode saved! Changes will take effect across the platform.');
+                alert('Currency, earnings & elite MLM referral settings saved!');
               } catch (err) {
                 console.error(err);
-                alert('Failed to save currency settings');
+                alert('Failed to save settings');
               } finally {
                 setSaving(false);
               }
@@ -473,7 +522,7 @@ export default function AdminSettings() {
             className="btn-primary"
             style={{ padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#a855f7', color: 'white', fontSize: '0.95rem' }}
           >
-            {saving ? 'Saving...' : ' Save Currency & Earnings Settings'}
+            {saving ? 'Saving...' : ' Save Settings'}
           </button>
         </form>
       </div>
