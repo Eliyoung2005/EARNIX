@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { createNewTask, deleteTask } from './actions';
 import { useCurrency } from '@/lib/CurrencyContext';
+import { Users, CheckSquare } from 'lucide-react';
 
 type Task = {
   id: string;
@@ -13,12 +14,15 @@ type Task = {
   link: string;
   requiresProof: boolean;
   targetPlan: string;
+  submissionCount?: number;
 };
 
 export default function ManageTasksClient({ 
-  initialTasks
+  initialTasks,
+  globalStats
 }: { 
-  initialTasks: Task[]
+  initialTasks: Task[];
+  globalStats?: { totalUniqueUsers: number; totalTasksCompleted: number };
 }) {
   const { fmt, symbol } = useCurrency();
   const [activePlans, setActivePlans] = useState<{ id: string, name: string }[]>([]);
@@ -84,8 +88,28 @@ export default function ManageTasksClient({
   };
 
   return (
-    <div className="grid-1-2">
-      {/* Create Task Form */}
+    <>
+      {globalStats && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div style={{ padding: '1.5rem', borderRadius: '12px', background: 'linear-gradient(135deg, #1042a3 0%, #0d2875 100%)', border: '1px solid rgba(10,91,255,0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <Users size={18} /> Total Users Engaged
+            </div>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{globalStats.totalUniqueUsers.toLocaleString()}</div>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem', margin: 0 }}>Unique users who performed tasks</p>
+          </div>
+          <div style={{ padding: '1.5rem', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%)', border: '1px solid rgba(16,185,129,0.3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <CheckSquare size={18} /> Total Tasks Completed
+            </div>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--success)' }}>{globalStats.totalTasksCompleted.toLocaleString()}</div>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem', margin: 0 }}>Successfully approved submissions</p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid-1-2">
+        {/* Create Task Form */}
       <form onSubmit={handleCreateTask} className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', alignSelf: 'start' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Create New Task</h2>
         
@@ -174,6 +198,11 @@ export default function ManageTasksClient({
                   <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '50px', background: task.requiresProof ? 'rgba(10,91,255,0.2)' : 'rgba(16,185,129,0.2)', color: task.requiresProof ? 'var(--accent-blue)' : 'var(--success)' }}>
                     {task.requiresProof ? 'Proof Required' : 'Auto-Approve'}
                   </span>
+                  {task.submissionCount !== undefined && (
+                    <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '50px', background: 'rgba(255,255,255,0.1)', color: 'white' }}>
+                      {task.submissionCount.toLocaleString()} {task.submissionCount === 1 ? 'Completion' : 'Completions'}
+                    </span>
+                  )}
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{task.platform} • {fmt(task.reward)}</p>
               </div>
@@ -191,6 +220,7 @@ export default function ManageTasksClient({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
