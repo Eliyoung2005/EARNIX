@@ -31,6 +31,8 @@ export default function WithdrawalsPage() {
     referenceCode?: string;
     sessionId?: string;
   } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmStep, setConfirmStep] = useState<'confirm' | 'pin'>('confirm');
 
   useEffect(() => {
     let isMounted = true;
@@ -134,7 +136,8 @@ export default function WithdrawalsPage() {
     ? new Date(closeDateRaw).toLocaleString('en-NG', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : (profile?.settings?.autoCloseSchedule || 'Sundays at 11:59 PM');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Step 1: Validate and show confirmation modal
+  const handleRequestWithdrawal = (e: React.FormEvent) => {
     e.preventDefault();
     if (isPortalClosed) {
       alert('The Withdrawal Portal is currently closed. Please check back later.');
@@ -158,9 +161,23 @@ export default function WithdrawalsPage() {
       return;
     }
 
+    // Show confirmation modal
+    setPin('');
+    setConfirmStep('confirm');
+    setShowConfirmModal(true);
+  };
+
+  // Step 2: After PIN entry, submit the actual withdrawal
+  const handleFinalSubmit = async () => {
+    if (!pin || pin.length !== 4) {
+      alert('Please enter your 4-digit PIN.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
+      const withdrawalAmount = parseFloat(amount);
       const res = await fetch('/api/user/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,6 +187,7 @@ export default function WithdrawalsPage() {
 
       if (!res.ok) {
         if (data.error === 'UpgradeRequired') {
+          setShowConfirmModal(false);
           setUpgradeError({ message: data.message, nextPlan: data.nextPlan });
         } else {
           alert(data.error || 'Failed to submit withdrawal');
@@ -183,6 +201,7 @@ export default function WithdrawalsPage() {
 
       setAmount('');
       setPin('');
+      setShowConfirmModal(false);
 
       setSuccessModal({
         isOpen: true,
@@ -258,7 +277,7 @@ export default function WithdrawalsPage() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form onSubmit={handleRequestWithdrawal} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             
             {!profile?.hasPin && (
               <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid var(--warning)', color: 'var(--warning)', fontSize: '0.9rem' }}>
@@ -305,21 +324,6 @@ export default function WithdrawalsPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label htmlFor="pin" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--warning)' }}>4-Digit Withdrawal Security PIN</label>
-              <input 
-                type="password" 
-                id="pin" 
-                maxLength={4} 
-                required 
-                disabled={!profile?.hasPin}
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                placeholder="••••" 
-                style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.5)', background: 'rgba(0,0,0,0.2)', color: 'white', letterSpacing: '4px', fontSize: '1.1rem' }}
-              />
-            </div>
-
             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Ensure your bank details are correct in your profile settings before withdrawing.</p>
               <Link href="/dashboard/settings" style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', textDecoration: 'underline' }}>View Profile Settings</Link>
@@ -327,7 +331,7 @@ export default function WithdrawalsPage() {
 
             <button 
               type="submit" 
-              disabled={submitting || isPortalClosed || !profile?.hasPin} 
+              disabled={isPortalClosed || !profile?.hasPin} 
               className="btn-primary" 
               style={{ 
                 marginTop: '1rem', 
@@ -337,7 +341,7 @@ export default function WithdrawalsPage() {
                 cursor: (isPortalClosed || !profile?.hasPin) ? 'not-allowed' : 'pointer'
               }}
             >
-              {isPortalClosed ? 'Portal Closed' : !profile?.hasPin ? 'PIN Required in Profile' : submitting ? 'Processing...' : 'Request Withdrawal'}
+              {isPortalClosed ? 'Portal Closed' : !profile?.hasPin ? 'PIN Required in Profile' : 'Review Withdrawal'}
             </button>
           </form>
 
@@ -448,6 +452,123 @@ export default function WithdrawalsPage() {
           </div>
         </div>
       </div>
+
+      {/* Withdrawal Confirmation Modal */}
+      {showConfirmModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(8px)', padding: '1rem' }}>
+          <div className="bg-surface" style={{ padding: '2rem', borderRadius: '20px', maxWidth: '420px', width: '100%', border: '1px solid rgba(10, 91, 255, 0.3)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+            
+            {confirmStep === 'confirm' ? (
+              <>
+                {/* Confirmation Step */}
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: withdrawalType === 'AFFILIATE' ? 'rgba(10,91,255,0.15)' : 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>
+                  </div>
+                  <h2 style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.25rem' }}>Confirm Withdrawal</h2>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Please review the details below before proceeding.</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Wallet</span>
+                    <span style={{ fontWeight: 'bold', color: withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)', fontSize: '0.85rem' }}>{withdrawalType === 'AFFILIATE' ? 'Affiliate' : 'Task + Bonus'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Amount</span>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.05rem' }}>{withdrawalType === 'AFFILIATE' ? fmt(parseFloat(amount) || 0) : fmtTask(parseFloat(amount) || 0)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Bank</span>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '0.85rem' }}>{profile?.bankName || 'Not set'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Account Name</span>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '0.85rem' }}>{profile?.accountName || 'Not set'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Account Number</span>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '0.85rem' }}>{profile?.accountNumber || 'Not set'}</span>
+                  </div>
+                </div>
+
+                {(!profile?.bankName || !profile?.accountNumber) && (
+                  <div style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,59,48,0.1)', border: '1px solid rgba(255,59,48,0.3)', marginBottom: '1rem' }}>
+                    <p style={{ color: '#ff3b30', fontSize: '0.82rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <AlertTriangle size={16} /> Please set your bank details in <Link href="/dashboard/settings" style={{ color: '#fff', textDecoration: 'underline' }}>Profile Settings</Link> first.
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmModal(false)}
+                    style={{ flex: 1, padding: '0.85rem', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmStep('pin')}
+                    disabled={!profile?.bankName || !profile?.accountNumber}
+                    style={{ flex: 1, padding: '0.85rem', borderRadius: '10px', background: withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)', border: 'none', color: withdrawalType === 'AFFILIATE' ? '#fff' : '#000', fontWeight: 'bold', cursor: (!profile?.bankName || !profile?.accountNumber) ? 'not-allowed' : 'pointer', fontSize: '0.9rem', opacity: (!profile?.bankName || !profile?.accountNumber) ? 0.5 : 1 }}
+                  >
+                    Confirm Details
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* PIN Entry Step */}
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                    <Lock size={28} style={{ color: 'var(--warning)' }} />
+                  </div>
+                  <h2 style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.25rem' }}>Enter Security PIN</h2>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Enter your 4-digit withdrawal PIN to authorize this transaction.</p>
+                </div>
+
+                <div style={{ padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', marginBottom: '1.25rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Withdrawing </span>
+                  <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{withdrawalType === 'AFFILIATE' ? fmt(parseFloat(amount) || 0) : fmtTask(parseFloat(amount) || 0)}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}> to {profile?.bankName}</span>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <input
+                    type="password"
+                    maxLength={4}
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="••••"
+                    autoFocus
+                    style={{ width: '100%', padding: '1rem', borderRadius: '12px', border: '2px solid rgba(245, 158, 11, 0.5)', background: 'rgba(0,0,0,0.3)', color: 'white', letterSpacing: '12px', fontSize: '1.5rem', textAlign: 'center', outline: 'none' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => { setConfirmStep('confirm'); setPin(''); }}
+                    style={{ flex: 1, padding: '0.85rem', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-secondary)', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFinalSubmit}
+                    disabled={submitting || pin.length !== 4}
+                    style={{ flex: 1, padding: '0.85rem', borderRadius: '10px', background: pin.length === 4 ? (withdrawalType === 'AFFILIATE' ? 'var(--accent-blue)' : 'var(--accent-gold)') : 'rgba(255,255,255,0.2)', border: 'none', color: pin.length === 4 ? (withdrawalType === 'AFFILIATE' ? '#fff' : '#000') : '#888', fontWeight: 'bold', cursor: pin.length !== 4 ? 'not-allowed' : 'pointer', fontSize: '0.9rem' }}
+                  >
+                    {submitting ? 'Processing...' : 'Submit Withdrawal'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Required Modal */}
       {upgradeError && (
