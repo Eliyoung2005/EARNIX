@@ -123,7 +123,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 cursor: 'default'
               }}
             >
-              ✓ Claimed Today
+              Claimed Today
             </button>
           ) : (
             <button
@@ -201,7 +201,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 </span>
 
                 <span style={{ fontSize: '0.65rem', color: textColor, fontWeight: 'bold' }}>
-                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : ''}
+                  {isCompleted ? 'Done' : isCurrent ? (claimedToday ? 'Done' : 'Today') : ''}
                 </span>
               </div>
             );
@@ -210,7 +210,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
       </div>
 
       {message && (
-        <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: message.includes('🎉') || message.includes('credited') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold', padding: '0.75rem', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' }}>
+        <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: message.includes('credited') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold', padding: '0.75rem', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' }}>
           {message}
         </p>
       )}

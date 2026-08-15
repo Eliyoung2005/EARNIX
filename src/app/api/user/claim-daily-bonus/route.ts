@@ -183,7 +183,7 @@ export async function POST() {
       dayIndexInCycle,
       newTaskBalance: updatedUser.taskBalance,
       taskEarningsMode,
-      message: `🎉 Day ${dayIndexInCycle} streak bonus of ${displayAmount.toLocaleString()} ${unitLabel} credited to your balance!`
+      message: `Day ${dayIndexInCycle} streak bonus of ${displayAmount.toLocaleString()} ${unitLabel} credited to your balance!`
     });
 
   } catch (error: any) {

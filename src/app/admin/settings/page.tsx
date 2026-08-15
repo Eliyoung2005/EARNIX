@@ -93,7 +93,7 @@ export default function AdminSettings() {
       {/* Daily Login Bonus */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.4rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          🎁 Daily Login Bonus
+          Daily Login Bonus
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
           Set the default daily login bonus awarded to users. This applies to users on plans where no per-plan bonus is configured.
@@ -441,7 +441,7 @@ export default function AdminSettings() {
                     opacity: fetchingRate ? 0.6 : 1
                   }}
                 >
-                  {fetchingRate ? '⏳ Fetching...' : ' Fetch Live Rate'}
+                  {fetchingRate ? 'Fetching...' : 'Fetch Live Rate'}
                 </button>
               </div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
@@ -483,7 +483,7 @@ export default function AdminSettings() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  ⭐ ERX
+                  ERX
                 </button>
               </div>
             </div>
@@ -585,7 +585,7 @@ export default function AdminSettings() {
             className="btn-primary"
             style={{ padding: '0.85rem 1.5rem', borderRadius: '10px', fontWeight: 'bold', alignSelf: 'flex-start', background: '#a855f7', color: 'white', fontSize: '0.95rem' }}
           >
-            {saving ? 'Saving...' : ' Save Settings'}
+            {saving ? 'Saving...' : 'Save Settings'}
           </button>
         </form>
       </div>

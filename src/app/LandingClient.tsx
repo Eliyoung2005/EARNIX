@@ -470,7 +470,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
 
                     {/* Badge */}
                     <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', background: 'rgba(212, 175, 55, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold' }}>
-                       Verified Vendor
+                      Verified Vendor
                     </div>
 
                     {/* Direct Links */}
@@ -502,7 +502,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
 
             <div style={{ marginTop: '2.5rem' }}>
               <Link href="/vendors" className="btn-pro" style={{ padding: '0.75rem 2rem', borderRadius: '50px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>
-                View All Verified Vendors &rarr;
+                View All Verified Vendors ->
               </Link>
             </div>
 

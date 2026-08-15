@@ -120,7 +120,7 @@ export default function ReferralsClient({
               minWidth: '110px'
             }}
           >
-            {copied ? 'Copied! ' : 'Copy Link'}
+            {copied ? 'Copied!' : 'Copy Link'}
           </button>
         </div>
 
