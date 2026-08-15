@@ -189,7 +189,7 @@ export default function AdminDashboardClient({
                 </p>
               </div>
               <Link href="/admin/memberships" style={{ padding: '0.5rem 1.25rem', borderRadius: '50px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 'bold' }}>
-                Manage Plans ->
+                Manage Plans &rarr;
               </Link>
             </div>
 
@@ -239,7 +239,7 @@ export default function AdminDashboardClient({
                 </p>
               </div>
               <Link href="/admin/coupons" style={{ padding: '0.5rem 1.25rem', borderRadius: '50px', background: 'rgba(40,199,111,0.15)', border: '1px solid rgba(40,199,111,0.3)', color: 'var(--success)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 'bold' }}>
-                Coupon Manager ({unusedCouponsCount.toLocaleString()} Unused) ->
+                Coupon Manager ({unusedCouponsCount.toLocaleString()} Unused) &rarr;
               </Link>
             </div>
 

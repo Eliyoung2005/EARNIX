@@ -34,11 +34,11 @@ export default function QuickActions({ username, plan }: { username: string, pla
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {plan !== 'FREE' && (
           <a href="/dashboard/withdrawals?type=affiliate" className="btn-primary" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', padding: '1rem', borderRadius: '12px', textDecoration: 'none', alignItems: 'center' }}>
-            <span>Withdraw Affiliate Funds</span> <span>-></span>
+            <span>Withdraw Affiliate Funds</span> <span>&rarr;</span>
           </a>
         )}
         <a href="/dashboard/withdrawals?type=task" className="btn-pro" style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--surface-color-light)', padding: '1rem', borderRadius: '12px', textDecoration: 'none', color: '#fff', alignItems: 'center' }}>
-          <span>Withdraw Task Earnings</span> <span>-></span>
+          <span>Withdraw Task Earnings</span> <span>&rarr;</span>
         </a>
 
         {/* Stable Referral Link Section - Available for ALL users on any device */}

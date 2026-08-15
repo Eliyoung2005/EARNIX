@@ -502,7 +502,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
 
             <div style={{ marginTop: '2.5rem' }}>
               <Link href="/vendors" className="btn-pro" style={{ padding: '0.75rem 2rem', borderRadius: '50px', fontSize: '0.95rem', borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>
-                View All Verified Vendors ->
+                View All Verified Vendors &rarr;
               </Link>
             </div>
 
