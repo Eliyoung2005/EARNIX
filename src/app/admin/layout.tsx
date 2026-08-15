@@ -63,9 +63,61 @@ export default function AdminLayout({
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link href="/admin" style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--accent-gold)', letterSpacing: '-1px', textDecoration: 'none' }}>
-            EARNIX <span style={{ fontSize: '0.8rem', color: 'white', verticalAlign: 'top' }}>ADMIN</span>
+        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ 
+                fontSize: '1.45rem', 
+                fontWeight: '900', 
+                letterSpacing: '-0.5px', 
+                background: 'linear-gradient(135deg, #FFF1C5 0%, #FFD700 45%, #FFA500 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.45))',
+                textShadow: '0 0 16px rgba(255, 215, 0, 0.4)'
+              }}>
+                super<span style={{ 
+                  background: 'linear-gradient(135deg, #FF5E62 0%, #FF9966 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: '950',
+                  letterSpacing: '0.5px'
+                }}>ADMIN</span>
+              </span>
+              <span style={{
+                fontSize: '0.58rem',
+                fontWeight: '800',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                background: 'rgba(255, 59, 48, 0.2)',
+                border: '1px solid rgba(255, 59, 48, 0.5)',
+                color: '#ff6b6b',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase'
+              }}>
+                ROOT
+              </span>
+            </div>
+            <span style={{ 
+              fontSize: '0.65rem', 
+              fontWeight: '700', 
+              letterSpacing: '1.2px', 
+              textTransform: 'uppercase', 
+              color: 'rgba(255, 255, 255, 0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}>
+              <span style={{ 
+                width: '5px', 
+                height: '5px', 
+                borderRadius: '50%', 
+                backgroundColor: '#10b981', 
+                boxShadow: '0 0 6px #10b981', 
+                display: 'inline-block' 
+              }} />
+              Authorized Access Only
+            </span>
           </Link>
           <button 
             type="button"
