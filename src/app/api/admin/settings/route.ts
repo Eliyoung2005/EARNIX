@@ -57,6 +57,7 @@ export async function PATCH(req: Request) {
       'adsenseEnabled', 'adsenseClientId',
       'supportEmail', 'whatsappSupport', 'telegramSupport',
       'affiliateCurrency', 'usdExchangeRate', 'taskEarningsMode', 'pointsConversionRate',
+      'defaultDailyLoginBonus',
       'eliteTier2CommissionPercent', 'eliteTier3CommissionPercent'
     ];
 

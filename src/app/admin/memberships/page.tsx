@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useCurrency } from '@/lib/CurrencyContext';
 
 export default function MembershipsPage() {
-  const { symbol, settings } = useCurrency();
+  const { symbol, settings, taskLabel } = useCurrency();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -167,7 +167,7 @@ export default function MembershipsPage() {
                   <input type="number" value={plan.welcomeBonus} onChange={e => handleChange(plan.id, 'welcomeBonus', parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>Daily Login ({symbol})</label>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.3rem', fontWeight: 'bold' }}>Daily Login Bonus ({taskLabel})</label>
                   <input type="number" value={plan.dailyLoginBonus} onChange={e => handleChange(plan.id, 'dailyLoginBonus', parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
                 </div>
               </div>

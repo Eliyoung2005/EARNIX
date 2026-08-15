@@ -17,6 +17,22 @@ function getYesterdayStart() {
   return d;
 }
 
+/** Resolve the bonus amount for a user:
+ *  1. Plan's dailyLoginBonus (if > 0)
+ *  2. Platform defaultDailyLoginBonus
+ *  3. Hardcoded fallback of 50
+ */
+async function resolveBonus(
+  planBonus: number | null | undefined,
+  platformSettings: any
+): Promise<number> {
+  if (planBonus && planBonus > 0) return planBonus;
+  if (platformSettings?.defaultDailyLoginBonus && platformSettings.defaultDailyLoginBonus > 0) {
+    return platformSettings.defaultDailyLoginBonus;
+  }
+  return 50;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -25,16 +41,21 @@ export async function GET() {
     }
 
     const userId = (session.user as any).id;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { membership: true }
-    });
+    const [user, platformSettings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        include: { membership: true }
+      }),
+      prisma.platformSettings.findFirst()
+    ]);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const baseBonus = 50;
+    const baseBonus = await resolveBonus(user.membership?.dailyLoginBonus, platformSettings);
+    const taskEarningsMode = platformSettings?.taskEarningsMode || 'CASH';
+    const pointsConversionRate = platformSettings?.pointsConversionRate || 1;
 
     const startOfToday = getStartOfDay();
     const startOfYesterday = getYesterdayStart();
@@ -44,24 +65,28 @@ export async function GET() {
 
     let activeStreak = user.loginStreak || 0;
 
-    // Check if user missed a day
+    // Check if user missed a day — reset streak
     if (!claimedToday && lastClaim && lastClaim < startOfYesterday) {
-      activeStreak = 0; // Streak reset due to missed day
+      activeStreak = 0;
     }
 
     // Determine current day position in 7-day calendar (1 to 7)
-    const dayIndexInCycle = claimedToday 
+    const dayIndexInCycle = claimedToday
       ? (((activeStreak - 1) % 7) + 1)
       : (((activeStreak) % 7) + 1);
 
-    const todayBonus = baseBonus;
+    // The display amount in points (if POINTS mode) or raw amount (if CASH mode)
+    const displayAmount = taskEarningsMode === 'POINTS'
+      ? baseBonus * pointsConversionRate
+      : baseBonus;
 
     return NextResponse.json({
       claimedToday,
       activeStreak,
       dayIndexInCycle,
-      baseBonus,
-      todayBonus,
+      baseBonus: displayAmount,
+      todayBonus: displayAmount,
+      taskEarningsMode,
       planName: user.membership?.name || 'FREE'
     });
   } catch (error: any) {
@@ -78,16 +103,18 @@ export async function POST() {
     }
 
     const userId = (session.user as any).id;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { membership: true }
-    });
+    const [user, platformSettings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        include: { membership: true }
+      }),
+      prisma.platformSettings.findFirst()
+    ]);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const baseBonus = 50;
     const startOfToday = getStartOfDay();
     const startOfYesterday = getYesterdayStart();
 
@@ -102,6 +129,11 @@ export async function POST() {
       });
     }
 
+    // Resolve bonus amount (raw NGN/points value stored in DB)
+    const baseBonus = await resolveBonus(user.membership?.dailyLoginBonus, platformSettings);
+    const taskEarningsMode = platformSettings?.taskEarningsMode || 'CASH';
+    const pointsConversionRate = platformSettings?.pointsConversionRate || 1;
+
     // Calculate new streak
     let newStreak = 1;
     if (lastClaim && lastClaim >= startOfYesterday) {
@@ -110,7 +142,16 @@ export async function POST() {
 
     // 7-Day Cycle Calculation
     const dayIndexInCycle = ((newStreak - 1) % 7) + 1;
+
+    // The value credited to taskBalance is always the raw baseBonus
+    // (fmtTask on the frontend handles ERX vs ₦ display)
     const rewardAmount = baseBonus;
+
+    // Display amount shown to user in response message
+    const displayAmount = taskEarningsMode === 'POINTS'
+      ? baseBonus * pointsConversionRate
+      : baseBonus;
+    const unitLabel = taskEarningsMode === 'POINTS' ? 'ERX' : '₦';
 
     const updatedUser = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
@@ -127,7 +168,7 @@ export async function POST() {
       await tx.activityLog.create({
         data: {
           action: 'DAILY_LOGIN_BONUS',
-          description: `Claimed ₦${rewardAmount} Daily Bonus (Day ${newStreak} Streak)`,
+          description: `Claimed ${displayAmount.toLocaleString()} ${unitLabel} Daily Bonus (Day ${dayIndexInCycle} Streak)`,
           userId: user.id
         }
       });
@@ -137,11 +178,12 @@ export async function POST() {
 
     return NextResponse.json({
       claimed: true,
-      amount: rewardAmount,
+      amount: displayAmount,
       newStreak: updatedUser.loginStreak,
       dayIndexInCycle,
       newTaskBalance: updatedUser.taskBalance,
-      message: `Success! Day ${dayIndexInCycle} streak bonus of ₦${rewardAmount} credited to your task balance!`
+      taskEarningsMode,
+      message: `🎉 Day ${dayIndexInCycle} streak bonus of ${displayAmount.toLocaleString()} ${unitLabel} credited to your balance!`
     });
 
   } catch (error: any) {

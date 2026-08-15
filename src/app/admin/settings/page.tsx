@@ -90,6 +90,69 @@ export default function AdminSettings() {
         </Link>
       </div>
 
+      {/* Daily Login Bonus */}
+      <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.4rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          🎁 Daily Login Bonus
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+          Set the default daily login bonus awarded to users. This applies to users on plans where no per-plan bonus is configured.
+          Per-plan bonuses can be set in <a href="/admin/memberships" style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}>Membership Plans</a>.
+          The unit (ERX pts or ₦) is determined by the Task Earnings Mode below.
+        </p>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', color: 'white', marginBottom: '0.4rem' }}>
+              Default Daily Login Bonus (ERX / ₦)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={settings?.defaultDailyLoginBonus ?? 50}
+              onChange={(e) => setSettings((prev: any) => ({ ...prev, defaultDailyLoginBonus: parseFloat(e.target.value) || 0 }))}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(16, 185, 129, 0.4)', color: 'white', fontSize: '1rem' }}
+            />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', display: 'block' }}>
+              This value is used when a user's plan has no daily bonus set (e.g. FREE plan).
+            </span>
+          </div>
+
+          <button
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await fetch('/api/admin/settings', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ defaultDailyLoginBonus: settings?.defaultDailyLoginBonus ?? 50 })
+                });
+                alert('Daily login bonus updated! Users will see the new amount immediately.');
+              } catch {
+                alert('Failed to save.');
+              } finally {
+                setSaving(false);
+              }
+            }}
+            disabled={saving}
+            style={{
+              padding: '0.75rem 1.75rem',
+              background: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.7 : 1,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Default Bonus'}
+          </button>
+        </div>
+      </div>
+
       {/* Withdrawal Rules */}
       <div className="bg-surface" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Withdrawal Rules</h2>

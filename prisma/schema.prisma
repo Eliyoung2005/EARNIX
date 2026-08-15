@@ -263,6 +263,9 @@ model PlatformSettings {
   taskEarningsMode       String    @default("CASH")   // "CASH" | "POINTS"
   pointsConversionRate   Float     @default(1.0)      // 1 NGN = X points
 
+  // Daily Login Bonus
+  defaultDailyLoginBonus Float @default(50.0)         // Default ERX/cash awarded on daily login (used when plan has no bonus set)
+
   // Elite Downstream Multi-Level Referral Commissions
   eliteTier2CommissionPercent Float @default(5.0)     // Percentage of plan price
   eliteTier3CommissionPercent Float @default(2.0)     // Percentage of plan price

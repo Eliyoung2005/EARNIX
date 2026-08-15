@@ -11,9 +11,10 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
   const [activeStreak, setActiveStreak] = useState(0);
   const [dayIndexInCycle, setDayIndexInCycle] = useState(1);
   const [baseBonus, setBaseBonus] = useState(initialBonus);
+  const [taskEarningsMode, setTaskEarningsMode] = useState<string>('CASH');
   const [message, setMessage] = useState('');
   const router = useRouter();
-  const { fmtTask } = useCurrency();
+  const { fmtTask, taskLabel } = useCurrency();
 
   useEffect(() => {
     fetch('/api/user/claim-daily-bonus')
@@ -23,12 +24,21 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
           setClaimedToday(data.claimedToday);
           setActiveStreak(data.activeStreak || 0);
           setDayIndexInCycle(data.dayIndexInCycle || 1);
-          setBaseBonus(data.baseBonus || initialBonus);
+          setBaseBonus(data.baseBonus ?? initialBonus);
+          setTaskEarningsMode(data.taskEarningsMode || 'CASH');
         }
       })
       .catch(err => console.error('Failed to load daily bonus status', err))
       .finally(() => setLoading(false));
   }, [initialBonus]);
+
+  const isPoints = taskEarningsMode === 'POINTS';
+
+  // Format the bonus display — API already returns the display value (points or cash)
+  const formatBonus = (amount: number) => {
+    if (isPoints) return `${amount.toLocaleString()} ERX`;
+    return fmtTask(amount);
+  };
 
   const handleClaim = async () => {
     if (claimedToday) return;
@@ -50,6 +60,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
         setClaimedToday(true);
         setActiveStreak(data.newStreak || activeStreak + 1);
         if (data.dayIndexInCycle) setDayIndexInCycle(data.dayIndexInCycle);
+        if (data.taskEarningsMode) setTaskEarningsMode(data.taskEarningsMode);
         router.refresh();
       }
     } catch (err: any) {
@@ -62,12 +73,12 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
   const days = [1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <div 
-      className="bg-surface" 
-      style={{ 
-        padding: '1.75rem', 
-        borderRadius: '16px', 
-        borderLeft: '4px solid #10b981', 
+    <div
+      className="bg-surface"
+      style={{
+        padding: '1.75rem',
+        borderRadius: '16px',
+        borderLeft: '4px solid #10b981',
         background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(0,0,0,0.35))',
         border: '1px solid rgba(16, 185, 129, 0.25)',
         boxShadow: '0 8px 25px rgba(16, 185, 129, 0.12)',
@@ -79,47 +90,52 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#10b981', margin: 0 }}>
-              Daily Login Streak
+              Daily Login Bonus
             </h3>
             <span style={{ fontSize: '0.78rem', background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', padding: '0.2rem 0.75rem', borderRadius: '50px', fontWeight: 'bold', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
               {activeStreak} Day Streak
             </span>
+            {isPoints && (
+              <span style={{ fontSize: '0.72rem', background: 'rgba(212, 175, 55, 0.18)', color: 'var(--accent-gold)', padding: '0.2rem 0.6rem', borderRadius: '50px', fontWeight: 'bold', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+                ERX POINTS
+              </span>
+            )}
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.35rem 0 0 0' }}>
-            {claimedToday 
+            {claimedToday
               ? `You claimed your Day ${dayIndexInCycle} bonus today! Return tomorrow to keep your streak going.`
-              : `Claim your Day ${dayIndexInCycle} bonus of ${fmtTask(baseBonus)} today! Log in every day to maintain your streak.`}
+              : `Claim your Day ${dayIndexInCycle} bonus of ${formatBonus(baseBonus)} today! Log in every day to grow your streak.`}
           </p>
         </div>
 
         <div>
           {claimedToday ? (
-            <button 
-              disabled 
-              style={{ 
-                background: 'rgba(16, 185, 129, 0.15)', 
-                color: '#10b981', 
-                border: '1px solid #10b981', 
-                padding: '0.65rem 1.35rem', 
-                borderRadius: '50px', 
-                fontSize: '0.85rem', 
+            <button
+              disabled
+              style={{
+                background: 'rgba(16, 185, 129, 0.15)',
+                color: '#10b981',
+                border: '1px solid #10b981',
+                padding: '0.65rem 1.35rem',
+                borderRadius: '50px',
+                fontSize: '0.85rem',
                 fontWeight: 'bold',
                 cursor: 'default'
               }}
             >
-              Claimed Today 
+              ✓ Claimed Today
             </button>
           ) : (
-            <button 
-              onClick={handleClaim} 
+            <button
+              onClick={handleClaim}
               disabled={loading || claiming}
-              className="btn-primary" 
-              style={{ 
-                background: '#10b981', 
-                color: '#fff', 
-                padding: '0.65rem 1.5rem', 
-                borderRadius: '50px', 
-                fontSize: '0.85rem', 
+              className="btn-primary"
+              style={{
+                background: '#10b981',
+                color: '#fff',
+                padding: '0.65rem 1.5rem',
+                borderRadius: '50px',
+                fontSize: '0.85rem',
                 fontWeight: 'bold',
                 border: 'none',
                 cursor: (loading || claiming) ? 'not-allowed' : 'pointer',
@@ -127,7 +143,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                 boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
               }}
             >
-              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} Bonus (${fmtTask(baseBonus)})`}
+              {claiming ? 'Claiming...' : `Claim Day ${dayIndexInCycle} — ${formatBonus(baseBonus)}`}
             </button>
           )}
         </div>
@@ -142,8 +158,8 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: '0.6rem' }}>
           {days.map((dayNum) => {
             const isCurrent = dayNum === dayIndexInCycle;
-            const isCompleted = claimedToday 
-              ? dayNum <= dayIndexInCycle 
+            const isCompleted = claimedToday
+              ? dayNum <= dayIndexInCycle
               : dayNum < dayIndexInCycle;
 
             let bgColor = 'rgba(255,255,255,0.04)';
@@ -161,13 +177,13 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
             }
 
             return (
-              <div 
+              <div
                 key={dayNum}
-                style={{ 
-                  background: bgColor, 
-                  border: `1.5px solid ${borderColor}`, 
-                  borderRadius: '12px', 
-                  padding: '0.6rem 0.4rem', 
+                style={{
+                  background: bgColor,
+                  border: `1.5px solid ${borderColor}`,
+                  borderRadius: '12px',
+                  padding: '0.6rem 0.4rem',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
@@ -180,12 +196,12 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
                   Day {dayNum}
                 </span>
 
-                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent-gold)' : 'white' }}>
-                  {fmtTask(baseBonus)}
+                <span style={{ fontSize: '0.8rem', fontWeight: '800', color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent-gold)' : 'white' }}>
+                  {isPoints ? `${baseBonus.toLocaleString()} ERX` : fmtTask(baseBonus)}
                 </span>
 
-                <span style={{ fontSize: '0.7rem', color: textColor, fontWeight: 'bold' }}>
-                  {isCompleted ? '' : isCurrent ? (claimedToday ? '' : 'Today') : ''}
+                <span style={{ fontSize: '0.65rem', color: textColor, fontWeight: 'bold' }}>
+                  {isCompleted ? '✓' : isCurrent ? (claimedToday ? '✓' : 'Today') : ''}
                 </span>
               </div>
             );
@@ -194,7 +210,7 @@ export default function DailyBonusCard({ initialBonus = 50 }: { initialBonus?: n
       </div>
 
       {message && (
-        <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: message.includes('Success') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold' }}>
+        <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: message.includes('🎉') || message.includes('credited') ? '#10b981' : 'var(--accent-gold)', fontWeight: 'bold', padding: '0.75rem', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' }}>
           {message}
         </p>
       )}
