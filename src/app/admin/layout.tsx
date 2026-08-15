@@ -217,9 +217,6 @@ export default function AdminLayout({
             </svg>
           </button>
           
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Super Admin: <strong>Admin</strong></span>
-          </div>
         </header>
 
         {/* Page Content */}
