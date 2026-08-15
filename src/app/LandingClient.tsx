@@ -359,13 +359,15 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                 border: `1px solid ${isPremium ? 'rgba(212, 175, 55, 0.3)' : 'rgba(10, 91, 255, 0.3)'}`,
                 boxShadow: `0 20px 50px ${isPremium ? 'rgba(212, 175, 55, 0.15)' : 'rgba(10, 91, 255, 0.15)'}, inset 0 0 20px ${isPremium ? 'rgba(212, 175, 55, 0.05)' : 'rgba(10, 91, 255, 0.05)'}`,
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
               }}>
                 {/* Glow effect in background */}
                 <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: primaryColor, filter: 'blur(80px)', opacity: 0.3, zIndex: 0 }}></div>
                 <div style={{ position: 'absolute', bottom: '-50px', left: '-50px', width: '150px', height: '150px', background: primaryColorHex, filter: 'blur(80px)', opacity: 0.2, zIndex: 0 }}></div>
 
-                <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1 }}>
                   <div style={{ display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '50px', background: isPremium ? 'rgba(212, 175, 55, 0.2)' : 'rgba(10, 91, 255, 0.2)', color: primaryColorHex, fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1.5rem', border: `1px solid ${isPremium ? 'rgba(212, 175, 55, 0.3)' : 'rgba(10, 91, 255, 0.3)'}` }}>
                     {plan.name.toUpperCase()} TIER
                   </div>
@@ -401,7 +403,7 @@ export default function LandingClient({ initialPlans, initialVendors }: { initia
                     ))}
                   </ul>
                   
-                  <Link href={`/register?plan=${plan.id}`} className={isPremium ? 'btn-pro' : 'btn-primary'} style={{ width: '100%', display: 'block', padding: '1.2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: `0 10px 30px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}`, transition: 'transform 0.2s, box-shadow 0.2s', background: isPremium ? 'var(--accent-gold)' : 'var(--accent-blue)', color: isPremium ? '#000' : 'white', border: 'none' }}>
+                  <Link href={`/register?plan=${plan.id}`} className={isPremium ? 'btn-pro' : 'btn-primary'} style={{ width: '100%', display: 'block', padding: '1.2rem', borderRadius: '50px', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: `0 10px 30px ${isPremium ? 'rgba(212, 175, 55, 0.4)' : 'rgba(10, 91, 255, 0.4)'}`, transition: 'transform 0.2s, box-shadow 0.2s', background: isPremium ? 'var(--accent-gold)' : 'var(--accent-blue)', color: isPremium ? '#000' : 'white', border: 'none', marginTop: 'auto' }}>
                     Start {plan.name} Now
                   </Link>
                 </div>
