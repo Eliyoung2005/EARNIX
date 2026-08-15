@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 export default function AdminLayout({
   children,
@@ -172,10 +173,52 @@ export default function AdminLayout({
           })}
         </nav>
 
-        <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <Link href="/dashboard?view=user" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            Exit Admin Panel
+        <div style={{ padding: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <button 
+            type="button"
+            onClick={() => signOut({ callbackUrl: '/' })} 
+            style={{ 
+              color: '#ff6b6b', 
+              fontSize: '0.88rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.6rem',
+              background: 'rgba(255, 59, 48, 0.1)',
+              border: '1px solid rgba(255, 59, 48, 0.3)',
+              padding: '0.75rem 1rem',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              width: '100%',
+              transition: 'all 0.2s ease',
+              textAlign: 'left'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Exit &amp; Logout
+          </button>
+          <Link 
+            href="/dashboard?view=user" 
+            style={{ 
+              color: 'var(--text-secondary)', 
+              textDecoration: 'none', 
+              fontSize: '0.8rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              padding: '0.25rem 0.5rem'
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Preview User Dashboard
           </Link>
         </div>
       </aside>
@@ -217,6 +260,50 @@ export default function AdminLayout({
             </svg>
           </button>
           
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Link 
+              href="/"
+              style={{
+                color: 'var(--text-secondary)',
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              Landing Page
+            </Link>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              style={{
+                background: 'rgba(255, 59, 48, 0.12)',
+                border: '1px solid rgba(255, 59, 48, 0.3)',
+                color: '#ff6b6b',
+                padding: '0.45rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              Logout
+            </button>
+          </div>
         </header>
 
         {/* Page Content */}
