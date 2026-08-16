@@ -14,7 +14,6 @@ export async function POST(req: Request) {
       username,
       email,
       password,
-      withdrawalPin,
       phone,
       // Plan can come as ID or name
       plan,
@@ -28,7 +27,7 @@ export async function POST(req: Request) {
     const resolvedReferrer = referrerUsername || referralCode || null;
     const resolvedPlanIdentifier = planName || plan || null;
 
-    // 1. Validation — withdrawalPin is optional (default to '0000' if not provided)
+    // 1. Validation
     if (!fname || !lname || !username || !email || !password) {
       return NextResponse.json({ error: 'All required fields must be filled in' }, { status: 400 });
     }
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
-    const pinToUse = withdrawalPin && /^\d{4}$/.test(withdrawalPin) ? withdrawalPin : '0000';
+    // withdrawalPin is NOT set at registration — users must set it in Profile Settings before withdrawing
 
     const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
 
@@ -75,9 +74,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Password & PIN Hashing
+    // 4. Password Hashing
     const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedPin = await bcrypt.hash(pinToUse, 10);
 
     // 5. Lookup Membership Plan — try by ID first, then by name
     let selectedPlan = null;
@@ -161,7 +159,7 @@ export async function POST(req: Request) {
             username: cleanUsername,
             email: email.trim().toLowerCase(),
             password: hashedPassword,
-            withdrawalPin: hashedPin,
+            // withdrawalPin intentionally left null — user must set it in settings
             role: 'USER',
             planId: selectedPlan!.id,
             taskBalance: welcomeBonus,
@@ -225,7 +223,7 @@ export async function POST(req: Request) {
           username: cleanUsername,
           email: email.trim().toLowerCase(),
           password: hashedPassword,
-          withdrawalPin: hashedPin,
+          // withdrawalPin intentionally left null — user must set it in settings
           role: 'USER',
           planId: selectedPlan.id,
           taskBalance: welcomeBonus,
