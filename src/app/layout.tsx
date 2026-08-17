@@ -9,13 +9,31 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "EARNIX | SoftLife & Stress-free Earnings",
+  title: {
+    default: "EARNIX | SoftLife & Stress-free Earnings",
+    template: "%s | EARNIX"
+  },
   description: "EARNIX is the ultimate platform for SoftLife and Stress-free Earnings. Get paid for sponsored tasks and referrals.",
-  keywords: "EARNIX, earnings, make money online, affiliate marketing, sponsored tasks, softlife",
-  // Google AdSense verification meta tag placeholder
-  other: {
-    "google-adsense-account": "ca-pub-YOUR_ADSENSE_ID_HERE"
-  }
+  keywords: ["EARNIX", "earnings", "make money online", "affiliate marketing", "sponsored tasks", "softlife"],
+  metadataBase: new URL('https://earnix.online'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_NG',
+    siteName: 'EARNIX',
+    images: ['/earnix-logo.jpg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'EARNIX | SoftLife & Stress-free Earnings',
+    description: 'EARNIX is the ultimate platform for SoftLife and Stress-free Earnings. Get paid for sponsored tasks and referrals.',
+    images: ['/earnix-logo.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true }
+  },
+  alternates: { canonical: 'https://earnix.online' }
 };
 
 export default function RootLayout({

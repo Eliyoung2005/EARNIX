@@ -27,9 +27,44 @@ export default async function Home() {
   });
 
   return (
-    <LandingClient 
-      initialPlans={plans} 
-      initialVendors={vendors} 
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "name": "EARNIX",
+                "url": "https://earnix.online",
+                "logo": "https://earnix.online/earnix-logo.jpg",
+                "sameAs": [],
+                "contactPoint": {
+                  "@type": "ContactPoint",
+                  "email": "Supportearnix@gmail.com",
+                  "contactType": "customer support"
+                }
+              },
+              {
+                "@type": "WebSite",
+                "name": "EARNIX",
+                "url": "https://earnix.online",
+                "description": "EARNIX is the ultimate platform for SoftLife and Stress-free Earnings.",
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": "https://earnix.online/search?q={search_term_string}",
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ]
+          }).replace(/</g, '\\u003c')
+        }}
+      />
+      <LandingClient 
+        initialPlans={plans} 
+        initialVendors={vendors} 
+      />
+    </>
   );
 }

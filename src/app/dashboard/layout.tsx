@@ -6,6 +6,14 @@ import WelcomePopup from './WelcomePopup';
 import UpgradeThankYouPopup from './UpgradeThankYouPopup';
 import GlobalBroadcastPopup from './GlobalBroadcastPopup';
 import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardLayout({
   children,
